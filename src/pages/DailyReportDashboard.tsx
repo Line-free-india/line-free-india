@@ -90,7 +90,7 @@ export default function DailyReportDashboard() {
       </div>
 
       {/* Premium Header */}
-      <div className="sticky top-0 z-30 glass-strong border-b border-border p-5 flex items-center justify-between">
+      <div className="sticky top-0 z-30 glass-strong border-b border-border px-4 app-header-safe pb-3.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => { triggerHaptic('light'); nav(-1); }}
@@ -100,7 +100,7 @@ export default function DailyReportDashboard() {
           </button>
           <div>
             <h1 className="text-xl font-black tracking-tight">Daily Pulse 📊</h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-dim">{catInfo.label} Operations</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-text-dim">{catInfo.label} Operations</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -119,11 +119,11 @@ export default function DailyReportDashboard() {
       <div className="p-6 space-y-8">
         {/* Date Selection & Alert */}
         <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2 text-text-dim font-black uppercase tracking-widest text-[10px] bg-card/50 px-4 py-2 rounded-full border border-border">
+           <div className="flex items-center gap-2 text-text-dim font-black uppercase tracking-widest text-xs bg-card/50 px-4 py-2 rounded-full border border-border">
               <FaCalendarAlt className="text-primary" />
               {dateStr}
            </div>
-           <div className="flex items-center gap-1.5 text-[10px] font-black text-success uppercase tracking-widest bg-success/10 px-3 py-2 rounded-full border border-success/30">
+           <div className="flex items-center gap-1.5 text-xs font-black text-success uppercase tracking-widest bg-success/10 px-3 py-2 rounded-full border border-success/30">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> Finalized
            </div>
         </div>
@@ -142,8 +142,8 @@ export default function DailyReportDashboard() {
                 <div className="text-xl mb-4 text-text-dim">{stat.icon}</div>
                 <p className="text-2xl font-black tracking-tight mb-1">{stat.value}</p>
                 <div className="flex items-center justify-between">
-                   <p className="text-[9px] font-black uppercase tracking-widest text-text-dim">{stat.label}</p>
-                   <span className="text-[8px] font-bold text-success">{stat.trend}</span>
+                   <p className="text-xs font-black uppercase tracking-widest text-text-dim">{stat.label}</p>
+                   <span className="text-xs font-bold text-success">{stat.trend}</span>
                 </div>
              </motion.div>
            ))}
@@ -154,7 +154,7 @@ export default function DailyReportDashboard() {
            <div className="flex justify-between items-center mb-6">
               <div>
                  <h3 className="font-black text-sm uppercase tracking-widest">Efficiency Score</h3>
-                 <p className="text-[10px] text-text-dim font-bold mt-1">Based on queue velocity & margins</p>
+                 <p className="text-xs text-text-dim font-bold mt-1">Based on queue velocity & margins</p>
               </div>
               <div className="text-3xl font-black text-primary">{healthScore}%</div>
            </div>
@@ -165,7 +165,7 @@ export default function DailyReportDashboard() {
                 className="h-full bg-gradient-to-r from-primary to-accent rounded-full" 
               />
            </div>
-           <div className="flex justify-between mt-3 text-[9px] font-black uppercase tracking-widest text-text-dim">
+           <div className="flex justify-between mt-3 text-xs font-black uppercase tracking-widest text-text-dim">
               <span>Underperforming</span>
               <span>Optimal</span>
            </div>
@@ -175,7 +175,7 @@ export default function DailyReportDashboard() {
         <div>
            <div className="flex items-center justify-between mb-4 px-2">
               <h3 className="font-black text-sm uppercase tracking-widest">Timeline</h3>
-              <button className="text-[10px] font-black text-primary uppercase tracking-widest">View All →</button>
+              <button className="text-xs font-black text-primary uppercase tracking-widest">View All →</button>
            </div>
            <div className="space-y-3">
               {todayAppts.length > 0 ? todayAppts.slice(0, 5).map((a: any, i: number) => (
@@ -185,17 +185,17 @@ export default function DailyReportDashboard() {
                    </div>
                    <div className="flex-1">
                       <p className="text-xs font-black">{a.customerName || a.name || 'Guest User'}</p>
-                      <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest mt-0.5">{a.serviceName || a.category || 'Service'} &bull; {a.time || 'Walk-in'}</p>
+                      <p className="text-xs text-text-dim font-bold uppercase tracking-widest mt-0.5">{a.serviceName || a.category || 'Service'} &bull; {a.time || 'Walk-in'}</p>
                    </div>
                    <div className="text-right">
                       <p className="text-xs font-black text-emerald-500">₹{a.totalPrice || a.price || 0}</p>
-                      <p className="text-[8px] font-black uppercase text-text-dim">Success</p>
+                      <p className="text-xs font-black uppercase text-text-dim">Success</p>
                    </div>
                 </div>
               )) : (
                 <div className="py-12 border-2 border-dashed border-border rounded-[2.5rem] flex flex-col items-center justify-center text-center opacity-30">
                    <FaChartBar className="text-4xl mb-4" />
-                   <p className="font-black text-[10px] uppercase tracking-[3px]">No Activity Recorded</p>
+                   <p className="font-black text-xs uppercase tracking-[3px]">No Activity Recorded</p>
                 </div>
               )}
            </div>
@@ -208,16 +208,16 @@ export default function DailyReportDashboard() {
                  <FaBox className="text-amber-500" />
                  <h3 className="font-black text-sm uppercase tracking-widest">Inventory Snapshot</h3>
               </div>
-              <span className="text-[10px] bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-black">
+              <span className="text-xs bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20 font-black">
                  {businessProfile?.inventory?.filter((p: any) => (p.stock || p.quantity) < 5).length || 0} Low Stock
               </span>
            </div>
            <div className="space-y-3">
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-text-dim">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-text-dim">
                  <span>Operational Status</span>
                  <span className="text-success">Nominal</span>
               </div>
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-text-dim">
+              <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-text-dim">
                  <span>Active Assets</span>
                  <span className="text-text">{businessProfile?.inventory?.length || 0} SKU</span>
               </div>
@@ -226,7 +226,7 @@ export default function DailyReportDashboard() {
 
         {/* Report Footer */}
         <div className="text-center py-8 opacity-20 hover:opacity-100 transition-opacity">
-           <p className="text-[8px] font-black uppercase tracking-[5px]">Line Free India &bull; Enterprise Operations</p>
+           <p className="text-xs font-black uppercase tracking-[5px]">Line Free India &bull; Enterprise Operations</p>
         </div>
       </div>
     </div>

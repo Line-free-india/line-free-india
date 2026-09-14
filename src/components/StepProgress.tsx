@@ -28,7 +28,7 @@ export default function StepProgress({ steps, currentStep, accentColor = 'var(--
             >
               {i < currentStep ? '✓' : i + 1}
             </motion.div>
-            <span className="text-[9px] font-medium text-center max-w-[60px] leading-tight" style={{ color: i <= currentStep ? accentColor : 'var(--color-text-dim)' }}>
+            <span className="text-xs font-medium text-center max-w-[60px] leading-tight" style={{ color: i <= currentStep ? accentColor : 'var(--color-text-dim)' }}>
               {step}
             </span>
           </div>

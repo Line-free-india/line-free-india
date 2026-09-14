@@ -51,7 +51,7 @@ export default function FlashDealTimer() {
           </div>
           <div>
             <h3 className="text-white font-black text-sm uppercase tracking-wider">Flash Deal</h3>
-            <p className="text-[10px] font-bold uppercase tracking-[2px]" style={{ color: '#00F0FF' }}>35% OFF Next Token</p>
+            <p className="text-xs font-bold uppercase tracking-[2px]" style={{ color: '#00F0FF' }}>35% OFF Next Token</p>
           </div>
         </div>
 

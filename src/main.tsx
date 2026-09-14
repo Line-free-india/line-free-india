@@ -6,12 +6,23 @@ import "./index.css";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { registerServiceWorker, startUpdateChecker } from './utils/updateChecker';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
-// Register service worker for auto-updates
-registerServiceWorker();
-
-// Start checking for updates
-startUpdateChecker();
+// Only run web PWA auto-update checker and service worker in browsers
+if (!Capacitor.isNativePlatform()) {
+  registerServiceWorker();
+  startUpdateChecker();
+} else {
+  // Native Android configuration: never overlay status bar, use light status bar with dark icons
+  try {
+    StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+    StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+    StatusBar.setBackgroundColor({ color: '#FFFFFF' }).catch(() => {});
+  } catch (e) {
+    console.warn('StatusBar config error:', e);
+  }
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -85,7 +85,7 @@ export default function MembershipRenewalBot() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Renewal Bot 🤖</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{members.length} Members Tracked</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{members.length} Members Tracked</p>
           </div>
         </div>
         <button onClick={addManualMember} disabled={saving} className="text-2xl w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">+</button>
@@ -97,15 +97,15 @@ export default function MembershipRenewalBot() {
         <div className="grid grid-cols-3 gap-3">
            <div className="bg-danger/10 border border-danger/30 rounded-2xl p-3 flex flex-col items-center justify-center">
              <span className="text-2xl font-black text-danger">{expired.length}</span>
-             <span className="text-[10px] font-bold text-danger uppercase">Expired</span>
+             <span className="text-xs font-bold text-danger uppercase">Expired</span>
            </div>
            <div className="bg-warning/10 border border-warning/30 rounded-2xl p-3 flex flex-col items-center justify-center animate-pulse">
              <span className="text-2xl font-black text-warning">{expiringSoon.length}</span>
-             <span className="text-[10px] font-bold text-warning uppercase text-center leading-tight">Expiring Soon</span>
+             <span className="text-xs font-bold text-warning uppercase text-center leading-tight">Expiring Soon</span>
            </div>
            <div className="bg-success/10 border border-success/30 rounded-2xl p-3 flex flex-col items-center justify-center">
              <span className="text-2xl font-black text-success">{active.length}</span>
-             <span className="text-[10px] font-bold text-success uppercase">Active</span>
+             <span className="text-xs font-bold text-success uppercase">Active</span>
            </div>
         </div>
 
@@ -119,7 +119,7 @@ export default function MembershipRenewalBot() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-bold text-text text-sm">{m.gymId}</h4>
-                      <p className="text-[10px] text-text-dim">{m.planName} • Expires in {getDaysLeft(m.expiresAt)} days</p>
+                      <p className="text-xs text-text-dim">{m.planName} • Expires in {getDaysLeft(m.expiresAt)} days</p>
                     </div>
                     <button onClick={() => sendReminder(m)} className="bg-green-500/10 text-green-500 hover:bg-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold border border-green-500/20 transition-colors flex items-center gap-1">
                       <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
@@ -127,8 +127,8 @@ export default function MembershipRenewalBot() {
                     </button>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => renewMembership(m.id, 30)} className="flex-1 py-1 text-[10px] bg-card border border-warning/30 rounded text-warning font-bold active:scale-95 transition-transform">+ 1 Month</button>
-                    <button onClick={() => renewMembership(m.id, 90)} className="flex-1 py-1 text-[10px] bg-card border border-warning/30 rounded text-warning font-bold active:scale-95 transition-transform">+ 3 Months</button>
+                    <button onClick={() => renewMembership(m.id, 30)} className="flex-1 py-1 text-xs bg-card border border-warning/30 rounded text-warning font-bold active:scale-95 transition-transform">+ 1 Month</button>
+                    <button onClick={() => renewMembership(m.id, 90)} className="flex-1 py-1 text-xs bg-card border border-warning/30 rounded text-warning font-bold active:scale-95 transition-transform">+ 3 Months</button>
                   </div>
                 </div>
               ))}
@@ -145,11 +145,11 @@ export default function MembershipRenewalBot() {
                 <div key={m.id} className="p-3 rounded-2xl elite-glass spatial-card border-danger/20 flex justify-between items-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all">
                   <div>
                     <h4 className="font-bold text-text text-sm line-through">{m.gymId}</h4>
-                    <p className="text-[10px] text-danger font-bold mt-0.5">Expired {-getDaysLeft(m.expiresAt)} days ago</p>
+                    <p className="text-xs text-danger font-bold mt-0.5">Expired {-getDaysLeft(m.expiresAt)} days ago</p>
                   </div>
                   <div className="flex flex-col gap-1 items-end">
-                    <button onClick={() => renewMembership(m.id, 30)} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg shadow active:scale-95">Renew</button>
-                    <button onClick={() => deleteMember(m.id)} className="text-[10px] text-text-dim underline mt-1">Remove</button>
+                    <button onClick={() => renewMembership(m.id, 30)} className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg shadow active:scale-95">Renew</button>
+                    <button onClick={() => deleteMember(m.id)} className="text-xs text-text-dim underline mt-1">Remove</button>
                   </div>
                 </div>
               ))}
@@ -167,9 +167,9 @@ export default function MembershipRenewalBot() {
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                        <h4 className="font-bold text-text text-sm">{m.gymId}</h4>
-                       <span className="text-[9px] bg-success/10 text-success px-1.5 py-0.5 rounded font-bold uppercase">{m.planName}</span>
+                       <span className="text-xs bg-success/10 text-success px-1.5 py-0.5 rounded font-bold uppercase">{m.planName}</span>
                     </div>
-                    <p className="text-[10px] text-text-dim font-bold">Expires: {new Date(m.expiresAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-text-dim font-bold">Expires: {new Date(m.expiresAt).toLocaleDateString()}</p>
                   </div>
                   <button onClick={() => deleteMember(m.id)} className="w-8 h-8 flex justify-center items-center rounded-lg bg-danger/5 text-danger/50 hover:bg-danger/20 hover:text-danger transition-colors">🗑️</button>
                 </div>

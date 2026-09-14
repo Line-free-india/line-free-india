@@ -1,20 +1,19 @@
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
 
 export default function BackButton({ to }: { to?: string }) {
   const nav = useNavigate();
   return (
     <button
-      onClick={() => to ? nav(to) : nav(-1 as any)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 4,
-        background: 'none', color: 'var(--color-primary)',
-        fontSize: 15, fontWeight: 500, padding: '4px 0',
+      onClick={() => {
+        triggerHaptic('light');
+        to ? nav(to) : nav(-1 as any);
       }}
+      className="flex items-center gap-1.5 py-1.5 px-3 -ml-3 rounded-xl text-primary font-bold hover:bg-primary/10 transition-colors cursor-pointer"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-      Back
+      <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+      <span>Back</span>
     </button>
   );
 }

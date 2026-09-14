@@ -61,7 +61,7 @@ export default function GroomingChecklist() {
       <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-cyan-400">Grooming Checklist 🐕</h1><p className="text-[10px] text-cyan-200/50 font-bold uppercase tracking-widest">{jobs.filter(j=>j.status!=='done').length} Active</p></div>
+          <div><h1 className="font-black text-lg text-cyan-400">Grooming Checklist 🐕</h1><p className="text-xs text-cyan-200/50 font-bold uppercase tracking-widest">{jobs.filter(j=>j.status!=='done').length} Active</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -79,10 +79,10 @@ export default function GroomingChecklist() {
           {jobs.length === 0 ? (<div className="text-center py-8 border border-dashed border-white/10 rounded-3xl opacity-50 elite-glass"><span className="text-3xl block mb-2">🐾</span><p className="text-xs font-bold text-text-dim">No grooming sessions.</p></div>
           ) : jobs.map(j => (
             <div key={j.id} className={`p-4 rounded-3xl elite-glass spatial-card shadow-sm ${j.status==='done'?'border-emerald-500/20 opacity-60':'border-white/5'}`}>
-              <div className="flex justify-between items-start mb-3"><div><h4 className="font-black text-base text-cyan-50">{j.petName} <span className="text-[10px] text-text-dim font-bold">({j.breed})</span></h4><p className="text-[10px] text-cyan-200/50 font-bold">Owner: {j.ownerName}</p></div><span className={`text-[9px] font-black uppercase tracking-widest ${statusColors[j.status]}`}>{j.status.replace('_',' ')}</span></div>
+              <div className="flex justify-between items-start mb-3"><div><h4 className="font-black text-base text-cyan-50">{j.petName} <span className="text-xs text-text-dim font-bold">({j.breed})</span></h4><p className="text-xs text-cyan-200/50 font-bold">Owner: {j.ownerName}</p></div><span className={`text-xs font-black uppercase tracking-widest ${statusColors[j.status]}`}>{j.status.replace('_',' ')}</span></div>
               <div className="space-y-1.5">{j.steps.map((s, si) => (
                 <button key={si} onClick={() => toggleStep(j.id, si)} className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-xs text-left transition-all ${s.done ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-background border border-border hover:border-cyan-500/30'}`}>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center text-[10px] transition-colors ${s.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-background border-border text-transparent'}`}>✓</div>
+                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center text-xs transition-colors ${s.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-background border-border text-transparent'}`}>✓</div>
                   <span className={`font-bold ${s.done ? 'text-emerald-300 line-through opacity-60' : 'text-cyan-100'}`}>{s.name}</span>
                 </button>
               ))}</div>

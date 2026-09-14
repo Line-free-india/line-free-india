@@ -63,9 +63,9 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
   const isPaused = businessProfile?.isPaused;
 
   return (
-    <div className="min-h-screen pb-40 relative overflow-hidden text-white font-[var(--font-space)]">
+    <div className="min-h-screen pb-40 relative w-full max-w-full overflow-x-hidden text-white font-[var(--font-space)]">
       {/* Premium animated gradient backdrop */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0014] via-[#110033] to-[#0d0014]" />
         <motion.div
           animate={{ x: ['-30%','30%','-30%'], y: ['-20%','20%','-20%'], scale: [1,1.3,1] }}
@@ -86,8 +86,8 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
           <BackButton to="/barber/home" />
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => window.open('/barber/tv-dashboard', '_blank')}
-            className="flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-violet-300"
+            onClick={() => navigate('/barber/tv-dashboard')}
+            className="flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-violet-300"
           >
             <Tv size={14} /> Lounge TV
           </motion.button>
@@ -102,8 +102,8 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
               <span className="text-white"> {businessProfile?.businessName?.split(' ').slice(1).join(' ') || 'Vibe'}</span>
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-violet-300/40 text-[10px] font-black tracking-widest uppercase">◈ Studio Status:</span>
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isPaused ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+              <span className="text-violet-300/40 text-xs font-black tracking-widest uppercase">◈ Studio Status:</span>
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${isPaused ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? 'bg-red-500' : 'bg-emerald-400 animate-pulse'}`} />
                 {isPaused ? 'Closed' : 'Styling Now'}
               </div>
@@ -132,7 +132,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
            >
               {isPaused ? <Play size={24} fill="currentColor" /> : <Pause size={24} fill="currentColor" />}
               <div className="text-left mt-2">
-                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Entry Gate</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-40">Entry Gate</p>
                 <p className="text-lg font-black">{isPaused ? 'Open Now' : 'Stop Entry'}</p>
               </div>
            </motion.button>
@@ -144,7 +144,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
            >
               <Users size={24} />
               <div className="text-left mt-2">
-                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Next Client</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-40">Next Client</p>
                 <p className="text-lg font-black">Call Queue</p>
               </div>
            </motion.button>
@@ -162,10 +162,10 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                 </div>
                 <div className="flex justify-between items-center mb-6">
                    <div>
-                     <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest">Ongoing Style</span>
+                     <span className="text-xs font-black text-violet-400 uppercase tracking-widest">Ongoing Style</span>
                      <h3 className="text-2xl font-black mt-1">Token #{serving.tokenNumber}</h3>
                    </div>
-                   <div className="px-4 py-2 rounded-xl bg-violet-600 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-violet-600/30">
+                   <div className="px-4 py-2 rounded-xl bg-violet-600 text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-600/30">
                      In Progress
                    </div>
                 </div>
@@ -173,7 +173,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 flex items-center justify-center text-xl">👤</div>
                    <div className="flex-1">
                       <p className="font-bold text-white">{serving.customerName}</p>
-                      <p className="text-[10px] text-violet-300/40 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
+                      <p className="text-xs text-violet-300/40 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
                    </div>
                    <button onClick={() => handleOpenToken(serving)} className="p-2 bg-white/5 rounded-lg text-violet-300">
                      <MessageSquare size={16} />
@@ -183,7 +183,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
            ) : (
              <div className="p-10 rounded-[32px] border border-dashed border-white/10 flex flex-col items-center justify-center bg-white/[0.01]">
                 <Zap size={32} className="text-white/10 mb-4" />
-                <p className="text-white/20 font-black text-[10px] uppercase tracking-widest">No Active Styles</p>
+                <p className="text-white/20 font-black text-xs uppercase tracking-widest">No Active Styles</p>
              </div>
            )}
         </div>
@@ -191,11 +191,11 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
         {/* Queue Board */}
         <div className="mb-12">
            <div className="flex justify-between items-center mb-6 px-1">
-             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-violet-400/60 flex items-center gap-2">
+             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-violet-400/60 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" /> 
                 Upcoming Styles ({waiting.length})
              </h2>
-             <button onClick={() => navigate('/barber/revenue-ops')} className="text-[9px] font-black uppercase tracking-widest text-pink-400/60">Revenue: ₹{done.reduce((s,t)=>s + t.totalPrice, 0)}</button>
+             <button onClick={() => navigate('/barber/revenue-ops')} className="text-xs font-black uppercase tracking-widest text-pink-400/60">Revenue: ₹{done.reduce((s,t)=>s + t.totalPrice, 0)}</button>
            </div>
 
            <div className="space-y-4">
@@ -212,13 +212,13 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                     </div>
                     <div>
                       <p className="font-bold text-white text-lg">{token.customerName}</p>
-                      <p className="text-[10px] text-violet-300/40 font-black uppercase tracking-widest">{token.selectedServices[0]?.name}</p>
+                      <p className="text-xs text-violet-300/40 font-black uppercase tracking-widest">{token.selectedServices[0]?.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right mr-2">
                       <p className="text-sm font-black text-violet-400">{token.estimatedWaitMinutes}m</p>
-                      <p className="text-[8px] text-white/10 font-black uppercase tracking-widest">Wait</p>
+                      <p className="text-xs text-white/10 font-black uppercase tracking-widest">Wait</p>
                     </div>
                     <ChevronRight size={18} className="text-white/10 group-hover:text-violet-400 transition-colors" />
                   </div>
@@ -227,13 +227,13 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
 
              {waiting.length === 0 && (
                 <div className="py-16 text-center bg-white/[0.01] border border-dashed border-white/10 rounded-[40px]">
-                   <p className="text-white/10 font-black text-[10px] uppercase tracking-widest">Queue Clear</p>
+                   <p className="text-white/10 font-black text-xs uppercase tracking-widest">Queue Clear</p>
                 </div>
              )}
            </div>
         </div>
 
-        <div className="text-[10px] font-black text-violet-300/40 uppercase tracking-widest mb-4 px-1">Studio Administration</div>
+        <div className="text-xs font-black text-violet-300/40 uppercase tracking-widest mb-4 px-1">Studio Administration</div>
         <BusinessToolGrid />
       </div>
 
@@ -260,12 +260,12 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-xs font-black text-violet-400 uppercase tracking-widest">Style Portfolio</span>
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest bg-violet-500/10 border border-violet-500/20 text-violet-200`}>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-widest bg-violet-500/10 border border-violet-500/20 text-violet-200`}>
                           {selectedToken.status}
                         </span>
                       </div>
                       <h2 className="text-3xl font-black">Token #{selectedToken.tokenNumber}</h2>
-                      <p className="text-white/20 font-black mt-1 uppercase tracking-widest text-[9px]">ID: {selectedToken.id?.slice(-8).toUpperCase()}</p>
+                      <p className="text-white/20 font-black mt-1 uppercase tracking-widest text-xs">ID: {selectedToken.id?.slice(-8).toUpperCase()}</p>
                     </div>
                     <button onClick={() => setSelectedToken(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
                       <X size={20} />
@@ -284,7 +284,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-1">Proposed Services</label>
+                      <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-1">Proposed Services</label>
                       <div className="grid gap-2">
                         {selectedToken.selectedServices.map((s, i) => (
                           <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -298,7 +298,7 @@ export default function UnisexSalonDashboard({ todayTokens, serving, waiting, do
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-white/5">
-                       <label className="text-[9px] font-black text-violet-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                       <label className="text-xs font-black text-violet-400 uppercase tracking-[0.2em] flex items-center gap-2">
                          <MessageSquare size={14} /> Style Formulas & Notes
                        </label>
                        <textarea 

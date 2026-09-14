@@ -27,7 +27,7 @@ export default function BusinessCompare() {
     <div className="py-6 border-b border-white/5">
       <div className="flex items-center justify-center gap-2 mb-4">
         <span className="text-primary text-xs">{icon}</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-dim">{label}</span>
+        <span className="text-xs font-black uppercase tracking-[0.3em] text-text-dim">{label}</span>
       </div>
       <div className="grid grid-cols-2 gap-8 items-center text-center px-4">
         <div className={`p-4 rounded-2xl transition-all ${highlight1 ? 'bg-primary/10 border border-primary/20 scale-105 shadow-xl' : 'opacity-60'}`}>
@@ -64,7 +64,7 @@ export default function BusinessCompare() {
           </button>
           <div className="flex-1">
             <h1 className="text-xl font-black">Comparison</h1>
-            <p className="text-[9px] font-black text-text-dim uppercase tracking-widest">Decision Matrix 3.0</p>
+            <p className="text-xs font-black text-text-dim uppercase tracking-widest">Decision Matrix 3.0</p>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function BusinessCompare() {
                 <img src={b1.bannerImageURL || b1.photoURL} className="w-full h-full object-cover" alt="" />
               </div>
               <h2 className="text-sm font-black truncate w-full">{b1.businessName}</h2>
-              <p className="text-[8px] font-black text-primary uppercase tracking-widest mt-1">{cat1.label}</p>
+              <p className="text-xs font-black text-primary uppercase tracking-widest mt-1">{cat1.label}</p>
            </motion.div>
 
            {/* VS Indicator */}
@@ -92,7 +92,7 @@ export default function BusinessCompare() {
                 <img src={b2.bannerImageURL || b2.photoURL} className="w-full h-full object-cover" alt="" />
               </div>
               <h2 className="text-sm font-black truncate w-full">{b2.businessName}</h2>
-              <p className="text-[8px] font-black text-primary uppercase tracking-widest mt-1">{cat2.label}</p>
+              <p className="text-xs font-black text-primary uppercase tracking-widest mt-1">{cat2.label}</p>
            </motion.div>
         </div>
       </div>
@@ -144,13 +144,13 @@ export default function BusinessCompare() {
       <div className="fixed bottom-10 inset-x-0 px-6 flex gap-4">
         <button 
           onClick={() => { triggerHaptic('success'); nav(`/customer/salon/${b1.uid}`); }}
-          className="flex-1 py-5 neu-btn border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-xl"
+          className="flex-1 py-5 neu-btn border-white/10 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl"
         >
           Select {b1.businessName?.split(' ')[0]}
         </button>
         <button 
           onClick={() => { triggerHaptic('success'); nav(`/customer/salon/${b2.uid}`); }}
-          className="flex-1 py-5 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-xl"
+          className="flex-1 py-5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl"
         >
           Select {b2.businessName?.split(' ')[0]}
         </button>

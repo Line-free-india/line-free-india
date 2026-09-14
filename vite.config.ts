@@ -23,9 +23,31 @@ export default defineConfig({
         theme_color: '#1e1b4b',
         background_color: '#ffffff',
         display: 'standalone',
+        start_url: '/',
+        scope: '/',
+        launch_handler: {
+          client_mode: 'focus-existing'
+        },
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icon-384.png', sizes: '384x384', type: 'image/png', purpose: 'any maskable' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+        ],
+        screenshots: [
+          {
+            src: '/screenshot-1.png',
+            sizes: '1080x2400',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Skip Hospital & Salon Queues'
+          },
+          {
+            src: '/screenshot-2.png',
+            sizes: '1080x2400',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Live Token Tracking'
+          }
         ]
       },
       workbox: {
@@ -44,6 +66,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          'motion-vendor': ['framer-motion'],
           'lucide': ['lucide-react']
         }
       }

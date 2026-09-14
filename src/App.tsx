@@ -6,121 +6,141 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AdvancedSplashScreen from './components/AdvancedSplashScreen';
 import TokenNotificationListener from './components/TokenNotificationListener';
 import Sidebar from './components/Sidebar';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import NativeAppBridge from './components/NativeAppBridge';
 import { useTheme, getThemeMode } from './hooks/useTheme';
 
-// ─── Lazy-loaded Pages ───
-const LanguageSelect = lazy(() => import('./pages/LanguageSelect'));
-const ThemeSelect = lazy(() => import('./pages/ThemeSelect'));
-const RoleSelect = lazy(() => import('./pages/RoleSelect'));
-const PremiumAnimatedAuth = lazy(() => import('./pages/PremiumAnimatedAuth'));
-const CustomerProfileSetup = lazy(() => import('./pages/CustomerProfileSetup'));
-const BarberProfileSetup = lazy(() => import('./pages/BarberProfileSetup'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const SecretAdminPanel = lazy(() => import('./pages/SecretAdminPanel'));
-const GetMyUID = lazy(() => import('./pages/GetMyUID'));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
-const SalonQRPage = lazy(() => import('./pages/SalonQRPage'));
-const QRScanLanding = lazy(() => import('./pages/QRScanLanding'));
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-// ─── Customer Discovery ───
-const CommunityBoard = lazy(() => import('./pages/CommunityBoard'));
-const SupportChat = lazy(() => import('./pages/SupportChat'));
-const ReferralPage = lazy(() => import('./pages/ReferralPage'));
-const CustomerHome = lazy(() => import('./pages/CustomerHome'));
-const CustomerSearch = lazy(() => import('./pages/CustomerSearch'));
-const SalonDetail = lazy(() => import('./pages/SalonDetail'));
-const SalonDetailSimple = lazy(() => import('./pages/SalonDetailSimple'));
-const CustomerTokens = lazy(() => import('./pages/CustomerTokens'));
-const CustomerProfileEdit = lazy(() => import('./pages/CustomerProfileEdit'));
-const CustomerSubscription = lazy(() => import('./pages/CustomerSubscription'));
-const CustomerHairstyles = lazy(() => import('./pages/CustomerHairstyles'));
-const CustomerTryOn = lazy(() => import('./pages/CustomerTryOn'));
-const CustomerHistory = lazy(() => import('./pages/CustomerHistory'));
-const LoyaltyPage = lazy(() => import('./pages/LoyaltyPage'));
-const CustomerLoyalty = lazy(() => import('./pages/CustomerLoyalty'));
-const CustomerFavourites = lazy(() => import('./pages/CustomerFavourites'));
-const CustomerChat = lazy(() => import('./pages/CustomerChat'));
-const ConsultationRoom = lazy(() => import('./pages/ConsultationRoom'));
-const CartPage = lazy(() => import('./pages/CartPage'));
-const BusinessCompare = lazy(() => import('./pages/BusinessCompare'));
+import { Capacitor } from '@capacitor/core';
 
-// ─── Business / Partner Dashboard ───
-const BarberHome = lazy(() => import('./pages/BarberHome'));
-const BarberDashboard = lazy(() => import('./pages/BarberDashboard'));
-const BarberProfile = lazy(() => import('./pages/BarberProfile'));
-const BarberCustomers = lazy(() => import('./pages/BarberCustomers'));
-const BarberAnalytics = lazy(() => import('./pages/BarberAnalytics'));
-const BarberMessages = lazy(() => import('./pages/BarberMessages'));
-const BarberSubscription = lazy(() => import('./pages/BarberSubscription'));
+// ─── Eager Core Pages (Zero network fetch, 100% instant & immune to load failures) ───
+import LanguageSelect from './pages/LanguageSelect';
+import RoleSelect from './pages/RoleSelect';
+import PremiumAnimatedAuth from './pages/PremiumAnimatedAuth';
+import CustomerHome from './pages/CustomerHome';
+import BarberHome from './pages/BarberHome';
+import CustomerSearch from './pages/CustomerSearch';
+import SalonDetail from './pages/SalonDetail';
+import CustomerTokens from './pages/CustomerTokens';
+import NotificationsPage from './pages/NotificationsPage';
+import BarberProfile from './pages/BarberProfile';
+import BarberCustomers from './pages/BarberCustomers';
+
+// ─── Lazy-loaded Secondary & Deep Pages (Instant first-paint) ───
+const CustomerFavourites = lazyWithRetry(() => import('./pages/CustomerFavourites'), 'CustomerFavourites');
+const CustomerProfileEdit = lazyWithRetry(() => import('./pages/CustomerProfileEdit'), 'CustomerProfileEdit');
+const CustomerHistory = lazyWithRetry(() => import('./pages/CustomerHistory'), 'CustomerHistory');
+const CustomerChat = lazyWithRetry(() => import('./pages/CustomerChat'), 'CustomerChat');
+const BarberDashboard = lazyWithRetry(() => import('./pages/BarberDashboard'), 'BarberDashboard');
+const BarberAnalytics = lazyWithRetry(() => import('./pages/BarberAnalytics'), 'BarberAnalytics');
+const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage'), 'NotFoundPage');
+const OfflinePage = lazyWithRetry(() => import('./pages/OfflinePage'), 'OfflinePage');
+
+// ─── Lazy-loaded Pages (Protected with 3x Auto-Retry & Self-Healing Manifest Reload) ───
+const ThemeSelect = lazyWithRetry(() => import('./pages/ThemeSelect'), 'ThemeSelect');
+const CustomerProfileSetup = lazyWithRetry(() => import('./pages/CustomerProfileSetup'), 'CustomerProfileSetup');
+const BarberProfileSetup = lazyWithRetry(() => import('./pages/BarberProfileSetup'), 'BarberProfileSetup');
+const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'), 'AdminDashboard');
+const SecretAdminPanel = lazyWithRetry(() => import('./pages/SecretAdminPanel'), 'SecretAdminPanel');
+const GetMyUID = lazyWithRetry(() => import('./pages/GetMyUID'), 'GetMyUID');
+const SalonQRPage = lazyWithRetry(() => import('./pages/SalonQRPage'), 'SalonQRPage');
+const QRScanLanding = lazyWithRetry(() => import('./pages/QRScanLanding'), 'QRScanLanding');
+const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'), 'TermsOfService');
+const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'), 'PrivacyPolicy');
+const DeleteAccount = lazyWithRetry(() => import('./pages/DeleteAccount'), 'DeleteAccount');
+const RefundPolicy = lazyWithRetry(() => import('./pages/RefundPolicy'), 'RefundPolicy');
+const TVDisplay = lazyWithRetry(() => import('./pages/TVDisplay'), 'TVDisplay');
+const Floorplan = lazyWithRetry(() => import('./pages/Floorplan'), 'Floorplan');
+const ProductCatalog = lazyWithRetry(() => import('./pages/ProductCatalog'), 'ProductCatalog');
+
+// ─── Customer Discovery & Addons ───
+const CommunityBoard = lazyWithRetry(() => import('./pages/CommunityBoard'), 'CommunityBoard');
+const SupportChat = lazyWithRetry(() => import('./pages/SupportChat'), 'SupportChat');
+const ReferralPage = lazyWithRetry(() => import('./pages/ReferralPage'), 'ReferralPage');
+const SalonDetailSimple = lazyWithRetry(() => import('./pages/SalonDetailSimple'), 'SalonDetailSimple');
+const CustomerSubscription = lazyWithRetry(() => import('./pages/CustomerSubscription'), 'CustomerSubscription');
+const CustomerHairstyles = lazyWithRetry(() => import('./pages/CustomerHairstyles'), 'CustomerHairstyles');
+const CustomerTryOn = lazyWithRetry(() => import('./pages/CustomerTryOn'), 'CustomerTryOn');
+const LoyaltyPage = lazyWithRetry(() => import('./pages/LoyaltyPage'), 'LoyaltyPage');
+const CustomerLoyalty = lazyWithRetry(() => import('./pages/CustomerLoyalty'), 'CustomerLoyalty');
+const ConsultationRoom = lazyWithRetry(() => import('./pages/ConsultationRoom'), 'ConsultationRoom');
+const CartPage = lazyWithRetry(() => import('./pages/CartPage'), 'CartPage');
+const BusinessCompare = lazyWithRetry(() => import('./pages/BusinessCompare'), 'BusinessCompare');
+
+// ─── Business / Partner Dashboard Addons ───
+const BarberMessages = lazyWithRetry(() => import('./pages/BarberMessages'), 'BarberMessages');
+const BarberSubscription = lazyWithRetry(() => import('./pages/BarberSubscription'), 'BarberSubscription');
 
 // ─── Business Tools (Beauty-Relevant) ───
-const TherapistCalendar = lazy(() => import('./pages/TherapistCalendar'));
-const DesignGalleryManager = lazy(() => import('./pages/DesignGalleryManager'));
-const UniversalStaffManager = lazy(() => import('./pages/UniversalStaffManager'));
-const DynamicTaxSettings = lazy(() => import('./pages/DynamicTaxSettings'));
-const InventoryLowAlerts = lazy(() => import('./pages/InventoryLowAlerts'));
-const MembershipRenewalBot = lazy(() => import('./pages/MembershipRenewalBot'));
-const SmartInventory = lazy(() => import('./pages/SmartInventory'));
-const BridalPackageBuilder = lazy(() => import('./pages/BridalPackageBuilder'));
-const DigitalConsentForm = lazy(() => import('./pages/DigitalConsentForm'));
-const UniversalFeedbackLoop = lazy(() => import('./pages/UniversalFeedbackLoop'));
-const UniversalReferralEngine = lazy(() => import('./pages/UniversalReferralEngine'));
-const DynamicPricing = lazy(() => import('./pages/DynamicPricing'));
-const CouponManager = lazy(() => import('./pages/CouponManager'));
-const AppointmentReminders = lazy(() => import('./pages/AppointmentReminders'));
-const BookingCalendar = lazy(() => import('./pages/BookingCalendar'));
-const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator'));
-const ExpenseTracker = lazy(() => import('./pages/ExpenseTracker'));
-const CashRegister = lazy(() => import('./pages/CashRegister'));
-const StaffPayroll = lazy(() => import('./pages/StaffPayroll'));
-const StaffAttendance = lazy(() => import('./pages/StaffAttendance'));
-const ProductRetailPOS = lazy(() => import('./pages/ProductRetailPOS'));
-const WhatsAppCRM = lazy(() => import('./pages/WhatsAppCRM'));
-const CustomerCRM = lazy(() => import('./pages/CustomerCRM'));
-const CustomerInsights = lazy(() => import('./pages/CustomerInsights'));
-const SellProducts = lazy(() => import('./pages/SellProducts'));
-const LeadManager = lazy(() => import('./pages/LeadManager'));
-const MembershipDashboard = lazy(() => import('./pages/MembershipDashboard'));
-const GroomingChecklist = lazy(() => import('./pages/GroomingChecklist'));
-const SmartNotifications = lazy(() => import('./pages/SmartNotifications'));
-const LoyaltyProgramManager = lazy(() => import('./pages/LoyaltyProgramManager'));
-const TaskManager = lazy(() => import('./pages/TaskManager'));
-const ShiftPlanner = lazy(() => import('./pages/ShiftPlanner'));
-const BusinessAnalyticsPro = lazy(() => import('./pages/BusinessAnalyticsPro'));
-const ReferralProgram = lazy(() => import('./pages/ReferralProgram'));
-const DailyReportDashboard = lazy(() => import('./pages/DailyReportDashboard'));
-const DailyReportGenerator = lazy(() => import('./pages/DailyReportGenerator'));
-const CustomerFeedback = lazy(() => import('./pages/CustomerFeedback'));
-const ContractManager = lazy(() => import('./pages/ContractManager'));
-const SubscriptionManager = lazy(() => import('./pages/SubscriptionManager'));
-const BirthdayReminder = lazy(() => import('./pages/BirthdayReminder'));
-const MembershipCard = lazy(() => import('./pages/MembershipCard'));
-const HairstyleTryOn = lazy(() => import('./pages/HairstyleTryOn'));
-const SalonProductCatalog = lazy(() => import('./pages/SalonProductCatalog'));
-const FranchiseAuth = lazy(() => import('./pages/FranchiseAuth'));
-const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
-const FranchiseManager = lazy(() => import('./pages/FranchiseManager'));
-const MarketingDashboard = lazy(() => import('./pages/MarketingDashboard'));
-const TechnicianTracker = lazy(() => import('./pages/TechnicianTracker'));
-const ToolsGridPage = lazy(() => import('./pages/ToolsGridPage'));
-const TVDashboard = lazy(() => import('./pages/TVDashboard'));
-const MenuEditor = lazy(() => import('./pages/MenuEditor'));
-const RevenueOps = lazy(() => import('./pages/RevenueOps'));
+const TherapistCalendar = lazyWithRetry(() => import('./pages/TherapistCalendar'), 'TherapistCalendar');
+const DesignGalleryManager = lazyWithRetry(() => import('./pages/DesignGalleryManager'), 'DesignGalleryManager');
+const UniversalStaffManager = lazyWithRetry(() => import('./pages/UniversalStaffManager'), 'UniversalStaffManager');
+const DynamicTaxSettings = lazyWithRetry(() => import('./pages/DynamicTaxSettings'), 'DynamicTaxSettings');
+const InventoryLowAlerts = lazyWithRetry(() => import('./pages/InventoryLowAlerts'), 'InventoryLowAlerts');
+const MembershipRenewalBot = lazyWithRetry(() => import('./pages/MembershipRenewalBot'), 'MembershipRenewalBot');
+const SmartInventory = lazyWithRetry(() => import('./pages/SmartInventory'), 'SmartInventory');
+const BridalPackageBuilder = lazyWithRetry(() => import('./pages/BridalPackageBuilder'), 'BridalPackageBuilder');
+const DigitalConsentForm = lazyWithRetry(() => import('./pages/DigitalConsentForm'), 'DigitalConsentForm');
+const UniversalFeedbackLoop = lazyWithRetry(() => import('./pages/UniversalFeedbackLoop'), 'UniversalFeedbackLoop');
+const UniversalReferralEngine = lazyWithRetry(() => import('./pages/UniversalReferralEngine'), 'UniversalReferralEngine');
+const DynamicPricing = lazyWithRetry(() => import('./pages/DynamicPricing'), 'DynamicPricing');
+const CouponManager = lazyWithRetry(() => import('./pages/CouponManager'), 'CouponManager');
+const AppointmentReminders = lazyWithRetry(() => import('./pages/AppointmentReminders'), 'AppointmentReminders');
+const BookingCalendar = lazyWithRetry(() => import('./pages/BookingCalendar'), 'BookingCalendar');
+const InvoiceGenerator = lazyWithRetry(() => import('./pages/InvoiceGenerator'), 'InvoiceGenerator');
+const ExpenseTracker = lazyWithRetry(() => import('./pages/ExpenseTracker'), 'ExpenseTracker');
+const CashRegister = lazyWithRetry(() => import('./pages/CashRegister'), 'CashRegister');
+const StaffPayroll = lazyWithRetry(() => import('./pages/StaffPayroll'), 'StaffPayroll');
+const StaffAttendance = lazyWithRetry(() => import('./pages/StaffAttendance'), 'StaffAttendance');
+const ProductRetailPOS = lazyWithRetry(() => import('./pages/ProductRetailPOS'), 'ProductRetailPOS');
+const WhatsAppCRM = lazyWithRetry(() => import('./pages/WhatsAppCRM'), 'WhatsAppCRM');
+const CustomerCRM = lazyWithRetry(() => import('./pages/CustomerCRM'), 'CustomerCRM');
+const CustomerInsights = lazyWithRetry(() => import('./pages/CustomerInsights'), 'CustomerInsights');
+const SellProducts = lazyWithRetry(() => import('./pages/SellProducts'), 'SellProducts');
+const LeadManager = lazyWithRetry(() => import('./pages/LeadManager'), 'LeadManager');
+const MembershipDashboard = lazyWithRetry(() => import('./pages/MembershipDashboard'), 'MembershipDashboard');
+const GroomingChecklist = lazyWithRetry(() => import('./pages/GroomingChecklist'), 'GroomingChecklist');
+const SmartNotifications = lazyWithRetry(() => import('./pages/SmartNotifications'), 'SmartNotifications');
+const LoyaltyProgramManager = lazyWithRetry(() => import('./pages/LoyaltyProgramManager'), 'LoyaltyProgramManager');
+const TaskManager = lazyWithRetry(() => import('./pages/TaskManager'), 'TaskManager');
+const ShiftPlanner = lazyWithRetry(() => import('./pages/ShiftPlanner'), 'ShiftPlanner');
+const BusinessAnalyticsPro = lazyWithRetry(() => import('./pages/BusinessAnalyticsPro'), 'BusinessAnalyticsPro');
+const ReferralProgram = lazyWithRetry(() => import('./pages/ReferralProgram'), 'ReferralProgram');
+const DailyReportDashboard = lazyWithRetry(() => import('./pages/DailyReportDashboard'), 'DailyReportDashboard');
+const DailyReportGenerator = lazyWithRetry(() => import('./pages/DailyReportGenerator'), 'DailyReportGenerator');
+const CustomerFeedback = lazyWithRetry(() => import('./pages/CustomerFeedback'), 'CustomerFeedback');
+const ContractManager = lazyWithRetry(() => import('./pages/ContractManager'), 'ContractManager');
+const SubscriptionManager = lazyWithRetry(() => import('./pages/SubscriptionManager'), 'SubscriptionManager');
+const BirthdayReminder = lazyWithRetry(() => import('./pages/BirthdayReminder'), 'BirthdayReminder');
+const MembershipCard = lazyWithRetry(() => import('./pages/MembershipCard'), 'MembershipCard');
+const HairstyleTryOn = lazyWithRetry(() => import('./pages/HairstyleTryOn'), 'HairstyleTryOn');
+const SalonProductCatalog = lazyWithRetry(() => import('./pages/SalonProductCatalog'), 'SalonProductCatalog');
+const FranchiseAuth = lazyWithRetry(() => import('./pages/FranchiseAuth'), 'FranchiseAuth');
+const FranchiseDashboard = lazyWithRetry(() => import('./pages/FranchiseDashboard'), 'FranchiseDashboard');
+const FranchiseManager = lazyWithRetry(() => import('./pages/FranchiseManager'), 'FranchiseManager');
+const MarketingDashboard = lazyWithRetry(() => import('./pages/MarketingDashboard'), 'MarketingDashboard');
+const TechnicianTracker = lazyWithRetry(() => import('./pages/TechnicianTracker'), 'TechnicianTracker');
+const ToolsGridPage = lazyWithRetry(() => import('./pages/ToolsGridPage'), 'ToolsGridPage');
+const TVDashboard = lazyWithRetry(() => import('./pages/TVDashboard'), 'TVDashboard');
+const MenuEditor = lazyWithRetry(() => import('./pages/MenuEditor'), 'MenuEditor');
+const RevenueOps = lazyWithRetry(() => import('./pages/RevenueOps'), 'RevenueOps');
 
-// ─── Beauty Niche Pages ───
-const MassageTherapy = lazy(() => import('./pages/MassageTherapy'));
-const MehndiArtist = lazy(() => import('./pages/MehndiArtist'));
-const TattooStudio = lazy(() => import('./pages/TattooStudio'));
-const SpaWellness = lazy(() => import('./pages/SpaWellness'));
-const AcupunctureClinic = lazy(() => import('./pages/AcupunctureClinic'));
-const AyurvedicCenter = lazy(() => import('./pages/AyurvedicCenter'));
-const AyurvedaClinic = lazy(() => import('./pages/AyurvedaClinic'));
+// New Pages
+const QueuePassport = lazyWithRetry(() => import('./pages/QueuePassport'), 'QueuePassport');
+const OperationsTimeline = lazyWithRetry(() => import('./pages/OperationsTimeline'), 'OperationsTimeline');
+const BusinessHealthScore = lazyWithRetry(() => import('./pages/BusinessHealthScore'), 'BusinessHealthScore');
+
+// ─── Beauty Niche Pages (Kept categories only) ───
+const MehndiArtist = lazyWithRetry(() => import('./pages/MehndiArtist'), 'MehndiArtist');
+const TattooStudio = lazyWithRetry(() => import('./pages/TattooStudio'), 'TattooStudio');
+const SpaWellness = lazyWithRetry(() => import('./pages/SpaWellness'), 'SpaWellness');
 
 // ─── NEW: Sprint 1-8 Feature Pages ───
-const Achievements = lazy(() => import('./pages/Achievements'));
-const RewardsCenter = lazy(() => import('./pages/RewardsCenter'));
-const Wallet = lazy(() => import('./pages/Wallet'));
-const GiftCards = lazy(() => import('./pages/GiftCards'));
+const Achievements = lazyWithRetry(() => import('./pages/Achievements'), 'Achievements');
+const RewardsCenter = lazyWithRetry(() => import('./pages/RewardsCenter'), 'RewardsCenter');
+const Wallet = lazyWithRetry(() => import('./pages/Wallet'), 'Wallet');
+const GiftCards = lazyWithRetry(() => import('./pages/GiftCards'), 'GiftCards');
 
 const OWNER_EMAIL = 'satyamkumar56021@gmail.com';
 
@@ -133,7 +153,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 
 function AuthGuard({ children, requiredRole }: { children: React.ReactNode; requiredRole: 'customer' | 'business' }) {
   const { user, role, loading } = useApp();
-  if (loading) return (<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--color-bg)"}}>
+  if (loading || (user && !role)) return (<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--color-bg)"}}>
       <div style={{width:24,height:24,border:"2.5px solid var(--color-border)",borderTopColor:"var(--color-primary)",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>
     </div>);
   if (!user) {
@@ -166,6 +186,7 @@ function AppRoutes() {
     </div>);
 
   const isBusinessRoute = location.pathname.startsWith('/barber') ||
+    location.pathname.startsWith('/business') ||
     location.pathname.startsWith('/franchise') ||
     location.pathname.startsWith('/beauty');
 
@@ -173,10 +194,11 @@ function AppRoutes() {
     <div className={isBusinessRoute ? 'business-layout scroll-viewport' : 'scroll-viewport'}>
       <Sidebar />
       <PageTransition>
-        <Suspense fallback={
-          <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--color-bg)"}}><div style={{width:24,height:24,border:"2.5px solid var(--color-border)",borderTopColor:"var(--color-primary)",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/></div>
-        }>
-          <Routes>
+        <ErrorBoundary key={location.pathname}>
+          <Suspense fallback={
+            <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--color-bg)"}}><div style={{width:24,height:24,border:"2.5px solid var(--color-border)",borderTopColor:"var(--color-primary)",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/></div>
+          }>
+            <Routes>
             <Route path="/" element={<LanguageSelect />} />
             <Route path="/theme" element={<ThemeSelect />} />
             <Route path="/role" element={<RoleSelect />} />
@@ -186,16 +208,24 @@ function AppRoutes() {
           <Route path="/customer/refer" element={<ReferralPage />} />
           <Route path="/customer/auth" element={<PremiumAnimatedAuth mode="customer" />} />
           <Route path="/barber/auth" element={<PremiumAnimatedAuth mode="business" />} />
+          <Route path="/business/auth" element={<PremiumAnimatedAuth mode="business" />} />
           <Route path="/customer/setup" element={<CustomerProfileSetup />} />
           <Route path="/barber/setup" element={<BarberProfileSetup />} />
+          <Route path="/business/setup" element={<BarberProfileSetup />} />
           <Route path="/salon/:id/qr" element={<SalonQRPage />} />
           <Route path="/qr/:id" element={<QRScanLanding />} />
+          <Route path="/tv/:businessId" element={<TVDisplay />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/offline" element={<OfflinePage />} />
 
           {/* Admin */}
           <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           
           {/* 🔐 Secret Admin Panel - Hidden Route */}
-          <Route path="/secret-admin-x9z2k" element={<SecretAdminPanel />} />
+          <Route path="/secret-admin-x9z2k" element={<AdminGuard><SecretAdminPanel /></AdminGuard>} />
           
           {/* 🔑 Get My UID Helper */}
           <Route path="/get-my-uid" element={<GetMyUID />} />
@@ -209,6 +239,7 @@ function AppRoutes() {
           <Route path="/customer/subscription" element={<AuthGuard requiredRole="customer"><CustomerSubscription /></AuthGuard>} />
           <Route path="/customer/hairstyles" element={<AuthGuard requiredRole="customer"><CustomerHairstyles /></AuthGuard>} />
           <Route path="/customer/try-on" element={<AuthGuard requiredRole="customer"><CustomerTryOn /></AuthGuard>} />
+          <Route path="/customer/passport" element={<AuthGuard requiredRole="customer"><QueuePassport /></AuthGuard>} />
           <Route path="/customer/history" element={<AuthGuard requiredRole="customer"><CustomerHistory /></AuthGuard>} />
           <Route path="/customer/loyalty" element={<AuthGuard requiredRole="customer"><LoyaltyPage /></AuthGuard>} />
           <Route path="/customer/loyalty/:businessId" element={<AuthGuard requiredRole="customer"><CustomerLoyalty /></AuthGuard>} />
@@ -235,9 +266,23 @@ function AppRoutes() {
           <Route path="/barber/notifications" element={<AuthGuard requiredRole="business"><NotificationsPage /></AuthGuard>} />
           <Route path="/barber/qr" element={<AuthGuard requiredRole="business"><SalonQRPage id="own" /></AuthGuard>} />
 
+          {/* ═══ Business Aliases (/business/*) ═══ */}
+          <Route path="/business/home" element={<AuthGuard requiredRole="business"><BarberHome /></AuthGuard>} />
+          <Route path="/business/dashboard" element={<AuthGuard requiredRole="business"><BarberDashboard /></AuthGuard>} />
+          <Route path="/business/profile" element={<AuthGuard requiredRole="business"><BarberProfile /></AuthGuard>} />
+          <Route path="/business/customers" element={<AuthGuard requiredRole="business"><BarberCustomers /></AuthGuard>} />
+          <Route path="/business/analytics" element={<AuthGuard requiredRole="business"><BarberAnalytics /></AuthGuard>} />
+          <Route path="/business/subscription" element={<AuthGuard requiredRole="business"><BarberSubscription /></AuthGuard>} />
+          <Route path="/business/messages" element={<AuthGuard requiredRole="business"><BarberMessages /></AuthGuard>} />
+          <Route path="/business/notifications" element={<AuthGuard requiredRole="business"><NotificationsPage /></AuthGuard>} />
+          <Route path="/business/qr" element={<AuthGuard requiredRole="business"><SalonQRPage id="own" /></AuthGuard>} />
+          <Route path="/business/tools" element={<AuthGuard requiredRole="business"><ToolsGridPage /></AuthGuard>} />
+
           {/* ═══ Business Tools (Beauty OS) ═══ */}
           <Route path="/barber/therapist-calendar" element={<AuthGuard requiredRole="business"><TherapistCalendar /></AuthGuard>} />
           <Route path="/barber/gallery" element={<AuthGuard requiredRole="business"><DesignGalleryManager /></AuthGuard>} />
+          <Route path="/barber/product-catalog" element={<AuthGuard requiredRole="business"><ProductCatalog /></AuthGuard>} />
+          <Route path="/barber/floorplan" element={<AuthGuard requiredRole="business"><Floorplan /></AuthGuard>} />
           <Route path="/barber/staff" element={<AuthGuard requiredRole="business"><UniversalStaffManager /></AuthGuard>} />
           <Route path="/barber/tax" element={<AuthGuard requiredRole="business"><DynamicTaxSettings /></AuthGuard>} />
           <Route path="/barber/inventory-alerts" element={<AuthGuard requiredRole="business"><InventoryLowAlerts /></AuthGuard>} />
@@ -286,6 +331,8 @@ function AppRoutes() {
           <Route path="/barber/tv-dashboard" element={<AuthGuard requiredRole="business"><TVDashboard /></AuthGuard>} />
           <Route path="/barber/menu-editor" element={<AuthGuard requiredRole="business"><MenuEditor /></AuthGuard>} />
           <Route path="/barber/revenue-ops" element={<AuthGuard requiredRole="business"><RevenueOps /></AuthGuard>} />
+          <Route path="/barber/operations" element={<AuthGuard requiredRole="business"><OperationsTimeline /></AuthGuard>} />
+          <Route path="/barber/health-score" element={<AuthGuard requiredRole="business"><BusinessHealthScore /></AuthGuard>} />
 
           {/* ═══ Franchise ═══ */}
           <Route path="/franchise/auth" element={<FranchiseAuth />} />
@@ -293,25 +340,23 @@ function AppRoutes() {
           <Route path="/franchise/manager" element={<AuthGuard requiredRole="business"><FranchiseManager /></AuthGuard>} />
 
           {/* ═══ Beauty Niche Pages ═══ */}
-          <Route path="/beauty/massage" element={<AuthGuard requiredRole="business"><MassageTherapy /></AuthGuard>} />
           <Route path="/beauty/mehndi" element={<AuthGuard requiredRole="business"><MehndiArtist /></AuthGuard>} />
           <Route path="/beauty/tattoo" element={<AuthGuard requiredRole="business"><TattooStudio /></AuthGuard>} />
           <Route path="/beauty/spa" element={<AuthGuard requiredRole="business"><SpaWellness /></AuthGuard>} />
-          <Route path="/beauty/acupuncture" element={<AuthGuard requiredRole="business"><AcupunctureClinic /></AuthGuard>} />
-          <Route path="/beauty/ayurveda" element={<AuthGuard requiredRole="business"><AyurvedicCenter /></AuthGuard>} />
-          <Route path="/beauty/ayurveda-clinic" element={<AuthGuard requiredRole="business"><AyurvedaClinic /></AuthGuard>} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </Suspense>
+        </ErrorBoundary>
       </PageTransition>
     </div>
   );
 }
 
 export default function App() {
-  // Check if user has seen splash before (localStorage)
-  const hasSeenSplash = localStorage.getItem('lf_splash_seen') === 'true';
+  // On native Android app, native splash already handles loading - skip web artificial delay for instant startup
+  const isNative = Capacitor.isNativePlatform();
+  const hasSeenSplash = isNative || localStorage.getItem('lf_splash_seen') === 'true';
   const [showSplash, setShowSplash] = useState(!hasSeenSplash);
 
   const handleSplashComplete = () => {
@@ -328,7 +373,9 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AppProvider>
+          <NativeAppBridge />
           <TokenNotificationListener />
+          <PWAInstallPrompt />
           <AppRoutes />
         </AppProvider>
       </BrowserRouter>

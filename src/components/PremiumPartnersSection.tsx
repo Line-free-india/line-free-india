@@ -52,7 +52,7 @@ export default function PremiumPartnersSection({
             <span className="text-2xl">👑</span>
             <span>PREMIUM PARTNERS</span>
           </h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-dim mt-1">
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-text-dim mt-1">
             {businesses.length} Elite Business{businesses.length !== 1 ? 'es' : ''}
           </p>
         </div>

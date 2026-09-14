@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic } from '../utils/haptics';
+import { useApp } from '../store/AppContext';
+import { generateReviewReply } from '../services/aiService';
 
 interface Review {
   id: string;
@@ -17,28 +19,44 @@ const MOCK_REVIEWS: Review[] = [
 ];
 
 export default function AIBotManager() {
+  const { businessProfile, getSalonReviews, user } = useApp();
+  const [reviewsList, setReviewsList] = useState<Review[]>(MOCK_REVIEWS);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiResponse, setAiResponse] = useState('');
+  const [copied, setCopied] = useState(false);
 
-  const generateResponse = (review: Review) => {
+  useEffect(() => {
+    if (user?.uid) {
+      getSalonReviews(user.uid).then(revs => {
+        if (revs && revs.length > 0) {
+          setReviewsList(revs.map((r: any) => ({
+            id: r.id,
+            customer: r.customerName || 'Customer',
+            rating: r.rating || 5,
+            comment: r.comment || r.review || 'Great service'
+          })));
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
+
+  const generateResponse = async (review: Review) => {
     setIsGenerating(true);
     triggerHaptic('medium');
-    
-    // Simulate AI behavior
-    setTimeout(() => {
-      let response = '';
-      if (review.rating >= 4) {
-        response = `Hi ${review.customer}, thank you for the wonderful 5-star review! We're thrilled you enjoyed our professional staff and ambiance. We look forward to serving you again soon!`;
-      } else if (review.rating === 3) {
-        response = `Dear ${review.customer}, thank you for your feedback. We apologize for the wait time. We are currently optimizing our staff shifts using our new AI heatmaps to ensure a faster experience next time!`;
-      } else {
-        response = `Hello ${review.customer}, we're sorry our pricing didn't meet your expectations. We offer premium services with specialized technicians. We'd love to offer you a 20% loyalty discount on your next visit to make it right.`;
-      }
-      setAiResponse(response);
-      setIsGenerating(false);
+    try {
+      const res = await generateReviewReply({
+        rating: review.rating,
+        customerName: review.customer,
+        comment: review.comment,
+        businessName: businessProfile?.businessName || 'Our Business'
+      });
+      setAiResponse(res.replyText);
       triggerHaptic('success');
-    }, 1800);
+    } catch {
+      setAiResponse(`Thank you ${review.customer} for your review! We truly value your business and hope to see you again soon.`);
+    }
+    setIsGenerating(false);
   };
 
   return (
@@ -49,7 +67,7 @@ export default function AIBotManager() {
       <div className="px-6 pt-14 pb-8 relative overflow-hidden">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <p className="text-[10px] text-fuchsia-400 font-black uppercase tracking-[0.4em] mb-1">Reputation Engine</p>
+            <p className="text-xs text-fuchsia-400 font-black uppercase tracking-[0.4em] mb-1">Reputation Engine</p>
             <h1 className="text-3xl font-black tracking-tighter italic">AI Review Bot</h1>
           </div>
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: 'linear' }} className="w-12 h-12 rounded-full border-2 border-fuchsia-500/20 flex items-center justify-center text-xl">🤖</motion.div>
@@ -60,7 +78,7 @@ export default function AIBotManager() {
       <div className="px-6 space-y-6">
         {/* Reviews List */}
         <div className="space-y-4">
-           {MOCK_REVIEWS.map(rev => (
+           {reviewsList.map(rev => (
               <motion.div 
                 key={rev.id} 
                 layoutId={rev.id}
@@ -91,14 +109,14 @@ export default function AIBotManager() {
             >
                <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/5 blur-[50px] -translate-x-1/2 -translate-y-1/2" />
                
-               <h3 className="text-[10px] font-black uppercase tracking-widest text-fuchsia-400 mb-6 flex items-center gap-2">
+               <h3 className="text-xs font-black uppercase tracking-widest text-fuchsia-400 mb-6 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse" /> AI Draft Assistant
                </h3>
 
                {isGenerating ? (
                   <div className="py-12 flex flex-col items-center justify-center gap-4">
                      <div className="w-12 h-12 border-4 border-fuchsia-500/20 border-t-fuchsia-500 rounded-full animate-spin" />
-                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Analyzing Sentiment...</p>
+                     <p className="text-xs font-black uppercase tracking-widest text-zinc-500">Analyzing Sentiment & Drafting...</p>
                   </div>
                ) : aiResponse ? (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -106,8 +124,18 @@ export default function AIBotManager() {
                         <p className="text-sm leading-relaxed text-zinc-300 font-medium">{aiResponse}</p>
                      </div>
                      <div className="flex gap-3">
-                        <button onClick={() => { setAiResponse(''); triggerHaptic('light'); }} className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest">Regenerate</button>
-                        <button onClick={() => triggerHaptic('success')} className="flex-1 py-4 rounded-2xl bg-fuchsia-600 shadow-lg shadow-fuchsia-600/30 text-[10px] font-black text-white uppercase tracking-widest">Copy & Reply</button>
+                        <button onClick={() => { setAiResponse(''); triggerHaptic('light'); }} className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest">Regenerate</button>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard?.writeText(aiResponse);
+                            setCopied(true);
+                            triggerHaptic('success');
+                            setTimeout(() => setCopied(false), 2500);
+                          }} 
+                          className="flex-1 py-4 rounded-2xl bg-fuchsia-600 shadow-lg shadow-fuchsia-600/30 text-xs font-black text-white uppercase tracking-widest"
+                        >
+                          {copied ? 'Copied! ✅' : 'Copy Reply 📋'}
+                        </button>
                      </div>
                   </motion.div>
                ) : (
@@ -118,7 +146,7 @@ export default function AIBotManager() {
                      >
                         Analyze & Respond
                      </button>
-                     <p className="mt-4 text-[9px] text-zinc-600 font-black uppercase tracking-widest">Confidence Score: 0.982</p>
+                     <p className="mt-4 text-xs text-zinc-600 font-black uppercase tracking-widest">Confidence Score: 0.982</p>
                   </div>
                )}
             </motion.div>
@@ -128,11 +156,11 @@ export default function AIBotManager() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4">
            <div className="p-6 rounded-[2rem] elite-glass spatial-card border-white/5">
-              <p className="text-[8px] text-zinc-600 font-black uppercase tracking-widest mb-1">Reputation Score</p>
+              <p className="text-xs text-zinc-600 font-black uppercase tracking-widest mb-1">Reputation Score</p>
               <p className="text-2xl font-black text-emerald-400">4.8</p>
            </div>
            <div className="p-6 rounded-[2rem] elite-glass spatial-card border-white/5">
-              <p className="text-[8px] text-zinc-600 font-black uppercase tracking-widest mb-1">Total Replies</p>
+              <p className="text-xs text-zinc-600 font-black uppercase tracking-widest mb-1">Total Replies</p>
               <p className="text-2xl font-black">1.2k</p>
            </div>
         </div>

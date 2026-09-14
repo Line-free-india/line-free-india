@@ -127,7 +127,7 @@ export default function Achievements() {
               }`}
             >
               <span className="text-3xl">{badge.emoji}</span>
-              <span className="text-[10px] font-semibold text-text text-center leading-tight">{badge.name}</span>
+              <span className="text-xs font-semibold text-text text-center leading-tight">{badge.name}</span>
               {!badge.unlocked && (
                 <div className="w-full h-1 rounded-full bg-black/20 overflow-hidden">
                   <div
@@ -138,7 +138,7 @@ export default function Achievements() {
               )}
               {badge.unlocked && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center">
-                  <span className="text-[10px]">✓</span>
+                  <span className="text-xs">✓</span>
                 </div>
               )}
             </motion.button>

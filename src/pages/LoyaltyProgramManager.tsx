@@ -57,14 +57,14 @@ export default function LoyaltyProgramManager() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-900/20 via-background to-background">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
-          <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-yellow-400">Loyalty Program ⭐</h1><p className="text-[10px] text-yellow-200/50 font-bold uppercase tracking-widest">{members.length} Members</p></div>
+          <button onClick={() => nav('/barber/home')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
+          <div><h1 className="font-black text-lg text-yellow-400">Loyalty Program ⭐</h1><p className="text-xs text-yellow-200/50 font-bold uppercase tracking-widest">{members.length} Members</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
-        <div className="grid grid-cols-4 gap-2">{config.tiers.map(t => (<div key={t.name} className="elite-glass rounded-2xl p-3 text-center spatial-card"><p className={`text-[10px] font-black uppercase tracking-widest ${t.color}`}>{t.name}</p><p className="text-[9px] text-text-dim mt-1">{t.minPoints}+ pts</p><p className="text-[8px] text-text-dim mt-0.5">{t.perks}</p></div>))}</div>
+        <div className="grid grid-cols-4 gap-2">{config.tiers.map(t => (<div key={t.name} className="elite-glass rounded-2xl p-3 text-center spatial-card"><p className={`text-xs font-black uppercase tracking-widest ${t.color}`}>{t.name}</p><p className="text-xs text-text-dim mt-1">{t.minPoints}+ pts</p><p className="text-xs text-text-dim mt-0.5">{t.perks}</p></div>))}</div>
         <div className="p-5 rounded-3xl elite-glass spatial-card">
           <h2 className="font-black text-sm text-text mb-4">Add Member</h2>
           <div className="flex gap-3">
@@ -79,8 +79,8 @@ export default function LoyaltyProgramManager() {
           ) : members.map(m => { const tier = getTier(m.points); return (
             <div key={m.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border group">
               <div className="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-sm font-black text-yellow-400">{m.name[0]}</div>
-              <div className="flex-1 min-w-0"><p className="text-xs font-black text-yellow-50 truncate">{m.name}</p><p className="text-[9px] text-text-dim font-bold">{m.phone}</p></div>
-              <div className="text-right"><p className="text-sm font-black text-yellow-400">{m.points} pts</p><p className={`text-[9px] font-black uppercase tracking-widest ${tier.color}`}>{tier.name}</p></div>
+              <div className="flex-1 min-w-0"><p className="text-xs font-black text-yellow-50 truncate">{m.name}</p><p className="text-xs text-text-dim font-bold">{m.phone}</p></div>
+              <div className="text-right"><p className="text-sm font-black text-yellow-400">{m.points} pts</p><p className={`text-xs font-black uppercase tracking-widest ${tier.color}`}>{tier.name}</p></div>
               <button onClick={() => setAddPointsId(m.id)} className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-xs font-black hover:bg-yellow-500 hover:text-white transition-colors">+</button>
             </div>
           ); })}

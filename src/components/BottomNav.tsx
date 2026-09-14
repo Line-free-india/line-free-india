@@ -2,225 +2,147 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp, getCategoryInfo } from '../store/AppContext';
 import { useState } from 'react';
 import QuickActions from './QuickActions';
-import { AnimatePresence } from 'framer-motion';
-
-// Simple SVG icons — no dependency bloat
-const HomeIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    {filled
-      ? <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="currentColor"/>
-      : <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>}
-  </svg>
-);
-
-const SearchIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth={filled ? 0 : 1.7}
-      fill={filled ? "currentColor" : "none"} opacity={filled ? 0.15 : 1}/>
-    {filled && <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7"/>}
-    <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-  </svg>
-);
-
-const HeartIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M12 21C12 21 3 14.5 3 8.5a4.5 4.5 0 019-1 4.5 4.5 0 019 1c0 6-9 12.5-9 12.5z"
-      fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
-  </svg>
-);
-
-const TicketIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <rect x="2" y="6" width="20" height="12" rx="2"
-      fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-    <path d="M9 6v12M15 6v12" stroke={filled ? "white" : "currentColor"} strokeWidth="1.7" strokeDasharray="2 2"/>
-  </svg>
-);
-
-const PersonIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="8" r="4" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-  </svg>
-);
-
-const UsersIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <circle cx="9" cy="8" r="3.5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-    <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-    <path d="M16 6c1.7 0 3 1.3 3 3s-1.3 3-3 3M22 20c0-3-2-5-4.5-5.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-  </svg>
-);
-
-const ChartIcon = ({ filled }: { filled?: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="13" width="4" height="8" rx="1"
-      fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-    <rect x="10" y="8" width="4" height="13" rx="1"
-      fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-    <rect x="17" y="3" width="4" height="18" rx="1"
-      fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7"/>
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-  </svg>
-);
+import { AnimatePresence, motion } from 'framer-motion';
+import { triggerHaptic } from '../utils/haptics';
+import { 
+  Home, 
+  Compass, 
+  Heart, 
+  Ticket, 
+  User, 
+  Users, 
+  BarChart3, 
+  Plus 
+} from 'lucide-react';
 
 export default function BottomNav() {
-  const { role, unreadCount, t, businessProfile } = useApp();
+  const { role, unreadCount, businessProfile } = useApp();
   const nav = useNavigate();
   const loc = useLocation();
   const [showQuickActions, setShowQuickActions] = useState(false);
 
+  const handleTabClick = (path: string) => {
+    triggerHaptic('selection');
+    nav(path);
+  };
+
   if (role === 'customer') {
     const tabs = [
-      { path: '/customer/home',       label: 'Home',      icon: HomeIcon },
-      { path: '/customer/search',     label: 'Explore',   icon: SearchIcon },
-      { path: '/customer/favourites', label: 'Saved',     icon: HeartIcon },
-      { path: '/customer/tokens',     label: 'Tokens',    icon: TicketIcon },
-      { path: '/customer/profile',    label: 'Profile',   icon: PersonIcon },
+      { path: '/customer/home', label: 'Home', icon: Home },
+      { path: '/customer/search', label: 'Discover', icon: Compass },
+      { path: '/customer/favourites', label: 'Saved', icon: Heart },
+      { path: '/customer/tokens', label: 'My Tokens', icon: Ticket, badge: unreadCount || 1 },
+      { path: '/customer/profile', label: 'Account', icon: User },
     ];
 
     return (
-      <div
-        style={{
-          position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 480, zIndex: 100,
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          background: 'rgba(255,255,255,0.92)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(60,60,67,0.12)',
-        }}
+      <nav
+        aria-label="Customer Navigation"
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white/98 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_25px_rgba(0,0,0,0.05)] px-3 pt-2.5 app-bottom-safe"
       >
-        <div style={{ display: 'flex', height: 56 }}>
-          {tabs.map(tab => {
+        <div className="flex items-center justify-around relative">
+          {tabs.map((tab) => {
             const active = loc.pathname === tab.path;
             const Icon = tab.icon;
+
             return (
               <button
                 key={tab.path}
-                onClick={() => nav(tab.path)}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  background: 'none',
-                  color: active ? 'var(--color-primary)' : 'var(--color-text-dim)',
-                  padding: '6px 0',
-                }}
+                onClick={() => handleTabClick(tab.path)}
+                className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 relative transition-all duration-200 cursor-pointer ${
+                  active ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'
+                }`}
               >
-                <Icon filled={active} />
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: active ? 600 : 400,
-                  letterSpacing: 0,
-                  color: 'inherit',
-                }}>
+                <div className="relative">
+                  <Icon className={`w-5.5 h-5.5 transition-transform duration-200 ${active ? 'scale-110 stroke-[2.4]' : 'stroke-[1.9]'}`} />
+                  {tab.badge && tab.badge > 0 ? (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-xs font-black flex items-center justify-center shadow-sm">
+                      {tab.badge}
+                    </span>
+                  ) : null}
+                </div>
+
+                <span className={`text-xs tracking-tight ${active ? 'font-black text-emerald-600' : 'font-bold text-gray-400'}`}>
                   {tab.label}
                 </span>
+
+                {active && (
+                  <motion.div
+                    layoutId="activeTabDotCustomer"
+                    className="w-1.5 h-1.5 rounded-full bg-emerald-600 -mt-0.5"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </button>
             );
           })}
         </div>
-      </div>
+      </nav>
     );
   }
 
   if (role === 'business') {
-    const catType = businessProfile?.businessType || 'men_salon';
-    const catInfo = getCategoryInfo(catType);
-    const noun = catInfo.terminology.noun;
-
     const tabs = [
-      { path: '/barber/home',      label: 'Home',      icon: HomeIcon },
-      { path: '/barber/customers', label: noun,         icon: UsersIcon },
-      { path: 'FAB',               label: 'Actions',   icon: null },
-      { path: '/barber/analytics', label: 'Analytics', icon: ChartIcon },
-      { path: '/barber/profile',   label: 'Profile',   icon: PersonIcon },
+      { path: '/barber/home', label: 'Command', icon: Home },
+      { path: '/barber/customers', label: 'Queue', icon: Users },
+      { path: 'FAB', label: 'Action', icon: null },
+      { path: '/barber/analytics', label: 'Analytics', icon: BarChart3 },
+      { path: '/barber/profile', label: 'Profile', icon: User },
     ];
 
     return (
       <>
-        <div
-          style={{
-            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-            width: '100%', maxWidth: 480, zIndex: 100,
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(60,60,67,0.12)',
-          }}
+        <nav
+          aria-label="Merchant Navigation"
+          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white/98 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_25px_rgba(0,0,0,0.05)] px-3 pt-2.5 app-bottom-safe"
         >
-          <div style={{ display: 'flex', height: 56, alignItems: 'center' }}>
-            {tabs.map(tab => {
+          <div className="flex items-center justify-around relative">
+            {tabs.map((tab) => {
               if (tab.path === 'FAB') {
                 return (
-                  <button
-                    key="fab"
-                    onClick={() => setShowQuickActions(true)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'none',
-                    }}
-                  >
-                    <div style={{
-                      width: 44, height: 44,
-                      background: 'var(--color-primary)',
-                      borderRadius: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 8px rgba(0,122,255,0.35)',
-                      marginBottom: 4,
-                    }}>
-                      <PlusIcon />
-                    </div>
-                  </button>
+                  <div key="fab" className="flex-1 flex items-center justify-center -mt-6">
+                    <button
+                      onClick={() => {
+                        triggerHaptic('medium');
+                        setShowQuickActions(true);
+                      }}
+                      className="w-13 h-13 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95 transition cursor-pointer border-3 border-white"
+                      title="Quick Actions"
+                    >
+                      <Plus className="w-6.5 h-6.5 stroke-[2.8]" />
+                    </button>
+                  </div>
                 );
               }
 
-              const active = loc.pathname === tab.path;
+              const active = loc.pathname === tab.path || (tab.path === '/barber/home' && loc.pathname === '/barber/dashboard');
               const Icon = tab.icon!;
+
               return (
                 <button
                   key={tab.path}
-                  onClick={() => nav(tab.path)}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 2,
-                    background: 'none',
-                    color: active ? 'var(--color-primary)' : 'var(--color-text-dim)',
-                    padding: '6px 0',
-                  }}
+                  onClick={() => handleTabClick(tab.path)}
+                  className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 relative transition-all duration-200 cursor-pointer ${
+                    active ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'
+                  }`}
                 >
-                  <Icon filled={active} />
-                  <span style={{
-                    fontSize: 10,
-                    fontWeight: active ? 600 : 400,
-                    color: 'inherit',
-                  }}>
+                  <Icon className={`w-5.5 h-5.5 transition-transform duration-200 ${active ? 'scale-110 stroke-[2.4]' : 'stroke-[1.9]'}`} />
+                  <span className={`text-xs tracking-tight ${active ? 'font-black text-emerald-600' : 'font-bold text-gray-400'}`}>
                     {tab.label}
                   </span>
+
+                  {active && (
+                    <motion.div
+                      layoutId="activeTabDotMerchant"
+                      className="w-1.5 h-1.5 rounded-full bg-emerald-600 -mt-0.5"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
                 </button>
               );
             })}
           </div>
-        </div>
+        </nav>
 
         <AnimatePresence>
           {showQuickActions && (

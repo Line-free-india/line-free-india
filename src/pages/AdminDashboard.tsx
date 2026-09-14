@@ -44,11 +44,18 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
+  const [statusMsg, setStatusMsg] = useState('');
+
   const suspendSalon = async (salonId: string, isSuspended: boolean) => {
-    if (!confirm(`Are you sure you want to ${isSuspended ? 'UNSUSPEND' : 'SUSPEND'} this business?`)) return;
     try {
       await updateDoc(doc(db, 'barbers', salonId), { isStopped: !isSuspended });
-    } catch (e) { alert('Failed to update business status.'); }
+      setStatusMsg(`Business ${isSuspended ? 'unsuspended' : 'suspended'} successfully.`);
+      setTimeout(() => setStatusMsg(''), 3000);
+    } catch (e) {
+      console.error('Failed to update business status:', e);
+      setStatusMsg('Failed to update business status.');
+      setTimeout(() => setStatusMsg(''), 3000);
+    }
   };
 
   const handleLogout = async () => {
@@ -171,11 +178,11 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-text-dim">
-                  <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Type</th>
-                  <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Info</th>
-                  <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">State</th>
-                  <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Services</th>
-                  <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Actions</th>
+                  <th className="p-4 font-semibold uppercase text-xs tracking-wider">Type</th>
+                  <th className="p-4 font-semibold uppercase text-xs tracking-wider">Info</th>
+                  <th className="p-4 font-semibold uppercase text-xs tracking-wider">State</th>
+                  <th className="p-4 font-semibold uppercase text-xs tracking-wider">Services</th>
+                  <th className="p-4 font-semibold uppercase text-xs tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -190,7 +197,7 @@ export default function AdminDashboard() {
                         <p className="text-text-dim text-xs">{s.name} • {cat?.label || 'Business'}</p>
                       </td>
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded inline-flex text-[10px] font-bold ${
+                        <span className={`px-2 py-1 rounded inline-flex text-xs font-bold ${
                           isSuspended ? 'bg-danger/10 text-danger' :
                           s.isOpen ? 'bg-success/10 text-success' : 'bg-border text-text'
                         }`}>
@@ -201,7 +208,7 @@ export default function AdminDashboard() {
                       <td className="p-4">
                         <button 
                           onClick={() => suspendSalon(s.uid, isSuspended)}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                             isSuspended ? 'bg-success text-white hover:bg-success/90' : 'bg-danger/10 text-danger hover:bg-danger/20'
                           }`}
                         >

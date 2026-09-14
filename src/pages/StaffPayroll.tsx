@@ -12,10 +12,11 @@ export default function StaffPayroll() {
   const { user, businessProfile } = useApp();
   const nav = useNavigate();
   const [entries, setEntries] = useState<PayrollEntry[]>([]);
+  const [message, setMessage] = useState<string>('');
   const [saving, setSaving] = useState(false);
-  const [staffId, setStaffId] = useState(''); 
-  const [baseSalary, setBaseSalary] = useState(''); 
-  const [bonus, setBonus] = useState('0'); 
+  const [staffId, setStaffId] = useState('');
+  const [baseSalary, setBaseSalary] = useState('');
+  const [bonus, setBonus] = useState('0');
   const [deductions, setDeductions] = useState('0');
   const [month, setMonth] = useState(new Date().toISOString().slice(0,7));
 
@@ -30,7 +31,7 @@ export default function StaffPayroll() {
       await updateDoc(doc(db, 'barbers', user.uid), { payroll: recs }); 
       setEntries(recs); 
       triggerHaptic('success'); 
-    } catch (e: any) { alert('Error: ' + e.message); } 
+    } catch (e: any) { setMessage('Error: ' + e.message); } 
     setSaving(false); 
   };
 
@@ -42,12 +43,12 @@ export default function StaffPayroll() {
     const comm = Math.round((s.earningsToday || 0) * 0.20);
     setBonus(comm.toString());
     setBaseSalary("500"); // Base per day/session for demo
-    alert(`AI Insight: Calculated ₹${comm} commission (20% of today's ₹${s.earningsToday} performance).`);
+    setMessage(`AI Insight: Calculated ₹${comm} commission (20% of today's ₹${s.earningsToday} performance).`);
   };
 
   const addEntry = async () => {
     const s = staffList.find(st => st.id === staffId);
-    if (!s || !baseSalary) return alert('Staff selection & base salary required.');
+    if (!s || !baseSalary) return setMessage('Staff selection & base salary required.');
     const base = Number(baseSalary)||0; const bon = Number(bonus)||0; const ded = Number(deductions)||0;
     const e: PayrollEntry = { 
       id: Date.now().toString(), 
@@ -76,7 +77,7 @@ export default function StaffPayroll() {
           <button onClick={() => nav('/barber/dashboard')} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-95">←</button>
           <div>
             <h1 className="font-black text-xl text-emerald-400">Payroll Engine 💵</h1>
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em]">Total Pending: ₹{totalPending.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-zinc-500 font-black uppercase tracking-[0.3em]">Total Pending: ₹{totalPending.toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
@@ -85,11 +86,11 @@ export default function StaffPayroll() {
         {/* Quick Insights */}
         <div className="grid grid-cols-2 gap-4">
            <div className="p-5 rounded-3xl elite-glass spatial-card border-white/5">
-              <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Total Paid</p>
+              <p className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-1">Total Paid</p>
               <p className="text-2xl font-black text-white">₹{totalPaid.toLocaleString('en-IN')}</p>
            </div>
            <div className="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20">
-              <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-1">Efficiency</p>
+              <p className="text-xs text-emerald-400 font-black uppercase tracking-widest mb-1">Efficiency</p>
               <p className="text-2xl font-black text-emerald-500">98.4%</p>
            </div>
         </div>
@@ -100,7 +101,7 @@ export default function StaffPayroll() {
           
           <div className="space-y-4">
              <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Recipient</label>
+                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Recipient</label>
                 <select value={staffId} onChange={e => setStaffId(e.target.value)} className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none font-bold text-sm">
                    <option value="">Select Staff Member</option>
                    {staffList.map(s => <option key={s.id} value={s.id}>{s.name} (Earned: ₹{s.earningsToday})</option>)}
@@ -109,18 +110,18 @@ export default function StaffPayroll() {
 
              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Base (₹)</label>
+                   <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Base (₹)</label>
                    <input type="number" value={baseSalary} onChange={e => setBaseSalary(e.target.value)} className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none font-bold text-sm" />
                 </div>
                 <div className="space-y-2 relative">
-                   <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Commissions (₹)</label>
+                   <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Commissions (₹)</label>
                    <input type="number" value={bonus} onChange={e => setBonus(e.target.value)} className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none font-bold text-sm" />
                    {staffId && <button onClick={autoCalc} className="absolute right-3 bottom-3 text-emerald-400 text-xs font-black uppercase">Auto</button>}
                 </div>
              </div>
 
              <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Deductions (₹)</label>
+                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Deductions (₹)</label>
                 <input type="number" value={deductions} onChange={e => setDeductions(e.target.value)} className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none font-bold text-sm text-rose-400" />
              </div>
 
@@ -129,7 +130,7 @@ export default function StaffPayroll() {
                 <span className="text-xl font-black text-emerald-400">₹{(Number(baseSalary)||0) + (Number(bonus)||0) - (Number(deductions)||0)}</span>
              </div>
 
-             <button disabled={saving || !staffId} onClick={addEntry} className="w-full py-5 bg-emerald-500 text-black rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50">
+             <button disabled={saving || !staffId} onClick={addEntry} className="w-full py-5 bg-emerald-500 text-black rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50">
                 {saving ? 'Processing...' : 'Authorize Transaction →'}
              </button>
           </div>
@@ -143,17 +144,17 @@ export default function StaffPayroll() {
                 <div key={e.id} className="p-5 rounded-3xl elite-glass spatial-card border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
                   <div>
                     <p className="text-sm font-black text-white">{e.staffName}</p>
-                    <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-1">{e.month}</p>
+                    <p className="text-xs text-zinc-500 font-black uppercase tracking-widest mt-1">{e.month}</p>
                   </div>
                   <div className="text-right flex items-center gap-4">
                     <div>
                       <p className="text-lg font-black text-emerald-400">₹{e.netPay}</p>
-                      <p className="text-[8px] text-zinc-500 font-bold">Base: ₹{e.baseSalary} + Comm: ₹{e.bonus}</p>
+                      <p className="text-xs text-zinc-500 font-bold">Base: ₹{e.baseSalary} + Comm: ₹{e.bonus}</p>
                     </div>
                     {e.status === 'pending' ? (
-                      <button onClick={() => markPaid(e.id)} className="px-4 py-2 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase border border-emerald-500/20 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">Pay</button>
+                      <button onClick={() => markPaid(e.id)} className="px-4 py-2 bg-emerald-500/10 text-emerald-400 text-xs font-black uppercase border border-emerald-500/20 rounded-xl hover:bg-emerald-500 hover:text-black transition-all">Pay</button>
                     ) : (
-                      <span className="text-[9px] font-black text-emerald-500 uppercase">Settled</span>
+                      <span className="text-xs font-black text-emerald-500 uppercase">Settled</span>
                     )}
                   </div>
                 </div>
@@ -161,6 +162,7 @@ export default function StaffPayroll() {
            </div>
         </div>
       </div>
-    </div>
+    {message && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-lg z-50 text-sm">{message} <button onClick={() => setMessage('')} className="ml-2 text-white/50 hover:text-white">&times;</button></div>}
+</div>
   );
 }

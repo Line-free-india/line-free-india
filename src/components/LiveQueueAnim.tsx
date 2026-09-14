@@ -52,13 +52,13 @@ export default function LiveQueueAnim({ position, total, businessName, accentCol
               <motion.span
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
-                className="text-[10px] font-black px-2 py-0.5 rounded-full"
+                className="text-xs font-black px-2 py-0.5 rounded-full"
                 style={{ background: `${accentColor}20`, color: accentColor }}
               >
                 GET READY! ⚡
               </motion.span>
             ) : (
-              <span className="text-[10px] text-text-dim font-bold">~{(position - 1) * 8} min wait</span>
+              <span className="text-xs text-text-dim font-bold">~{(position - 1) * 8} min wait</span>
             )}
           </div>
         </div>

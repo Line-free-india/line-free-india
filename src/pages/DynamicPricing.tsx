@@ -9,6 +9,7 @@ export default function DynamicPricing() {
   const { user, businessProfile } = useApp();
   const nav = useNavigate();
   const [rules, setRules] = useState<DynamicPricingRule[]>([]);
+  const [message, setMessage] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -35,7 +36,7 @@ export default function DynamicPricing() {
       setRules(newRecords);
       triggerHaptic('success');
     } catch (e: any) {
-      alert('Error saving pricing rules: ' + e.message);
+      setMessage('Error saving pricing rules: ' + e.message);
     }
     setSaving(false);
   };
@@ -48,11 +49,11 @@ export default function DynamicPricing() {
 
   const handleSaveRule = async () => {
     if (!ruleName || !percentage) {
-      return alert('Rule Name and Percentage are required.');
+      return setMessage('Rule Name and Percentage are required.');
     }
 
     if (appliesTo === 'specific_services' && selectedServices.length === 0) {
-      return alert('Please select at least one service.');
+      return setMessage('Please select at least one service.');
     }
 
     const newRec: DynamicPricingRule = {
@@ -103,7 +104,7 @@ export default function DynamicPricing() {
 
   const deleteRule = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if(confirm('Delete this Pricing Rule?')) {
+    if(window.confirm('Delete this Pricing Rule?')) {
       await saveToDb(rules.filter(r => r.id !== id));
       if (editingId === id) resetForm();
     }
@@ -123,7 +124,7 @@ export default function DynamicPricing() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-fuchsia-400">Dynamic Pricing 💰</h1>
-            <p className="text-[10px] text-fuchsia-200/50 font-bold uppercase tracking-widest">{rules.filter(r => r.isActive).length} Active Rules</p>
+            <p className="text-xs text-fuchsia-200/50 font-bold uppercase tracking-widest">{rules.filter(r => r.isActive).length} Active Rules</p>
           </div>
         </div>
       </div>
@@ -131,7 +132,7 @@ export default function DynamicPricing() {
       <div className="p-4 space-y-6">
 
         {/* Info Banner */}
-        <div className="p-4 rounded-3xl neu-panel border border-fuchsia-500/20 text-[10px] font-bold text-fuchsia-100/80 leading-relaxed shadow-sm">
+        <div className="p-4 rounded-3xl neu-panel border border-fuchsia-500/20 text-xs font-bold text-fuchsia-100/80 leading-relaxed shadow-sm">
           <strong className="text-fuchsia-400">Auto-Scaling Revenue:</strong> Set up surge pricing during festivals, weekends, or peak hours to automatically adjust your catalog prices online.
         </div>
 
@@ -143,7 +144,7 @@ export default function DynamicPricing() {
               <h2 className="font-black text-text text-sm flex items-center gap-2">
                 {editingId ? 'Edit Pricing Rule' : 'Create Pricing Rule'}
               </h2>
-              {editingId && <button onClick={resetForm} className="text-[10px] text-text-dim uppercase tracking-widest font-black bg-card-2 px-2 py-1 rounded-md">Cancel Edit</button>}
+              {editingId && <button onClick={resetForm} className="text-xs text-text-dim uppercase tracking-widest font-black bg-card-2 px-2 py-1 rounded-md">Cancel Edit</button>}
             </div>
 
             <div className="space-y-4">
@@ -153,7 +154,7 @@ export default function DynamicPricing() {
                
                <div className="grid grid-cols-2 gap-3">
                  <div>
-                   <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Adjustment Type</label>
+                   <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Adjustment Type</label>
                    <select value={type} onChange={e => setType(e.target.value as any)} className={`w-full p-3 rounded-xl bg-background border border-border outline-none text-xs font-black ${type === 'surge' ? 'text-green-400' : 'text-danger'}`}>
                      <option value="surge">Surge (+)</option>
                      <option value="discount">Discount (-)</option>
@@ -161,7 +162,7 @@ export default function DynamicPricing() {
                  </div>
                  
                  <div>
-                   <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Percentage (%)</label>
+                   <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Percentage (%)</label>
                    <div className="relative">
                      <input type="number" value={percentage} onChange={e => setPercentage(e.target.value)} className="w-full p-3 pl-8 rounded-xl bg-background border border-border outline-none text-xs text-fuchsia-100 font-bold" />
                      <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-black ${type === 'surge' ? 'text-green-500' : 'text-danger'}`}>{type === 'surge' ? '+' : '-'}</span>
@@ -170,7 +171,7 @@ export default function DynamicPricing() {
                </div>
 
                <div>
-                 <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">When does it apply?</label>
+                 <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">When does it apply?</label>
                  <select value={condition} onChange={e => setCondition(e.target.value)} className="w-full p-3 rounded-xl bg-background border border-border outline-none text-xs text-fuchsia-200 font-bold">
                    <option value="always">Always (Until disabled)</option>
                    <option value="weekend">Weekends (Sat-Sun)</option>
@@ -180,7 +181,7 @@ export default function DynamicPricing() {
                </div>
 
                <div>
-                 <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Target Services</label>
+                 <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Target Services</label>
                  <div className="flex gap-2">
                    <button onClick={() => setAppliesTo('all')} className={`flex-1 p-2 rounded-xl text-xs font-black transition-all ${appliesTo === 'all' ? 'bg-fuchsia-600 text-white' : 'bg-background border border-border text-text-dim'}`}>All Services</button>
                    <button onClick={() => setAppliesTo('specific_services')} className={`flex-1 p-2 rounded-xl text-xs font-black transition-all ${appliesTo === 'specific_services' ? 'bg-fuchsia-600 text-white' : 'bg-background border border-border text-text-dim'}`}>Specific Services</button>
@@ -190,11 +191,11 @@ export default function DynamicPricing() {
                {appliesTo === 'specific_services' && (
                  <div className="p-3 bg-background rounded-2xl border border-border max-h-48 overflow-y-auto space-y-2">
                    {(businessProfile?.services || []).length === 0 ? (
-                     <p className="text-[10px] text-text-dim text-center py-2">No services found in your catalog.</p>
+                     <p className="text-xs text-text-dim text-center py-2">No services found in your catalog.</p>
                    ) : (
                      <div className="grid grid-cols-1 gap-2">
                        {(businessProfile?.services || []).map(s => (
-                         <div key={s.id} onClick={() => toggleService(s.id)} className={`p-2 rounded-xl border text-[10px] font-bold cursor-pointer transition-colors flex justify-between items-center ${selectedServices.includes(s.id) ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-200' : 'bg-card border-border text-text-dim'}`}>
+                         <div key={s.id} onClick={() => toggleService(s.id)} className={`p-2 rounded-xl border text-xs font-bold cursor-pointer transition-colors flex justify-between items-center ${selectedServices.includes(s.id) ? 'bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-200' : 'bg-card border-border text-text-dim'}`}>
                            <span>{s.name}</span>
                            <span>₹{s.price}</span>
                          </div>
@@ -207,7 +208,7 @@ export default function DynamicPricing() {
                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border">
                  <div className="flex-1">
                    <h3 className="font-bold text-xs text-text">Rule Status</h3>
-                   <p className="text-[9px] text-text-dim">Activate this rule immediately upon saving</p>
+                   <p className="text-xs text-text-dim">Activate this rule immediately upon saving</p>
                  </div>
                  <button onClick={() => setIsActive(!isActive)} className={`w-12 h-6 rounded-full p-1 transition-colors ${isActive ? 'bg-green-500' : 'bg-card-2 border border-border'}`}>
                    <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -245,7 +246,7 @@ export default function DynamicPricing() {
                            {r.ruleName}
                          </h4>
                        </div>
-                       <p className="text-[10px] font-black uppercase tracking-widest mt-1 text-fuchsia-100/50">
+                       <p className="text-xs font-black uppercase tracking-widest mt-1 text-fuchsia-100/50">
                          {r.condition.replace('_', ' ')} • {r.appliesTo === 'all' ? 'All Services' : `${r.specificServices?.length || 0} Services`}
                        </p>
                      </div>
@@ -256,17 +257,17 @@ export default function DynamicPricing() {
                        </span>
                      </div>
 
-                     <button onClick={(e) => deleteRule(r.id, e)} className="absolute top-4 right-4 opacity-0 transition-all text-danger text-[10px] flex justify-center items-center hover:bg-danger/20 group-hover:opacity-100 w-8 h-8 rounded-full bg-danger/10 z-10">
+                     <button onClick={(e) => deleteRule(r.id, e)} className="absolute top-4 right-4 opacity-0 transition-all text-danger text-xs flex justify-center items-center hover:bg-danger/20 group-hover:opacity-100 w-8 h-8 rounded-full bg-danger/10 z-10">
                        ✕
                      </button>
                    </div>
                    
                    <div className="flex justify-between items-center mt-1 border-t border-border pt-3">
-                     <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded ${r.isActive ? 'bg-green-500/10 text-green-500' : 'bg-background text-text-dim'}`}>
+                     <span className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded ${r.isActive ? 'bg-green-500/10 text-green-500' : 'bg-background text-text-dim'}`}>
                        {r.isActive ? 'Active' : 'Paused'}
                      </span>
                      
-                     <button onClick={(e) => toggleRuleActive(r.id, e)} className="px-4 py-1.5 rounded-xl bg-card-2 border border-border text-[9px] font-black uppercase tracking-widest hover:bg-border transition-colors">
+                     <button onClick={(e) => toggleRuleActive(r.id, e)} className="px-4 py-1.5 rounded-xl bg-card-2 border border-border text-xs font-black uppercase tracking-widest hover:bg-border transition-colors">
                        {r.isActive ? 'Pause Rule' : 'Activate'}
                      </button>
                    </div>
@@ -277,6 +278,7 @@ export default function DynamicPricing() {
            )}
         </div>
       </div>
-    </div>
+    {message && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-lg z-50 text-sm">{message} <button onClick={() => setMessage('')} className="ml-2 text-white/50 hover:text-white">&times;</button></div>}
+</div>
   );
 }

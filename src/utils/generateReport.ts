@@ -21,7 +21,7 @@ export async function generateMonthlyReport(
   month: string
 ): Promise<void> {
   if (!stats || stats.length === 0) {
-    alert('No data available for this range.');
+    console.warn('No data available for this range.');
     return;
   }
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });

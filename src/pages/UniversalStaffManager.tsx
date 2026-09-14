@@ -98,12 +98,12 @@ export default function UniversalStaffManager() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border shadow-sm">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border shadow-sm">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Team Management 👥</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{staff.length} Active Members</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{staff.length} Active Members</p>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function UniversalStaffManager() {
                <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${Math.min(percentAchieved, 100)}%` }}></div>
              </div>
            )}
-           {totalTarget > 0 && <p className="text-[10px] font-bold text-primary mt-1 z-10">{percentAchieved}% Achieved</p>}
+           {totalTarget > 0 && <p className="text-xs font-bold text-primary mt-1 z-10">{percentAchieved}% Achieved</p>}
         </div>
 
         {/* Form */}
@@ -130,17 +130,17 @@ export default function UniversalStaffManager() {
           <div className="space-y-4">
              <div className="grid grid-cols-2 gap-3">
                <div className="col-span-2">
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Full Name</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Full Name</label>
                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. John Doe" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none font-bold text-sm" />
                </div>
                
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Role/Title (Opt)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Role/Title (Opt)</label>
                  <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Sr. Stylist" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
                </div>
 
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Daily Target (₹)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Daily Target (₹)</label>
                  <input type="number" value={target} onChange={e => setTarget(e.target.value)} placeholder="e.g. 5000" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
                </div>
 
@@ -183,9 +183,9 @@ export default function UniversalStaffManager() {
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
                           <h4 className="font-bold text-text text-sm">{s.name}</h4>
-                          {s.role && <span className="text-[9px] uppercase tracking-widest bg-card-2 px-1.5 py-0.5 rounded text-text-dim">{s.role}</span>}
+                          {s.role && <span className="text-xs uppercase tracking-widest bg-card-2 px-1.5 py-0.5 rounded text-text-dim">{s.role}</span>}
                         </div>
-                        <p className="text-[10px] text-text-dim flex items-center gap-1 font-bold">
+                        <p className="text-xs text-text-dim flex items-center gap-1 font-bold">
                            <span className={`w-2 h-2 rounded-full ${s.isAvailable ? 'bg-success' : 'bg-warning'}`}></span>
                            {s.isAvailable ? 'On Duty' : 'Off Duty'}
                         </p>

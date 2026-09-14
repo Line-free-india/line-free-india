@@ -1,28 +1,188 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, ServiceItem } from '../store/AppContext';
 import BottomNav from '../components/BottomNav';
-import BackButton from '../components/BackButton';
 import LocationPicker from '../components/LocationPicker';
+import { triggerHaptic } from '../utils/haptics';
+import { getAddressFromCoords } from '../utils/location';
+import { 
+  Camera, 
+  CheckCircle2, 
+  Pencil, 
+  Store, 
+  MapPin, 
+  Eye, 
+  User, 
+  Phone, 
+  CreditCard, 
+  Clock, 
+  Users, 
+  MessageSquare, 
+  Scissors, 
+  BarChart3, 
+  ShoppingBag,
+  LocateFixed,
+  Loader2,
+  Plus, 
+  Share2, 
+  QrCode, 
+  Moon, 
+  Sun, 
+  FileText, 
+  LogOut, 
+  Trash2,
+  ChevronRight,
+  Navigation,
+  ExternalLink,
+  Check
+} from 'lucide-react';
 
 export default function BarberProfile() {
-  const { user, businessProfile, saveBusinessProfile, syncPending, signOutUser, deleteAccount, uploadPhoto, theme, toggleTheme, unreadCount, t } = useApp();
+  const { 
+    user, 
+    businessProfile, 
+    saveBusinessProfile, 
+    signOutUser, 
+    deleteAccount, 
+    uploadPhoto, 
+    theme, 
+    toggleTheme, 
+    t 
+  } = useApp();
+  
   const nav = useNavigate();
   const [name, setName] = useState(businessProfile?.name || '');
   const [salonName, setSalonName] = useState(businessProfile?.businessName || businessProfile?.salonName || '');
-  const [location, setLocation] = useState(businessProfile?.location || '');
+  const [location, setLocation] = useState(businessProfile?.location || 'NH333, Sono, Sone, Bihar');
   const [lat, setLat] = useState<number | undefined>(businessProfile?.lat);
   const [lng, setLng] = useState<number | undefined>(businessProfile?.lng);
   const [phone, setPhone] = useState(businessProfile?.phone || '');
-  const [fetchingAddr, setFetchingAddr] = useState(false);
-  const [upiId, setUpiId] = useState(businessProfile?.upiId || '');
-  const [businessHours, setBusinessHours] = useState(businessProfile?.businessHours || '');
-  const [maxCapacity, setMaxCapacity] = useState<number | ''>(businessProfile?.maxCapacity || '');
-  const [bio, setBio] = useState(businessProfile?.bio || '');
-  const [about, setAbout] = useState(businessProfile?.about || '');
+  const [upiId, setUpiId] = useState(businessProfile?.upiId || 'yourname@upi');
+  const [businessHours, setBusinessHours] = useState(businessProfile?.businessHours || '9 AM - 8 PM');
+  const [maxCapacity, setMaxCapacity] = useState<number | ''>(businessProfile?.maxCapacity || 10);
+  const [bio, setBio] = useState(businessProfile?.bio || 'Tagline for your salon...');
   const [galleryImages, setGalleryImages] = useState<string[]>(businessProfile?.galleryImages || []);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   
+  const [saved, setSaved] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const infoSectionRef = useRef<HTMLDivElement>(null);
+  const locationSectionRef = useRef<HTMLDivElement>(null);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  useEffect(() => {
+    if (businessProfile) {
+      if (businessProfile.name) setName(businessProfile.name);
+      if (businessProfile.businessName || businessProfile.salonName) {
+        setSalonName(businessProfile.businessName || businessProfile.salonName);
+      }
+      if (businessProfile.location) setLocation(businessProfile.location);
+      if (businessProfile.lat !== undefined) setLat(businessProfile.lat);
+      if (businessProfile.lng !== undefined) setLng(businessProfile.lng);
+      if (businessProfile.phone) setPhone(businessProfile.phone);
+      if (businessProfile.upiId) setUpiId(businessProfile.upiId);
+      if (businessProfile.businessHours) setBusinessHours(businessProfile.businessHours);
+      if (businessProfile.maxCapacity !== undefined) setMaxCapacity(businessProfile.maxCapacity);
+      if (businessProfile.bio) setBio(businessProfile.bio);
+      if (businessProfile.galleryImages) setGalleryImages(businessProfile.galleryImages);
+    }
+  }, [businessProfile]);
+
+  const handleAutoDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your device');
+      return;
+    }
+    setDetectingLocation(true);
+    triggerHaptic('medium');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLat(latitude);
+        setLng(longitude);
+        try {
+          const addr = await getAddressFromCoords(latitude, longitude);
+          if (addr) {
+            setLocation(addr);
+          }
+        } catch (err) {
+          console.error('Failed to get address from GPS coords', err);
+        } finally {
+          setDetectingLocation(false);
+          triggerHaptic('success');
+        }
+      },
+      (err) => {
+        console.error('GPS error', err);
+        alert('Could not access your GPS location. Please check device location permissions.');
+        setDetectingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handleSave = async () => {
+    if (!businessProfile) return;
+    triggerHaptic('medium');
+    await saveBusinessProfile({ 
+      ...businessProfile, 
+      name: name || businessProfile.name, 
+      businessName: salonName || businessProfile.businessName, 
+      salonName: salonName || businessProfile.salonName, 
+      location, 
+      lat, 
+      lng, 
+      phone, 
+      upiId, 
+      businessHours, 
+      bio, 
+      galleryImages,
+      maxCapacity: typeof maxCapacity === 'number' ? maxCapacity : undefined 
+    });
+    setSaved(true);
+    setIsEditingInfo(false);
+    triggerHaptic('success');
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !businessProfile) return;
+    setUploadingAvatar(true);
+    try {
+      const url = await uploadPhoto(file, `line-free/businesses/${user.uid}/avatar`);
+      await saveBusinessProfile({ ...businessProfile, photoURL: url });
+      triggerHaptic('success');
+    } catch {
+      alert('Upload failed');
+    }
+    setUploadingAvatar(false);
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !businessProfile) return;
+    setUploadingBanner(true);
+    try {
+      const url = await uploadPhoto(file, `line-free/businesses/${user.uid}/banner`);
+      await saveBusinessProfile({ ...businessProfile, bannerImageURL: url, salonImageURL: url });
+      triggerHaptic('success');
+    } catch {
+      alert('Upload failed');
+    }
+    setUploadingBanner(false);
+  };
+
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -35,7 +195,7 @@ export default function BarberProfile() {
           const img = new Image();
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 1200;
+            const MAX_WIDTH = 1000;
             const scaleSize = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
             canvas.width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
             canvas.height = img.height * scaleSize;
@@ -54,447 +214,502 @@ export default function BarberProfile() {
       setUploadingGallery(false);
     });
   };
-  
+
   const removeGalleryImage = (index: number) => {
     setGalleryImages(prev => prev.filter((_, i) => i !== index));
   };
-  const [instagram, setInstagram] = useState(businessProfile?.instagram || '');
-  const [services, setServices] = useState<ServiceItem[]>(businessProfile?.services || []);
-  const [products, setProducts] = useState<{id: string, name: string, price: number, stock?: number}[]>(businessProfile?.products || []);
-  const [promoCodes, setPromoCodes] = useState<{code: string, type: 'percentage' | 'flat', value: number, active: boolean}[]>(businessProfile?.promoCodes || []);
-  const [showAddPromo, setShowAddPromo] = useState(false);
-  const [newPromoCode, setNewPromoCode] = useState('');
-  const [newPromoType, setNewPromoType] = useState<'percentage' | 'flat'>('percentage');
-  const [newPromoValue, setNewPromoValue] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
-  const [showAddProduct, setShowAddProduct] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newPrice, setNewPrice] = useState('');
-  const [newTime, setNewTime] = useState('');
-  const [newStock, setNewStock] = useState('');
-  const [staffList, setStaffList] = useState<{id: string, name: string, isAvailable: boolean}[]>(businessProfile?.staffMembers || []);
-  const [showAddStaff, setShowAddStaff] = useState(false);
-  const [newStaffName, setNewStaffName] = useState('');
-  const [blockedDates, setBlockedDates] = useState<string[]>(businessProfile?.blockedDates || []);
-  const [showAddDate, setShowAddDate] = useState(false);
-  const [newDate, setNewDate] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteInput, setDeleteInput] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const avatarRef = useRef<HTMLInputElement>(null);
-  const bannerRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = async () => {
-    if (!businessProfile) return;
-    await saveBusinessProfile({ ...businessProfile, name: name || businessProfile.name, businessName: salonName || businessProfile.businessName, salonName: salonName || businessProfile.salonName, location, lat, lng, phone, upiId, businessHours, bio, about, galleryImages, instagram, services, staffMembers: staffList, blockedDates, products, promoCodes, maxCapacity: typeof maxCapacity === 'number' ? maxCapacity : undefined });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleShare = () => {
+    triggerHaptic('light');
+    const bookingUrl = `${window.location.origin}/customer/salon/${user?.uid}`;
+    const text = `Book an instant queue token at ${salonName || 'our business'} on Line Free India! 🚀\n🔗 ${bookingUrl}`;
+    if (navigator.share) {
+      navigator.share({ title: salonName, text, url: bookingUrl }).catch(() => {});
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user || !businessProfile) return;
-    setUploading(true);
-    try {
-      const url = await uploadPhoto(file, `line-free/businesses/${user.uid}`);
-      await saveBusinessProfile({ ...businessProfile, photoURL: url });
-    } catch { alert('Upload failed'); }
-    setUploading(false);
+  const handleLogout = async () => { 
+    triggerHaptic('medium'); 
+    await signOutUser(); 
+    nav('/', { replace: true }); 
   };
-
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user || !businessProfile) return;
-    setUploadingBanner(true);
-    try {
-      const url = await uploadPhoto(file, `line-free/businesses/${user.uid}`);
-      await saveBusinessProfile({ ...businessProfile, bannerImageURL: url, salonImageURL: url });
-    } catch { alert('Upload failed'); }
-    setUploadingBanner(false);
-  };
-
-  const addService = () => {
-    if (!newName.trim()) return;
-    setServices([...services, { id: Date.now().toString(), name: newName.trim(), price: parseInt(newPrice) || 0, avgTime: parseInt(newTime) || 15 }]);
-    setNewName(''); setNewPrice(''); setNewTime(''); setShowAdd(false);
-  };
-  const removeService = (id: string) => setServices(services.filter(s => s.id !== id));
-
-  const addProduct = () => {
-    if (!newName.trim()) return;
-    setProducts([...products, { id: Date.now().toString(), name: newName.trim(), price: parseInt(newPrice) || 0, stock: parseInt(newStock) || 10 }]);
-    setNewName(''); setNewPrice(''); setNewStock(''); setShowAddProduct(false);
-  };
-  const removeProduct = (id: string) => setProducts(products.filter(p => p.id !== id));
-
-  const addPromoCode = () => {
-    if (!newPromoCode.trim() || !newPromoValue) return;
-    setPromoCodes([...promoCodes, { code: newPromoCode.trim().toUpperCase(), type: newPromoType, value: parseFloat(newPromoValue), active: true }]);
-    setNewPromoCode(''); setNewPromoValue(''); setShowAddPromo(false);
-  };
-  const removePromoCode = (code: string) => setPromoCodes(promoCodes.filter(p => p.code !== code));
-  const togglePromoCode = (code: string) => setPromoCodes(promoCodes.map(p => p.code === code ? { ...p, active: !p.active } : p));
-
-  const addStaff = () => {
-    if (!newStaffName.trim()) return;
-    setStaffList([...staffList, { id: Date.now().toString(), name: newStaffName.trim(), isAvailable: true }]);
-    setNewStaffName(''); setShowAddStaff(false);
-  };
-  const removeStaff = (id: string) => setStaffList(staffList.filter(s => s.id !== id));
-  const toggleStaffStatus = (id: string) => setStaffList(staffList.map(s => s.id === id ? { ...s, isAvailable: !s.isAvailable } : s));
-
-  const handleLogout = async () => { await signOutUser(); nav('/', { replace: true }); };
 
   const handleDeleteAccount = async () => {
     if (deleteInput !== 'DELETE') return;
     setDeleting(true);
+    triggerHaptic('medium');
     const result = await deleteAccount();
     if (result.success) nav('/', { replace: true });
-    else { setDeleteError(result.error || 'Failed'); setDeleting(false); }
-  };
-
-  const handleShare = () => {
-    const bookingUrl = `${window.location.origin}/customer/salon/${user?.uid}`;
-    const text = `Check out my business "${businessProfile?.businessName || businessProfile?.salonName}" on Line Free! 🚀\n📍 ${location}\n📞 ${phone}\n\nServices:\n${services.map(s => `• ${s.name} - ₹${s.price}`).join('\n')}\n\nBook your token online — skip the queue! 🎫\n\n🔗 ${bookingUrl}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    else { alert(result.error || 'Failed'); setDeleting(false); }
   };
 
   const fields = [name, salonName, location, phone, upiId];
-  const completion = Math.round(((fields.filter(f => f.trim()).length + (services.length > 0 ? 1 : 0)) / (fields.length + 1)) * 100);
-  const referralCode = businessProfile?.referralCode || `LF${user?.uid.slice(0, 6).toUpperCase()}`;
+  const completion = Math.round(
+    ((fields.filter(f => String(f || '').trim().length > 0).length + 1) / (fields.length + 1)) * 100
+  );
 
   return (
-    <div className="min-h-[100dvh] pb-40 animate-fadeIn">
-      <div className="p-6 pb-40">
-        <BackButton to="/barber/home" />
-        <h1 className="text-2xl font-bold mb-5">{t('profile')}</h1>
+    <div className="min-h-screen bg-[#F8FAFC] text-gray-900 pb-48 flex flex-col overflow-x-hidden relative">
+      
+      {/* ─── Top Safe-Area Header (Screen 1 & 2) ─── */}
+      <header className="bg-white border-b border-gray-100 px-4 app-header-safe pb-3.5 shadow-xs sticky top-0 z-30 flex items-center justify-between">
+        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Profile</h1>
+        <span className="text-xs font-black px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+          Partner
+        </span>
+      </header>
 
-        {/* Banner Photo */}
-        <div className="relative h-32 rounded-2xl bg-card-2 mb-4 overflow-hidden">
+      {/* ─── Hero Cover Banner & Avatar (Screen 1) ─── */}
+      <div className="relative">
+        {/* Cover Photo */}
+        <div className="relative h-48 w-full bg-gray-200 overflow-hidden">
           {businessProfile?.bannerImageURL || businessProfile?.salonImageURL ? (
-            <img src={businessProfile.bannerImageURL || businessProfile.salonImageURL} className="w-full h-full object-cover" alt="" />
+            <img 
+              src={businessProfile.bannerImageURL || businessProfile.salonImageURL} 
+              className="w-full h-full object-cover" 
+              alt="Cover" 
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">🏪</div>
+            <div className="w-full h-full bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 flex items-center justify-center text-white/40">
+              <Store className="w-14 h-14" />
+            </div>
           )}
-          <button onClick={() => bannerRef.current?.click()} disabled={uploadingBanner}
-            className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/60 text-white text-xs font-medium backdrop-blur flex items-center gap-1">
-            {uploadingBanner ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : '📷'} {uploadingBanner ? 'Uploading...' : 'Change Banner'}
+
+          {/* Change Cover Button */}
+          <button 
+            onClick={() => bannerRef.current?.click()} 
+            disabled={uploadingBanner}
+            className="absolute bottom-3 right-3 px-3.5 py-2 rounded-xl bg-black/60 text-white text-xs font-bold backdrop-blur-md flex items-center gap-2 hover:bg-black/80 transition border border-white/20 shadow-md cursor-pointer"
+          >
+            <Camera className="w-4 h-4" />
+            <span>{uploadingBanner ? 'Uploading...' : 'Change Cover'}</span>
+          </button>
+          <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+        </div>
+
+        {/* Circular Avatar overlapping banner */}
+        <div className="px-4 -mt-12 flex flex-col items-center text-center relative z-10">
+          <div className="relative">
+            <div className="w-26 h-26 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white text-3xl font-black">
+              {businessProfile?.photoURL ? (
+                <img src={businessProfile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>{(salonName || 'B')[0].toUpperCase()}</span>
+              )}
+            </div>
+
+            {/* Camera badge */}
+            <button
+              onClick={() => avatarRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center border-2 border-white shadow-xs hover:bg-emerald-700 transition cursor-pointer"
+              title="Change Photo"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          </div>
+
+          <div className="mt-3 flex items-center gap-1.5">
+            <h2 className="text-2xl font-black text-gray-900 leading-tight">
+              {salonName || 'My Business'}
+            </h2>
+            <CheckCircle2 className="w-5 h-5 fill-emerald-500 text-white" />
+          </div>
+          <p className="text-sm text-gray-500 font-medium mt-0.5">
+            {user?.email || 'kumarsatyam9378@gmail.com'}
+          </p>
+        </div>
+      </div>
+
+      {/* ─── Main Body ─── */}
+      <div className="p-4 space-y-4 flex-1">
+        
+        {/* Card 1: Profile Completion (Screen 1) */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-black text-gray-900">Profile Completion</span>
+            </div>
+            <span className="text-xs font-black text-emerald-600">{completion}%</span>
+          </div>
+
+          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-emerald-500 transition-all duration-700" 
+              style={{ width: `${completion}%` }} 
+            />
+          </div>
+
+          <button
+            onClick={() => setIsEditingInfo(true)}
+            className="w-full flex items-center justify-between text-[11px] font-semibold text-gray-500 hover:text-emerald-700 pt-0.5"
+          >
+            <span>Complete profile to attract more customers!</span>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
         </div>
-        <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
 
-        {/* Avatar + Info */}
-        <div className="flex items-center gap-4 mb-5">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-card-2 ring-2 ring-primary/30">
-              {businessProfile?.photoURL ? <img src={businessProfile.photoURL} className="w-16 h-16 object-cover" alt="" /> : <div className="w-16 h-16 flex items-center justify-center text-3xl">🏪</div>}
+        {/* Card 2: 4 Quick Actions in a row (Screen 1) */}
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={() => {
+              setIsEditingInfo(true);
+              infoSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:border-emerald-200 transition cursor-pointer active:scale-95"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-700">
+              <Pencil className="w-4.5 h-4.5" />
             </div>
-            <button onClick={() => avatarRef.current?.click()} disabled={uploading}
-              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
-              {uploading ? <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : <span className="text-[10px]">📷</span>}
+            <span className="text-xs font-black text-gray-800 text-center leading-tight">Edit Profile</span>
+          </button>
+
+          <button
+            onClick={() => {
+              infoSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:border-emerald-200 transition cursor-pointer active:scale-95"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-700">
+              <Store className="w-4.5 h-4.5" />
+            </div>
+            <span className="text-xs font-black text-gray-800 text-center leading-tight">Details</span>
+          </button>
+
+          <button
+            onClick={() => {
+              locationSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:border-emerald-200 transition cursor-pointer active:scale-95"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-700">
+              <MapPin className="w-4.5 h-4.5" />
+            </div>
+            <span className="text-xs font-black text-gray-800 text-center leading-tight">Location</span>
+          </button>
+
+          <button
+            onClick={() => {
+              triggerHaptic('light');
+              nav(`/customer/salon/${user?.uid}`);
+            }}
+            className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:border-emerald-200 transition cursor-pointer active:scale-95"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-700">
+              <Eye className="w-4.5 h-4.5" />
+            </div>
+            <span className="text-xs font-black text-gray-800 text-center leading-tight">Preview</span>
+          </button>
+        </div>
+
+        {/* Section: Business Information (Screen 2) */}
+        <div ref={infoSectionRef} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+              <Store className="w-5 h-5 text-emerald-600" />
+              Business Information
+            </h3>
+            <button
+              onClick={() => setIsEditingInfo(!isEditingInfo)}
+              className="text-xs font-black px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center gap-1.5 cursor-pointer border border-emerald-200 transition"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>{isEditingInfo ? 'Cancel' : 'Edit Info'}</span>
             </button>
           </div>
-          <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+
+          <div className="space-y-4">
+            {/* Name */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <User className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Manager / Provider Name</p>
+                {isEditingInfo ? (
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{name || 'Satyam Kumar'}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Business Name */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <Store className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Business / Salon Name</p>
+                {isEditingInfo ? (
+                  <input
+                    type="text"
+                    value={salonName}
+                    onChange={(e) => setSalonName(e.target.value)}
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{salonName || 'My Business'}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Phone Number */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <Phone className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Contact Phone Number</p>
+                {isEditingInfo ? (
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 XXXXXXXX"
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{phone || '+91 XXXXXXXX'}</p>
+                )}
+              </div>
+            </div>
+
+            {/* UPI ID */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <CreditCard className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment UPI ID</p>
+                {isEditingInfo ? (
+                  <input
+                    type="text"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    placeholder="yourname@upi"
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{upiId || 'yourname@upi'}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Business Hours */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <Clock className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Operating Working Hours</p>
+                {isEditingInfo ? (
+                  <input
+                    type="text"
+                    value={businessHours}
+                    onChange={(e) => setBusinessHours(e.target.value)}
+                    placeholder="9 AM - 8 PM"
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{businessHours || '9 AM - 8 PM'}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Max Queue Capacity */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <Users className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Queue Capacity Limit</p>
+                {isEditingInfo ? (
+                  <input
+                    type="number"
+                    value={maxCapacity}
+                    onChange={(e) => setMaxCapacity(e.target.value ? parseInt(e.target.value) : '')}
+                    placeholder="Auto-pause limit (e.g., 10)"
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">Auto-pause limit: {maxCapacity || 10} customers</p>
+                )}
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 shrink-0 mt-0.5">
+                <MessageSquare className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bio & Salon Tagline</p>
+                {isEditingInfo ? (
+                  <input
+                    type="text"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tagline for your salon..."
+                    className="w-full mt-1.5 px-3.5 py-2 text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white"
+                  />
+                ) : (
+                  <p className="text-base font-black text-gray-900 mt-0.5">{bio || 'Tagline for your salon...'}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section: Location with Auto-Detect GPS Button */}
+        <div ref={locationSectionRef} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-emerald-600" />
+              Business Location
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleAutoDetectLocation}
+                disabled={detectingLocation}
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-black flex items-center gap-1.5 transition cursor-pointer border border-emerald-200 shadow-xs"
+                title="Detect via GPS"
+              >
+                {detectingLocation ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                ) : (
+                  <LocateFixed className="w-3.5 h-3.5 text-emerald-600" />
+                )}
+                <span>{detectingLocation ? 'Locating...' : 'Auto Detect'}</span>
+              </button>
+
+              <button
+                onClick={() => setShowMapPicker(!showMapPicker)}
+                className="px-3 py-1.5 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 text-xs font-black flex items-center gap-1.5 transition cursor-pointer border border-gray-200 shadow-xs"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>{showMapPicker ? 'Close Map' : 'Map Pin'}</span>
+              </button>
+            </div>
+          </div>
+
           <div>
-            <p className="font-bold">{salonName || businessProfile?.businessName || businessProfile?.salonName || 'My Business'}</p>
-            <p className="text-text-dim text-sm">{user?.email}</p>
-            {businessProfile?.rating && <p className="text-gold text-xs font-semibold mt-0.5">⭐ {businessProfile.rating} ({businessProfile.totalReviews || 0} reviews)</p>}
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Current Address</p>
+            <p className="text-sm font-black text-gray-900 mt-1 leading-snug">
+              {location || 'NH333, Sono, Sone, Bihar - 811314'}
+            </p>
           </div>
+
+          {/* Interactive or Mini Map View with Open in Maps */}
+          {showMapPicker ? (
+            <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-xs">
+              <LocationPicker
+                lat={lat}
+                lng={lng}
+                onChange={(l, g) => {
+                  setLat(l);
+                  setLng(g);
+                }}
+                onAddressFound={(addr) => setLocation(addr)}
+              />
+            </div>
+          ) : (
+            <div className="relative h-32 w-full rounded-2xl overflow-hidden bg-emerald-50 border border-gray-200 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
+              <div className="flex flex-col items-center gap-1 z-10">
+                <MapPin className="w-8 h-8 text-rose-500 fill-rose-500 drop-shadow-md animate-bounce" />
+                <span className="text-xs font-black text-gray-800">{salonName || 'My Center'}</span>
+              </div>
+              <a
+                href={lat && lng ? `https://maps.google.com/?q=${lat},${lng}` : `https://maps.google.com/?q=${encodeURIComponent(location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-2.5 right-2.5 px-3.5 py-1.5 rounded-xl bg-white text-gray-800 text-xs font-black shadow-md border border-gray-200 flex items-center gap-1.5 hover:bg-gray-50"
+              >
+                <Navigation className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Open in Maps</span>
+              </a>
+            </div>
+          )}
         </div>
 
-        {/* Profile Completion */}
-        <div className="mb-5 p-3 rounded-xl bg-card border border-border">
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-sm font-medium">Profile Completion</p>
-            <p className="text-sm font-bold gradient-text">{completion}%</p>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${completion}%` }} />
-          </div>
-          {completion < 100 && <p className="text-text-dim text-[10px] mt-1.5">Complete profile to attract more customers!</p>}
+        {/* Section: Management Links (Including Sell Products) */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-xs divide-y divide-gray-100 overflow-hidden">
+          <button
+            onClick={() => {
+              triggerHaptic('light');
+              nav('/barber/sell-products');
+            }}
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition text-left cursor-pointer group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 shadow-xs">
+                <ShoppingBag className="w-5.5 h-5.5" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-gray-900 group-hover:text-amber-700 transition">Sell Products / Retail</p>
+                <p className="text-xs text-gray-500 font-semibold mt-0.5">Manage salon retail items, catalog, and inventory sales.</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-0.5 transition" />
+          </button>
+
+          <button
+            onClick={() => {
+              triggerHaptic('light');
+              nav('/barber/menu-editor');
+            }}
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition text-left cursor-pointer group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 shadow-xs">
+                <Scissors className="w-5.5 h-5.5" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-gray-900 group-hover:text-rose-700 transition">Service Menu Manager</p>
+                <p className="text-xs text-gray-500 font-semibold mt-0.5">Edit prices, durations, and add new services.</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-0.5 transition" />
+          </button>
+
+          <button
+            onClick={() => {
+              triggerHaptic('light');
+              nav('/barber/analytics');
+            }}
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition text-left cursor-pointer group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
+                <BarChart3 className="w-5.5 h-5.5" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-gray-900 group-hover:text-emerald-700 transition">Business Analytics</p>
+                <p className="text-xs text-gray-500 font-semibold mt-0.5">View earnings, trends, and customer insights.</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-0.5 transition" />
+          </button>
         </div>
 
-        {syncPending && (
-          <div className="mb-4 p-2 rounded-lg bg-primary/10 flex items-center gap-2 justify-center">
-            <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-primary text-[11px]">Syncing...</p>
-          </div>
-        )}
-
-        {/* Referral Code */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-5">
+        {/* Section: Business Gallery (Screen 6) */}
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-text-dim">🎁 Your Referral Code</p>
-              <p className="text-xl font-bold gradient-text tracking-widest">{referralCode}</p>
-            </div>
-            <button onClick={() => { navigator.clipboard.writeText(referralCode); alert('Copied!'); }} className="p-2 rounded-xl bg-primary/20 text-primary text-sm">📋</button>
-          </div>
-        </div>
-
-        {/* Fields */}
-        <div className="space-y-4 mb-5">
-          {[
-            { label: t('profile.name'), val: name, set: setName, placeholder: 'Owner name' },
-            { label: t('profile.businessName'), val: salonName, set: setSalonName, placeholder: 'Business name' },
-            { label: t('profile.phone'), val: phone, set: setPhone, placeholder: '+91 XXXXXXXXXX', type: 'tel' },
-            { label: 'UPI ID', val: upiId, set: setUpiId, placeholder: 'yourname@upi' },
-            { label: 'Business Hours', val: businessHours, set: setBusinessHours, placeholder: '9 AM - 8 PM' },
-            { label: 'Max Queue Capacity', val: maxCapacity.toString(), set: (v: string) => setMaxCapacity(v ? parseInt(v) : ''), placeholder: 'Auto-pause limit (e.g., 10)', type: 'number' },
-            { label: 'Bio', val: bio, set: setBio, placeholder: 'Tell customers about your salon...' },
-            { label: 'Instagram', val: instagram, set: setInstagram, placeholder: '@username' },
-          ].map(({ label, val, set, placeholder, type }) => (
-            <div key={label}>
-              <label className="text-sm text-text-dim mb-1 block">{label}</label>
-              <input value={val} onChange={e => set(e.target.value)} placeholder={placeholder} type={type || 'text'} className="input-field" />
-            </div>
-          ))}
-
-          {/* About Section - Textarea */}
-          <div>
-            <label className="text-sm text-text-dim mb-1 block">📝 About Your Business</label>
-            <textarea 
-              value={about} 
-              onChange={e => setAbout(e.target.value)} 
-              placeholder="Write a detailed description about your business, services, expertise, awards, etc..."
-              className="input-field min-h-[120px] resize-y"
-              rows={5}
-            />
-            <p className="text-xs text-text-dim mt-1">This will be shown in the About tab on your business page</p>
-          </div>
-
-          <div className="relative">
-            <label className="text-sm text-text-dim mb-1 block">{t('profile.location')} {t('profile.optional')}</label>
-            <input 
-              value={fetchingAddr ? 'Detecting address...' : location} 
-              onChange={e => setLocation(e.target.value)} 
-              placeholder="Area, City" 
-              className={`input-field pr-10 ${fetchingAddr ? 'text-primary animate-pulse border-primary/50' : ''}`}
-              disabled={fetchingAddr}
-            />
-            {fetchingAddr && (
-              <div className="absolute right-3 top-[34px]">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="flex justify-between items-end mb-1">
-              <label className="text-sm text-text-dim block">📌 Exact Map Location {t('profile.optional')}</label>
-            </div>
-            <LocationPicker 
-              lat={lat} 
-              lng={lng} 
-              onChange={(l, g) => { setLat(l); setLng(g); }} 
-              onAddressFound={(addr) => setLocation(addr)}
-              isFetchingAddress={setFetchingAddr}
-            />
-          </div>
-        </div>
-
-        {/* Services */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">{t('services')}</h3>
-            <button onClick={() => setShowAdd(v => !v)} className="text-primary text-sm font-medium">+ {t('services.add')}</button>
-          </div>
-          {showAdd && (
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 mb-3 animate-fadeIn space-y-3">
-              <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Service name" className="input-field" />
-              <div className="flex gap-2">
-                <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="Price ₹" className="input-field" type="number" />
-                <input value={newTime} onChange={e => setNewTime(e.target.value)} placeholder="Time (min)" className="input-field" type="number" />
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => setShowAdd(false)} className="flex-1 p-3 rounded-xl border border-border text-sm">{t('btn.cancel')}</button>
-                <button onClick={addService} className="flex-1 btn-primary text-sm">{t('services.add')}</button>
-              </div>
-            </div>
-          )}
-          <div className="space-y-2">
-            {services.map(s => (
-              <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
-                <div>
-                  <p className="font-medium text-sm">{s.name}</p>
-                  <p className="text-text-dim text-xs">₹{s.price} • ~{s.avgTime}min</p>
-                </div>
-                <button onClick={() => removeService(s.id)} className="w-7 h-7 rounded-full bg-danger/10 text-danger flex items-center justify-center text-sm">×</button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Products / POS */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">🛍️ Sell Products (POS)</h3>
-            <button onClick={() => setShowAddProduct(v => !v)} className="text-primary text-sm font-medium">+ Add Product</button>
-          </div>
-          {showAddProduct && (
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 mb-3 animate-fadeIn space-y-3">
-              <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Product Name (e.g. Hair Wax)" className="input-field" />
-              <div className="flex gap-2">
-                <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="Price ₹" className="input-field" type="number" />
-                <input value={newStock} onChange={e => setNewStock(e.target.value)} placeholder="Stock left" className="input-field" type="number" />
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => setShowAddProduct(false)} className="flex-1 p-3 rounded-xl border border-border text-sm">Cancel</button>
-                <button onClick={addProduct} className="flex-1 btn-primary text-sm">Add</button>
-              </div>
-            </div>
-          )}
-          {products.length === 0 ? (
-            <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-dim text-sm">
-              List products like gel, wax, or shampoo for customers to buy during checkout.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {products.map(p => (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
-                  <div>
-                    <p className="font-medium text-sm">{p.name}</p>
-                    <p className="text-primary font-bold text-xs">₹{p.price} <span className="text-text-dim text-[10px] ml-1">({p.stock || 0} in stock)</span></p>
-                  </div>
-                  <button onClick={() => removeProduct(p.id)} className="w-7 h-7 rounded-full bg-danger/10 text-danger flex items-center justify-center text-sm">×</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Promo Codes */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">🎟️ Promo Codes</h3>
-            <button onClick={() => setShowAddPromo(v => !v)} className="text-primary text-sm font-medium">+ Add Promo</button>
-          </div>
-          {showAddPromo && (
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 mb-3 animate-fadeIn space-y-3">
-              <input value={newPromoCode} onChange={e => setNewPromoCode(e.target.value.toUpperCase())} placeholder="Code (e.g. SUMMER20)" className="input-field uppercase" />
-              <div className="flex gap-2">
-                <select value={newPromoType} onChange={e => setNewPromoType(e.target.value as 'percentage' | 'flat')} className="input-field flex-1">
-                  <option value="percentage">% Discount</option>
-                  <option value="flat">Flat ₹ Off</option>
-                </select>
-                <input value={newPromoValue} onChange={e => setNewPromoValue(e.target.value)} placeholder="Amount" className="input-field flex-1" type="number" />
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => setShowAddPromo(false)} className="flex-1 p-3 rounded-xl border border-border text-sm">Cancel</button>
-                <button onClick={addPromoCode} className="flex-1 btn-primary text-sm">Create</button>
-              </div>
-            </div>
-          )}
-          {promoCodes.length === 0 ? (
-            <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-dim text-sm">
-              Create discount codes to attract more customers.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {promoCodes.map(p => (
-                <div key={p.code} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${p.active ? 'bg-success' : 'bg-text-dim'}`} />
-                    <div>
-                      <p className="font-bold text-sm tracking-widest">{p.code}</p>
-                      <p className="text-primary font-bold text-xs">{p.type === 'percentage' ? `${p.value}% OFF` : `₹${p.value} OFF`}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <button onClick={() => togglePromoCode(p.code)} className="p-2 rounded-lg bg-card-2 border border-border text-xs font-semibold">{p.active ? 'Pause' : 'Enable'}</button>
-                     <button onClick={() => removePromoCode(p.code)} className="w-8 h-8 rounded-lg bg-danger/10 text-danger flex items-center justify-center text-sm font-bold">×</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Staff Management */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">✂️ Staff & Chairs</h3>
-            <button onClick={() => setShowAddStaff(v => !v)} className="text-primary text-sm font-medium">+ Add Staff</button>
-          </div>
-          {showAddStaff && (
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 mb-3 animate-fadeIn space-y-3">
-              <input value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="Staff Name" className="input-field" />
-              <div className="flex gap-2">
-                <button onClick={() => setShowAddStaff(false)} className="flex-1 p-3 rounded-xl border border-border text-sm">Cancel</button>
-                <button onClick={addStaff} className="flex-1 btn-primary text-sm">Add</button>
-              </div>
-            </div>
-          )}
-          {staffList.length === 0 ? (
-            <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-dim text-sm">
-              Currently working solo. Add staff if you have multiple chairs.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {staffList.map(s => (
-                <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${s.isAvailable ? 'bg-success' : 'bg-text-dim'}`} />
-                    <div>
-                      <p className="font-medium text-sm">{s.name}</p>
-                      <button onClick={() => toggleStaffStatus(s.id)} className="text-[10px] text-primary/70 font-medium">Toggle Status</button>
-                    </div>
-                  </div>
-                  <button onClick={() => removeStaff(s.id)} className="p-2 rounded-lg bg-danger/10 text-danger text-xs">Remove</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Vacation Management */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">🏖️ Block Dates (Leave)</h3>
-            <button onClick={() => setShowAddDate(v => !v)} className="text-primary text-sm font-medium">+ Add Date</button>
-          </div>
-          {showAddDate && (
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 mb-3 animate-fadeIn space-y-3">
-              <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} min={new Date().toISOString().split('T')[0]} className="input-field" />
-              <div className="flex gap-2">
-                <button onClick={() => setShowAddDate(false)} className="flex-1 p-3 rounded-xl border border-border text-sm">Cancel</button>
-                <button onClick={() => {
-                  if (newDate && !blockedDates.includes(newDate)) {
-                    setBlockedDates([...blockedDates, newDate].sort());
-                  }
-                  setNewDate('');
-                  setShowAddDate(false);
-                }} className="flex-1 btn-primary text-sm">Add</button>
-              </div>
-            </div>
-          )}
-          {blockedDates.length === 0 ? (
-            <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-dim text-sm">
-              No upcoming leaves. Add dates to block online booking.
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {blockedDates.map(d => (
-                <div key={d} className="flex items-center gap-2 p-2 px-3 rounded-lg bg-danger/10 text-danger border border-danger/20 text-xs font-bold w-max animate-scaleIn">
-                  <span>📅 {new Date(d).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  <button onClick={() => setBlockedDates(blockedDates.filter(bd => bd !== d))} className="w-5 h-5 rounded-full bg-danger/20 flex items-center justify-center ml-1 font-normal hover:bg-danger hover:text-white transition-colors">✕</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Gallery Section */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">🖼️ Business Gallery</h3>
-            <label className="text-primary text-sm font-medium cursor-pointer">
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Business Gallery</h3>
+            <label className="text-xs font-black px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer border border-emerald-200 transition">
               + Add Photos
               <input 
+                ref={galleryRef}
                 type="file" 
                 accept="image/*" 
                 multiple 
@@ -504,93 +719,150 @@ export default function BarberProfile() {
               />
             </label>
           </div>
-          
+
           {uploadingGallery && (
-            <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 mb-3 flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-primary text-sm">Uploading images...</p>
-            </div>
+            <p className="text-xs font-bold text-emerald-600 animate-pulse">Uploading photos...</p>
           )}
-          
-          {galleryImages.length === 0 ? (
-            <div className="p-8 rounded-xl border border-dashed border-border text-center">
-              <span className="text-4xl block mb-2">📸</span>
-              <p className="text-text-dim text-sm mb-1">No gallery images yet</p>
-              <p className="text-text-dim text-xs">Add photos of your work, interior, team, etc.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {galleryImages.map((img, idx) => (
-                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-card-2 group">
-                  <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => removeGalleryImage(idx)}
-                    className="absolute top-1 right-1 w-6 h-6 rounded-full bg-danger text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-xs text-text-dim mt-2">These images will appear in the Gallery tab on your business page</p>
-        </div>
 
-        <button onClick={handleSave} className={`btn-primary w-full mb-3 ${saved ? 'bg-success' : ''}`}>
-          {saved ? '✅ Saved!' : t('btn.save')}
-        </button>
+          <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            {galleryImages.map((img, idx) => (
+              <div key={idx} className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200 group">
+                <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                <button
+                  onClick={() => removeGalleryImage(idx)}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs flex items-center justify-center hover:bg-rose-600"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <button onClick={handleShare} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-            <span>📱</span> Share Salon
-          </button>
-          <button onClick={() => nav('/barber/dashboard')} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-            <span>🎯</span> Dashboard
-          </button>
-          <button onClick={() => nav('/barber/qr')} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-            <span>🔲</span> My QR Code
-          </button>
-          <button onClick={() => nav('/barber/analytics')} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-            <span>📊</span> Analytics
-          </button>
-          <button onClick={() => nav('/barber/notifications')} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2 relative" style={{ color: 'var(--color-text)' }}>
-            <span>🔔</span> Notifications
-            {unreadCount > 0 && <span className="absolute top-2 right-2 w-4 h-4 bg-danger rounded-full text-[9px] text-white flex items-center justify-center">{unreadCount}</span>}
-          </button>
-          <button onClick={toggleTheme} className="p-3 rounded-xl border border-border bg-card text-sm font-medium flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-            <span>{theme === 'dark' ? '☀️' : '🌙'}</span> {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </button>
-        </div>
-
-        <button onClick={handleLogout} className="w-full p-3 rounded-xl border border-danger/30 text-danger text-sm font-medium mb-4 hover:bg-danger/5 transition-all">
-          {t('auth.logout')}
-        </button>
-
-        {/* Delete Account */}
-        {!showDeleteConfirm ? (
-          <button onClick={() => setShowDeleteConfirm(true)} className="w-full p-2 text-danger/50 text-xs hover:text-danger transition-all">
-            {t('delete.account')}
-          </button>
-        ) : (
-          <div className="p-4 rounded-2xl bg-danger/10 border border-danger/30 animate-fadeIn">
-            <p className="text-danger font-bold mb-1">⚠️ Delete Business Account?</p>
-            <p className="text-text-dim text-xs mb-3">All business data, tokens, reviews will be deleted. Type <strong>DELETE</strong> to confirm.</p>
-            <input value={deleteInput} onChange={e => setDeleteInput(e.target.value)} placeholder="Type DELETE" className="input-field mb-3 border-danger/30 text-center font-bold tracking-widest" />
-            {deleteError && <p className="text-danger text-xs mb-2 text-center">{deleteError}</p>}
-            <div className="flex gap-2">
-              <button onClick={() => { setShowDeleteConfirm(false); setDeleteInput(''); }} className="flex-1 p-3 rounded-xl border border-border text-sm" style={{ color: 'var(--color-text)' }}>Cancel</button>
-              <button onClick={handleDeleteAccount} disabled={deleteInput !== 'DELETE' || deleting}
-                className="flex-1 p-3 rounded-xl bg-danger text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
-                {deleting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Deleting...</> : '🗑️ Delete'}
-              </button>
-            </div>
+            {/* + Add Photos Square */}
+            <button
+              onClick={() => galleryRef.current?.click()}
+              className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 hover:border-emerald-500 flex flex-col items-center justify-center text-gray-400 hover:text-emerald-600 shrink-0 transition cursor-pointer"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
           </div>
-        )}
-        
-        {/* Explicit spacer for BottomNav */}
-        <div className="h-32" />
+        </div>
+
+        {/* Section: Quick Links (Screen 6) */}
+        <div className="space-y-3 pt-1">
+          <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider pl-1">Quick Links</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleShare}
+              className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center gap-3 text-left hover:border-emerald-200 transition cursor-pointer active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Share2 className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-black text-gray-800">Share Salon</span>
+            </button>
+
+            <button
+              onClick={() => nav(`/salon/${user?.uid}/qr`)}
+              className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center gap-3 text-left hover:border-blue-200 transition cursor-pointer active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-black text-gray-800">My QR Code</span>
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center gap-3 text-left hover:border-amber-200 transition cursor-pointer active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-purple-600" />}
+              </div>
+              <span className="text-sm font-black text-gray-800">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+
+            <button
+              onClick={() => nav('/terms')}
+              className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center gap-3 text-left hover:border-gray-300 transition cursor-pointer active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-black text-gray-800">Terms of Service</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Actions: Save Changes, Log Out, Delete Account */}
+        <div className="space-y-3 pt-3">
+          <button
+            onClick={handleSave}
+            className={`w-full py-4 rounded-2xl font-black text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
+              saved
+                ? 'bg-emerald-700 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            }`}
+          >
+            {saved ? (
+              <>
+                <Check className="w-5 h-5" />
+                <span>Changes Saved Successfully!</span>
+              </>
+            ) : (
+              <span>Save Changes</span>
+            )}
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="w-full py-4 rounded-2xl border-2 border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-600 font-black text-base flex items-center justify-center gap-2.5 transition cursor-pointer shadow-xs active:scale-98"
+          >
+            <LogOut className="w-5 h-5 stroke-[2.5]" />
+            <span>Log Out</span>
+          </button>
+
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full py-3.5 rounded-2xl border border-gray-200 bg-white hover:border-rose-200 hover:bg-rose-50/50 text-gray-600 hover:text-rose-600 text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs active:scale-98"
+            >
+              <Trash2 className="w-4.5 h-4.5" />
+              <span>Delete Business Account</span>
+            </button>
+          ) : (
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-center space-y-3">
+              <p className="text-base font-black text-rose-700">Delete Business Account?</p>
+              <p className="text-xs text-gray-600 font-medium">Type DELETE to confirm complete removal of business data.</p>
+              <input
+                type="text"
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                placeholder="Type DELETE"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-sm font-bold text-rose-700 text-center uppercase"
+              />
+              <div className="flex gap-2.5">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-3 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleteInput !== 'DELETE' || deleting}
+                  className="flex-1 py-3 rounded-xl bg-rose-600 text-white text-sm font-black disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Confirm Delete'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Generous bottom clearance spacer so nothing gets hidden behind BottomNav */}
+          <div className="h-32" />
+        </div>
       </div>
+
       <BottomNav />
     </div>
   );

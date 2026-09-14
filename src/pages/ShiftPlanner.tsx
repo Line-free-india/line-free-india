@@ -28,10 +28,10 @@ export default function ShiftPlanner() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-background to-background">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
-          <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-violet-400">Shift Planner 🕐</h1><p className="text-[10px] text-violet-200/50 font-bold uppercase tracking-widest">{todayShifts.length} Shifts Today</p></div>
+          <button onClick={() => nav('/barber/home')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
+          <div><h1 className="font-black text-lg text-violet-400">Shift Planner 🕐</h1><p className="text-xs text-violet-200/50 font-bold uppercase tracking-widest">{todayShifts.length} Shifts Today</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -50,8 +50,8 @@ export default function ShiftPlanner() {
         <div className="space-y-2">{dateShifts.length === 0 ? <p className="text-xs text-text-dim text-center py-4">No shifts scheduled.</p> : dateShifts.map(s => (
           <div key={s.id} className="flex items-center gap-3 p-3 rounded-2xl elite-glass spatial-card group">
             <div className="w-1 h-10 rounded-full bg-violet-500"></div>
-            <div className="flex-1"><p className="text-xs font-bold text-violet-100">{s.staffName}</p><p className="text-[9px] text-text-dim">{s.role} • {s.startTime} — {s.endTime}</p></div>
-            <button onClick={() => del(s.id)} className="w-6 h-6 rounded-lg bg-danger/10 text-danger flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            <div className="flex-1"><p className="text-xs font-bold text-violet-100">{s.staffName}</p><p className="text-xs text-text-dim">{s.role} • {s.startTime} — {s.endTime}</p></div>
+            <button onClick={() => del(s.id)} className="w-6 h-6 rounded-lg bg-danger/10 text-danger flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
           </div>
         ))}</div>
       </div>

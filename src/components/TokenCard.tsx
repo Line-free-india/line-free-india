@@ -54,17 +54,17 @@ export default function TokenCard({ token, livePos, liveWait, businessType }: To
              <span className="relative z-10">{termInfo.icon}</span>
           </div>
           <h2 className="text-xl font-black text-text tracking-tighter uppercase mb-1">{token.salonName}</h2>
-          <p className="text-[11px] font-bold text-text-dim mt-1">{token.customerName}</p>
+          <p className="text-sm font-bold text-text-dim mt-1">{token.customerName}</p>
           <div className="flex items-center justify-center gap-2 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <p className="text-[10px] font-black text-primary tracking-[2px] uppercase">Verified Pass</p>
+            <p className="text-xs font-black text-primary tracking-[2px] uppercase">Verified Pass</p>
           </div>
         </div>
          {/* Middle Section: Token Number */}
         <div className="relative flex flex-col items-center justify-center -mt-2">
           <div className="relative p-6 rounded-[2.5rem] bg-white/[0.03] border border-white/5 shadow-inner">
              <div className="absolute -inset-10 bg-primary/10 blur-[60px] animate-pulse rounded-full" />
-             <p className="text-[9px] font-black text-text-dim uppercase tracking-[4px] mb-3 text-center">Your ID</p>
+             <p className="text-xs font-black text-text-dim uppercase tracking-[4px] mb-3 text-center">Your ID</p>
              <h1 className="text-8xl font-black text-text tracking-tighter drop-shadow-[0_0_30px_rgba(16,185,129,0.4)] leading-none">
                {token.tokenNumber}
              </h1>
@@ -75,12 +75,12 @@ export default function TokenCard({ token, livePos, liveWait, businessType }: To
           <div className="flex gap-2">
             <div className="flex-1 bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
                <FaClock className="mx-auto text-primary mb-1" />
-               <p className="text-[8px] font-bold text-text-dim uppercase tracking-widest">Est. Wait</p>
+               <p className="text-xs font-bold text-text-dim uppercase tracking-widest">Est. Wait</p>
                <p className="text-sm font-black text-text">{liveWait ?? token.estimatedWaitMinutes}m</p>
             </div>
             <div className="flex-1 bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
                <span className="text-2xl mb-1">🏆</span>
-               <p className="text-[8px] font-bold text-text-dim uppercase tracking-widest">Your Position</p>
+               <p className="text-xs font-bold text-text-dim uppercase tracking-widest">Your Position</p>
                <p className="text-sm font-black text-text">{livePos ?? 1}{livePos === 1 ? 'st' : livePos === 2 ? 'nd' : livePos === 3 ? 'rd' : 'th'}</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function TokenCard({ token, livePos, liveWait, businessType }: To
         {/* Footer: Date & Security */}
         <div className="absolute bottom-10 inset-x-0 px-8 flex justify-between items-end">
            <div className="text-left">
-              <p className="text-[8px] font-black text-text-dim uppercase tracking-widest">Valid Today</p>
+              <p className="text-xs font-black text-text-dim uppercase tracking-widest">Valid Today</p>
               <p className="text-xs font-black text-text">{token.date}</p>
            </div>
            <div className="bg-white p-2 rounded-xl shadow-xl">
@@ -114,7 +114,7 @@ export default function TokenCard({ token, livePos, liveWait, businessType }: To
       <div className="flex gap-4 w-full max-w-[320px] md:w-80 lg:w-96">
         <button 
           onClick={downloadCard}
-          className="btn-glow flex-1 flex items-center justify-center gap-3 text-[10px] shadow-2xl active:scale-95 transition-all"
+          className="btn-glow flex-1 flex items-center justify-center gap-3 text-xs shadow-2xl active:scale-95 transition-all"
         >
           <FaDownload /> Download
         </button>
@@ -136,7 +136,7 @@ export default function TokenCard({ token, livePos, liveWait, businessType }: To
               }
             } catch (e) { console.error('Share failed:', e); }
           }}
-          className="flex-1 h-[58px] bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all active:scale-95 outline-none"
+          className="flex-1 h-[58px] bg-white/[0.05] backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white font-black uppercase text-xs tracking-widest hover:bg-white/10 transition-all active:scale-95 outline-none"
         >
           <FaShareAlt className="text-primary" /> Share
         </button>

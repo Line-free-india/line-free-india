@@ -111,7 +111,7 @@ export default function CustomerCRM() {
   };
 
   const del = async (id: string) => { 
-    if(confirm('Archive this customer record?')) {
+    if(window.confirm('Archive this customer record?')) {
       await saveToDb(customers.filter(c=>c.id!==id)); 
     }
   };
@@ -145,7 +145,7 @@ export default function CustomerCRM() {
           </button>
           <div>
             <h1 className="text-xl font-black tracking-tight">Client Hub 👥</h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-dim text-primary">{customers.length} Contacts</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-text-dim text-primary">{customers.length} Contacts</p>
           </div>
         </div>
         <button 
@@ -186,30 +186,30 @@ export default function CustomerCRM() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-text-dim uppercase tracking-widest ml-1">Full Name *</label>
+                    <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Full Name *</label>
                     <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Rahul Sharma" className="w-full p-4 rounded-2xl bg-bg border border-border outline-none font-black text-xs text-primary shadow-inner" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-black text-text-dim uppercase tracking-widest ml-1">Mobile *</label>
+                    <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Mobile *</label>
                     <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 00000 00000" className="w-full p-4 rounded-2xl bg-bg border border-border outline-none font-black text-xs text-primary shadow-inner" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-text-dim uppercase tracking-widest ml-1">Email Address</label>
+                  <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Email Address</label>
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" className="w-full p-4 rounded-2xl bg-bg border border-border outline-none font-bold text-xs shadow-inner" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-text-dim uppercase tracking-widest ml-1">Tags (Comma separated)</label>
+                  <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Tags (Comma separated)</label>
                   <div className="relative">
-                    <FaTag className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim text-[10px]" />
+                    <FaTag className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim text-xs" />
                     <input type="text" value={tags} onChange={e => setTags(e.target.value)} placeholder="VIP, Regular, Referral" className="w-full pl-10 pr-4 py-4 rounded-2xl bg-bg border border-border outline-none font-bold text-xs shadow-inner" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-text-dim uppercase tracking-widest ml-1">Private Notes</label>
+                  <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Private Notes</label>
                   <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Preferences, special requests..." rows={3} className="w-full p-4 rounded-2xl bg-bg border border-border outline-none text-xs font-semibold resize-none shadow-inner"></textarea>
                 </div>
 
@@ -227,7 +227,7 @@ export default function CustomerCRM() {
               {filtered.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center text-center opacity-30">
                   <div className="w-20 h-20 rounded-full border-2 border-dashed border-text-dim flex items-center justify-center text-3xl mb-4">🔍</div>
-                  <p className="font-black text-[10px] uppercase tracking-[3px]">No matching records</p>
+                  <p className="font-black text-xs uppercase tracking-[3px]">No matching records</p>
                 </div>
               ) : filtered.map((c, i) => (
                 <motion.div 
@@ -244,22 +244,22 @@ export default function CustomerCRM() {
                         {c.name[0]}
                       </div>
                       {c.totalVisits > 10 && (
-                        <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase ring-2 ring-card">VIP</div>
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full font-black uppercase ring-2 ring-card">VIP</div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                          <h3 className="font-black text-sm truncate">{c.name}</h3>
-                         {c.totalSpent > 5000 && <span className="text-[8px] bg-success/10 text-success px-1.5 py-0.5 rounded-full font-black border border-success/20">Elite</span>}
+                         {c.totalSpent > 5000 && <span className="text-xs bg-success/10 text-success px-1.5 py-0.5 rounded-full font-black border border-success/20">Elite</span>}
                       </div>
-                      <p className="text-[10px] font-bold text-text-dim mt-1 uppercase tracking-widest">
+                      <p className="text-xs font-bold text-text-dim mt-1 uppercase tracking-widest">
                          {c.totalVisits} Visits &bull; ₹{c.totalSpent} Worth
                       </p>
                       
                       <div className="flex gap-2 mt-2">
                         {c.tags.slice(0, 3).map(t => (
-                          <span key={t} className="text-[8px] bg-primary/5 text-primary/70 px-2 py-0.5 rounded-md border border-primary/10 font-bold">#{t}</span>
+                          <span key={t} className="text-xs bg-primary/5 text-primary/70 px-2 py-0.5 rounded-md border border-primary/10 font-bold">#{t}</span>
                         ))}
                       </div>
                     </div>
@@ -267,13 +267,13 @@ export default function CustomerCRM() {
                     {/* Quick Actions */}
                     <div className="flex flex-col gap-2">
                        <div className="flex gap-1">
-                          <a href={`tel:${c.phone}`} className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-[10px] text-text-dim hover:text-primary transition-colors">
+                          <a href={`tel:${c.phone}`} className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-xs text-text-dim hover:text-primary transition-colors">
                             <FaPhoneAlt />
                           </a>
-                          <a href={`https://wa.me/${c.phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-[11px] text-text-dim hover:text-success transition-colors">
+                          <a href={`https://wa.me/${c.phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-sm text-text-dim hover:text-success transition-colors">
                             <FaWhatsapp />
                           </a>
-                          <button onClick={() => edit(c)} className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-[10px] text-text-dim hover:text-indigo-400 transition-colors">
+                          <button onClick={() => edit(c)} className="w-8 h-8 rounded-xl bg-bg border border-border flex items-center justify-center text-xs text-text-dim hover:text-indigo-400 transition-colors">
                             <FaEdit />
                           </button>
                        </div>
@@ -283,7 +283,7 @@ export default function CustomerCRM() {
                   {/* Delete Button (Hidden till hover) */}
                   <button 
                     onClick={() => del(c.id)}
-                    className="absolute -right-2 -top-2 w-7 h-7 bg-danger text-white rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    className="absolute -right-2 -top-2 w-7 h-7 bg-danger text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                   >
                     <FaTrash />
                   </button>

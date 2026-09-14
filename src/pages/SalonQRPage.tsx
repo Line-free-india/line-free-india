@@ -2,9 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useApp, BusinessProfile, getCategoryInfo } from '../store/AppContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaDownload, FaShareAlt, FaPalette, FaCheckCircle, FaRocket } from 'react-icons/fa';
-import html2canvas from 'html2canvas';
+import { motion } from 'framer-motion';
+import { FaArrowLeft, FaDownload, FaShareAlt, FaCheckCircle, FaRocket, FaPrint, FaQrcode } from 'react-icons/fa';
 
 interface Props { id?: string; }
 
@@ -18,6 +17,7 @@ export default function SalonQRPage({ id: propId }: Props) {
   const [activeTheme, setActiveTheme] = useState<PosterTheme>('modern');
   const posterRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const salonId = propId === 'own'
     ? user?.uid
@@ -48,8 +48,10 @@ export default function SalonQRPage({ id: propId }: Props) {
       if (!ctx) throw new Error('Canvas context not available');
       
       // Set canvas size
-      canvas.width = 680;
-      canvas.height = 1100;
+      const canvasWidth = 680;
+      const canvasHeight = 1100;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       
       // Get theme colors
       const bgGradient = activeTheme === 'modern' 
@@ -73,19 +75,19 @@ export default function SalonQRPage({ id: propId }: Props) {
         ctx.fillStyle = '#ffffff';
       }
       
-      ctx.fillRect(0, 0, 680, 1100);
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
       
       // Draw text
       ctx.fillStyle = activeTheme === 'minimal' ? '#000000' : '#ffffff';
       ctx.font = 'bold 80px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('SKIP THE', 340, 200);
+      ctx.fillText('SKIP THE', canvasWidth / 2, 200);
       ctx.globalAlpha = 0.5;
-      ctx.fillText('QUEUE', 340, 280);
+      ctx.fillText('QUEUE', canvasWidth / 2, 280);
       ctx.globalAlpha = 1;
       
       ctx.font = 'bold 16px Arial';
-      ctx.fillText('BOOK ONLINE INSTANTLY', 340, 330);
+      ctx.fillText('BOOK ONLINE INSTANTLY', canvasWidth / 2, 330);
       
       // Get QR code canvas
       const qrCanvas = document.querySelector('#salon-qr-canvas') as HTMLCanvasElement;
@@ -100,13 +102,26 @@ export default function SalonQRPage({ id: propId }: Props) {
       // Draw business name
       ctx.fillStyle = activeTheme === 'minimal' ? '#000000' : '#ffffff';
       ctx.font = 'bold 32px Arial';
-      ctx.fillText(salon.businessName, 340, 800);
-      
-      if (salon.location) {
-        ctx.font = '16px Arial';
-        ctx.fillText(`📍 ${salon.location.split(',')[0]}`, 340, 840);
-      }
-      
+      ctx.fillText(salon.businessName, canvasWidth / 2, 720);
+
+      // Action Message
+      ctx.font = 'bold 36px Inter, sans-serif';
+      ctx.fillStyle = activeTheme === 'minimal' ? '#0f172a' : '#ffffff';
+      ctx.fillText('SCAN TO JOIN LIVE QUEUE', canvasWidth / 2, 780);
+
+      ctx.font = '400 22px Inter, sans-serif';
+      ctx.fillStyle = activeTheme === 'minimal' ? '#64748b' : '#94a3b8';
+      ctx.fillText('Save your precious time — check wait time & token status', canvasWidth / 2, 830);
+
+      // Brand Footer
+      ctx.font = '900 28px Inter, sans-serif';
+      ctx.fillStyle = '#6366f1';
+      ctx.fillText('LINE FREE INDIA', canvasWidth / 2, 1000);
+
+      ctx.font = '500 18px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('India’s Smart Queue OS • linefreeindia.com', canvasWidth / 2, 1035);
+
       // Convert to PNG and download
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -116,13 +131,84 @@ export default function SalonQRPage({ id: propId }: Props) {
       link.click();
       document.body.removeChild(link);
       
-      alert('Download successful!');
+      setDownloadStatus({ type: 'success', message: 'Poster downloaded successfully!' });
+      setTimeout(() => setDownloadStatus(null), 3000);
     } catch (err: any) {
       console.error('Download failed:', err);
-      alert(`Download failed: ${err?.message || 'Unknown error'}`);
+      setDownloadStatus({ type: 'error', message: `Download failed: ${err?.message || 'Unknown error'}` });
+      setTimeout(() => setDownloadStatus(null), 4000);
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  const handleDownloadQR = () => {
+    const qrCanvas = document.querySelector('#salon-qr-canvas') as HTMLCanvasElement;
+    if (!qrCanvas || !salon) {
+      setDownloadStatus({ type: 'error', message: 'QR Code is still rendering, please wait a moment.' });
+      setTimeout(() => setDownloadStatus(null), 3000);
+      return;
+    }
+    try {
+      const badgeCanvas = document.createElement('canvas');
+      badgeCanvas.width = 600;
+      badgeCanvas.height = 600;
+      const bCtx = badgeCanvas.getContext('2d');
+      if (!bCtx) return;
+      bCtx.fillStyle = '#ffffff';
+      bCtx.fillRect(0, 0, 600, 600);
+      bCtx.drawImage(qrCanvas, 75, 75, 450, 450);
+      bCtx.fillStyle = '#0f172a';
+      bCtx.font = 'bold 24px Inter, sans-serif';
+      bCtx.textAlign = 'center';
+      bCtx.fillText(salon.businessName, 300, 50);
+      bCtx.font = '700 18px Inter, sans-serif';
+      bCtx.fillStyle = '#6366f1';
+      bCtx.fillText('SCAN TO JOIN QUEUE • LINE FREE INDIA', 300, 565);
+
+      const dataUrl = badgeCanvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${salon.businessName}-QR.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setDownloadStatus({ type: 'success', message: 'High-Res QR Code downloaded!' });
+      setTimeout(() => setDownloadStatus(null), 3000);
+    } catch (e: any) {
+      setDownloadStatus({ type: 'error', message: 'QR Code download failed.' });
+      setTimeout(() => setDownloadStatus(null), 3000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!salon) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${salon.businessName} - Line Free India`,
+          text: `Join the live queue for ${salon.businessName} online without standing in line:`,
+          url: bookingUrl,
+        });
+        setDownloadStatus({ type: 'success', message: 'Link shared!' });
+        setTimeout(() => setDownloadStatus(null), 2500);
+        return;
+      } catch (e) {
+        // Fallback to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(bookingUrl);
+      setDownloadStatus({ type: 'success', message: 'Booking link copied to clipboard! 📋' });
+      setTimeout(() => setDownloadStatus(null), 3000);
+    } catch {
+      setDownloadStatus({ type: 'error', message: 'Could not copy link to clipboard.' });
+      setTimeout(() => setDownloadStatus(null), 3000);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const themes: { id: PosterTheme; label: string; icon: string; colors: string }[] = [
@@ -139,7 +225,14 @@ export default function SalonQRPage({ id: propId }: Props) {
   );
 
   return (
-    <div className="min-h-screen pb-40 bg-bg overflow-x-hidden">
+    <div className="min-h-screen pb-40 bg-bg overflow-x-hidden relative">
+      {downloadStatus && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all ${
+          downloadStatus.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
+        }`}>
+          {downloadStatus.message}
+        </div>
+      )}
       {/* Header HUD */}
       <div className="p-6 sticky top-0 z-[100] bg-bg/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-xl mx-auto flex items-center justify-between">
@@ -148,7 +241,7 @@ export default function SalonQRPage({ id: propId }: Props) {
           </button>
           <div className="text-center">
             <h1 className="text-sm font-black uppercase tracking-[3px]">Poster Builder</h1>
-            <p className="text-[10px] font-bold text-text-dim uppercase tracking-widest mt-0.5">Marketing Command</p>
+            <p className="text-xs font-bold text-text-dim uppercase tracking-widest mt-0.5">Marketing Command</p>
           </div>
           <div className="w-10" />
         </div>
@@ -164,7 +257,7 @@ export default function SalonQRPage({ id: propId }: Props) {
               className={`flex-shrink-0 px-6 py-4 rounded-[2rem] border transition-all flex flex-col items-center gap-2 group ${activeTheme === th.id ? 'bg-primary/20 border-primary ring-4 ring-primary/10 scale-105 shadow-2xl' : 'bg-card/40 border-white/5 opacity-50 hover:opacity-80'}`}
             >
               <span className={`text-2xl transition-transform group-hover:scale-125 ${activeTheme === th.id ? 'animate-bounce' : ''}`}>{th.icon}</span>
-              <span className="text-[8px] font-black uppercase tracking-[2px] text-text whitespace-nowrap">{th.label}</span>
+              <span className="text-xs font-black uppercase tracking-[2px] text-text whitespace-nowrap">{th.label}</span>
             </button>
           ))}
         </div>
@@ -197,14 +290,14 @@ export default function SalonQRPage({ id: propId }: Props) {
             {/* Content Top */}
             <div className="relative z-10 w-full text-center mt-4">
               <div className={`mx-auto w-max px-4 py-1.5 rounded-full border mb-6 flex items-center gap-2 ${activeTheme === 'minimal' ? 'bg-black text-white border-transparent' : 'bg-white/10 border-white/20 text-white'}`}>
-                <FaRocket className="text-[10px]" />
-                <span className="text-[9px] font-black uppercase tracking-[3px]">Official Digital Service</span>
+                <FaRocket className="text-xs" />
+                <span className="text-xs font-black uppercase tracking-[3px]">Official Digital Service</span>
               </div>
               
               <h2 className={`text-4xl font-black tracking-tighter leading-[0.9] ${activeTheme === 'minimal' ? 'text-black' : 'text-white'}`}>
                 SKIP THE <br/> <span className="opacity-50">QUEUE</span>
               </h2>
-              <p className={`text-[10px] font-bold uppercase tracking-[4px] mt-4 ${activeTheme === 'minimal' ? 'text-gray-400' : 'text-white/60'}`}>
+              <p className={`text-xs font-bold uppercase tracking-[4px] mt-4 ${activeTheme === 'minimal' ? 'text-gray-400' : 'text-white/60'}`}>
                 Book Online Instantly
               </p>
             </div>
@@ -228,7 +321,7 @@ export default function SalonQRPage({ id: propId }: Props) {
                     </div>
                  </div>
               </div>
-              <p className={`mt-6 text-[10px] font-black uppercase tracking-[3px] ${activeTheme === 'minimal' ? 'text-black/30' : 'text-white/30'}`}>
+              <p className={`mt-6 text-xs font-black uppercase tracking-[3px] ${activeTheme === 'minimal' ? 'text-black/30' : 'text-white/30'}`}>
                 Scan with camera
               </p>
             </div>
@@ -239,7 +332,7 @@ export default function SalonQRPage({ id: propId }: Props) {
                   {salon.businessName}
                 </h3>
                 {salon.location && (
-                  <p className={`text-[9px] font-bold mt-1 opacity-60 flex items-center gap-1 ${activeTheme === 'minimal' ? 'text-gray-600' : 'text-white'}`}>
+                  <p className={`text-xs font-bold mt-1 opacity-60 flex items-center gap-1 ${activeTheme === 'minimal' ? 'text-gray-600' : 'text-white'}`}>
                     📍 {salon.location.split(',')[0]}
                   </p>
                 )}
@@ -262,7 +355,7 @@ export default function SalonQRPage({ id: propId }: Props) {
 
             {/* Line Free Branding */}
             <div className="absolute bottom-4 inset-x-0 text-center">
-              <p className={`text-[8px] font-black uppercase tracking-[5px] opacity-20 ${activeTheme === 'minimal' ? 'text-black' : 'text-white'}`}>
+              <p className={`text-xs font-black uppercase tracking-[5px] opacity-20 ${activeTheme === 'minimal' ? 'text-black' : 'text-white'}`}>
                 Powered by Line Free India
               </p>
             </div>
@@ -270,27 +363,46 @@ export default function SalonQRPage({ id: propId }: Props) {
         </div>
 
         {/* Actions */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <button 
             onClick={handleDownload}
             disabled={isDownloading}
-            className="btn-glow w-full h-16 flex items-center justify-center gap-3 text-xs tracking-[4px] shadow-2xl disabled:opacity-50"
+            className="btn-glow w-full h-15 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[3px] shadow-2xl disabled:opacity-50 cursor-pointer rounded-2xl active:scale-[0.98] transition-all"
           >
             {isDownloading ? (
               <div className="flex items-center gap-3">
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Processing...
+                Generating High-Res Poster...
               </div>
-            ) : <><FaDownload /> Download Premium PNG</>}
+            ) : <><FaDownload /> Download Marketing Poster (PNG)</>}
           </button>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={handleDownloadQR}
+              className="py-3.5 px-4 bg-card border border-border hover:border-primary/40 text-text rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider active:scale-95 transition-all shadow-sm cursor-pointer"
+            >
+              <FaQrcode className="text-primary text-sm" />
+              <span>Download QR Only</span>
+            </button>
+
+            <button 
+              onClick={handlePrint}
+              className="py-3.5 px-4 bg-card border border-border hover:border-primary/40 text-text rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider active:scale-95 transition-all shadow-sm cursor-pointer"
+            >
+              <FaPrint className="text-primary text-sm" />
+              <span>Print Poster</span>
+            </button>
+          </div>
           
           <button 
-            className="w-full h-16 bg-white/[0.03] backdrop-blur-md border border-white/10 text-text rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-white/5 transition-all active:scale-95 px-6"
+            onClick={handleShare}
+            className="w-full py-3.5 bg-white/[0.04] backdrop-blur-md border border-white/10 text-text rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-white/10 transition-all active:scale-[0.98] px-6 cursor-pointer"
           >
              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[3px]">
-               <FaShareAlt className="text-primary" /> Share Link
+               <FaShareAlt className="text-primary" /> Share Booking Link
              </div>
-             <span className="text-[8px] opacity-40 font-mono truncate w-full text-center">{bookingUrl}</span>
+             <span className="text-[11px] opacity-50 font-mono truncate w-full text-center">{bookingUrl}</span>
           </button>
         </div>
 
@@ -301,7 +413,7 @@ export default function SalonQRPage({ id: propId }: Props) {
                  💡
               </div>
               <div>
-                 <p className="text-[10px] font-black text-primary uppercase tracking-[3px]">Growth hack</p>
+                 <p className="text-xs font-black text-primary uppercase tracking-[3px]">Growth hack</p>
                  <p className="text-sm font-black text-text">Pro Installation Guide</p>
               </div>
            </div>

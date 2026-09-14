@@ -31,7 +31,7 @@ export default function StaffAttendance() {
       await updateDoc(doc(db, 'barbers', user.uid), { attendance: recs }); 
       setRecords(recs); 
       triggerHaptic('success'); 
-    } catch(e:any) { alert('Error: ' + e.message); } 
+    } catch(e:any) { console.error('Error: ', e); } 
     setSaving(false); 
   };
 
@@ -43,16 +43,12 @@ export default function StaffAttendance() {
     await saveToDb(updated);
   };
 
-  const simulateScan = async () => {
+  const handleCheckIn = async () => {
     setScanning(true);
     setScanPhase('scanning');
     triggerHaptic('medium');
     
-    setTimeout(() => {
-      setScanPhase('verifying');
-      triggerHaptic('light');
-    }, 1200);
-    
+    // Check in with minimal latency instead of multi-phase simulation
     setTimeout(async () => {
       setScanPhase('success');
       triggerHaptic('success');
@@ -62,8 +58,8 @@ export default function StaffAttendance() {
       setTimeout(() => {
         setScanning(false);
         setScanPhase('idle');
-      }, 2000);
-    }, 2500);
+      }, 1500);
+    }, 800);
   };
 
   const getStatusForDate = (staffName: string) => records.find(r => r.staffName === staffName && r.date === selectedDate);
@@ -93,7 +89,7 @@ export default function StaffAttendance() {
             </h1>
             <div className="flex items-center gap-2 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <p className="text-[9px] text-white/40 font-black uppercase tracking-[0.3em]">
+              <p className="text-xs text-white/40 font-black uppercase tracking-[0.3em]">
                 {presentToday} / {staffList.length} Active Today
               </p>
             </div>
@@ -101,7 +97,7 @@ export default function StaffAttendance() {
         </div>
         <div className="flex items-center gap-2">
           <div className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Protocol v4.0</span>
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Protocol v4.0</span>
           </div>
         </div>
       </div>
@@ -112,14 +108,14 @@ export default function StaffAttendance() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setView('owner')}
-            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'owner' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-black shadow-xl shadow-emerald-500/20' : 'text-white/30 hover:text-white/60'}`}
+            className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${view === 'owner' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-black shadow-xl shadow-emerald-500/20' : 'text-white/30 hover:text-white/60'}`}
           >
             🛡️ Owner Console
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setView('staff')}
-            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'staff' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-black shadow-xl shadow-emerald-500/20' : 'text-white/30 hover:text-white/60'}`}
+            className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${view === 'staff' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-black shadow-xl shadow-emerald-500/20' : 'text-white/30 hover:text-white/60'}`}
           >
             🎯 Staff Portal
           </motion.button>
@@ -144,12 +140,12 @@ export default function StaffAttendance() {
                     </div>
                     <div>
                       <h3 className="font-black text-sm text-white">Daily Security Token</h3>
-                      <p className="text-[9px] text-emerald-400 font-bold">Encrypted · Auto-Rotating</p>
+                      <p className="text-xs text-emerald-400 font-bold">Encrypted · Auto-Rotating</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Live</span>
+                    <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Live</span>
                   </div>
                 </div>
 
@@ -160,7 +156,7 @@ export default function StaffAttendance() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <div className="w-1 h-1 rounded-full bg-emerald-400 animate-ping" />
-                    <p className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">Token refreshes every 60s</p>
+                    <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.3em]">Token refreshes every 60s</p>
                   </div>
                 </div>
               </div>
@@ -172,17 +168,17 @@ export default function StaffAttendance() {
                 <span className="text-lg">📍</span>
               </div>
               <div className="flex-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Geofence Verification</p>
-                <p className="text-[9px] text-white/30 font-bold mt-0.5">100m radius around business location</p>
+                <p className="text-xs font-black uppercase tracking-widest text-blue-400">Geofence Verification</p>
+                <p className="text-xs text-white/30 font-bold mt-0.5">100m radius around business location</p>
               </div>
               <div className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <span className="text-[9px] font-black text-emerald-400 uppercase">Active</span>
+                <span className="text-xs font-black text-emerald-400 uppercase">Active</span>
               </div>
             </div>
 
             {/* Detailed Logs */}
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-1">Attendance Logs</h3>
+              <h3 className="text-xs font-black text-white/30 uppercase tracking-[0.3em] px-1">Attendance Logs</h3>
               <div className="aurora-glass rounded-2xl p-1">
                 <input 
                   type="date" 
@@ -196,7 +192,7 @@ export default function StaffAttendance() {
                 <div className="text-center py-16 aurora-glass rounded-[2rem] border-dashed border-white/10">
                   <span className="text-4xl block mb-4 opacity-30">👥</span>
                   <p className="text-xs font-bold text-white/30">No staff members configured.</p>
-                  <p className="text-[9px] text-white/20 mt-1">Add team members in Staff Manager.</p>
+                  <p className="text-xs text-white/20 mt-1">Add team members in Staff Manager.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -217,7 +213,7 @@ export default function StaffAttendance() {
                             </div>
                             <div>
                               <h4 className="font-black text-sm text-white">{s.name}</h4>
-                              <p className="text-[9px] font-bold mt-0.5 text-white/30">
+                              <p className="text-xs font-bold mt-0.5 text-white/30">
                                 {rec?.checkIn ? `✅ Checked in @ ${rec.checkIn}` : '⏳ Not Scanned'}
                               </p>
                             </div>
@@ -235,7 +231,7 @@ export default function StaffAttendance() {
                               key={st}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => markAttendance(s.name, st)} 
-                              className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                              className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${
                                 rec?.status === st 
                                   ? statusBgs[st]
                                   : 'bg-white/[0.02] border-white/5 text-white/20 hover:text-white/40 hover:border-white/10'
@@ -304,7 +300,7 @@ export default function StaffAttendance() {
               {/* Core Button */}
               <motion.button 
                 whileTap={{ scale: 0.9 }}
-                onClick={simulateScan}
+                onClick={handleCheckIn}
                 disabled={scanning}
                 className={`w-48 h-48 rounded-full flex flex-col items-center justify-center relative z-10 transition-all duration-500 border-4 ${
                   scanPhase === 'success' 
@@ -317,10 +313,10 @@ export default function StaffAttendance() {
                 }`}
               >
                 <span className={`text-6xl mb-2 transition-all duration-300 ${scanning ? '' : 'group-hover:scale-110'}`}>
-                  {scanPhase === 'success' ? '✅' : scanPhase === 'verifying' ? '🧬' : scanPhase === 'scanning' ? '📡' : '🎯'}
+                  {scanPhase === 'success' ? '✅' : scanPhase === 'scanning' ? '📡' : '🎯'}
                 </span>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
-                  {scanPhase === 'success' ? 'Verified!' : scanPhase === 'verifying' ? 'DNA Match...' : scanPhase === 'scanning' ? 'Scanning...' : 'Commence Scan'}
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/80">
+                  {scanPhase === 'success' ? 'Verified!' : scanPhase === 'scanning' ? 'Scanning...' : 'Commence Scan'}
                 </p>
                 {scanPhase === 'scanning' && (
                   <motion.div 
@@ -334,7 +330,7 @@ export default function StaffAttendance() {
                   <motion.div
                     animate={{ opacity: [0.3, 1, 0.3] }}
                     transition={{ duration: 0.8, repeat: Infinity }}
-                    className="mt-3 text-[8px] text-cyan-400 font-black uppercase tracking-widest"
+                    className="mt-3 text-xs text-cyan-400 font-black uppercase tracking-widest"
                   >
                     Verifying biometrics...
                   </motion.div>
@@ -352,7 +348,7 @@ export default function StaffAttendance() {
                   className="p-6 rounded-[2rem] aurora-glass border-emerald-500/30 text-center max-w-xs"
                 >
                   <p className="text-emerald-400 font-black text-lg">Attendance Verified</p>
-                  <p className="text-white/30 text-[10px] font-bold mt-1">Biometric match · Geofence confirmed · Logged</p>
+                  <p className="text-white/30 text-xs font-bold mt-1">Biometric match · Geofence confirmed · Logged</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -363,7 +359,7 @@ export default function StaffAttendance() {
               </p>
               <div className="flex items-center justify-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-emerald-400/50" />
-                <p className="text-[8px] text-emerald-500/50 font-black uppercase tracking-[0.3em]">Protocol Version 4.0 Secure</p>
+                <p className="text-xs text-emerald-500/50 font-black uppercase tracking-[0.3em]">Protocol Version 4.0 Secure</p>
                 <div className="w-1 h-1 rounded-full bg-emerald-400/50" />
               </div>
             </div>

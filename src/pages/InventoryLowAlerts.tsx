@@ -101,7 +101,7 @@ export default function InventoryLowAlerts() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Inventory & Stock 📦</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{products.length} Products Tracked</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{products.length} Products Tracked</p>
           </div>
         </div>
       </div>
@@ -136,17 +136,17 @@ export default function InventoryLowAlerts() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Product Name</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Product Name</label>
                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. L'Oreal Hair Serum" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none font-bold text-sm" />
               </div>
               
               <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Selling Price (₹)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Selling Price (₹)</label>
                  <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 450" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none font-bold text-primary text-sm" />
               </div>
 
               <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Current Stock qty</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Current Stock qty</label>
                  <input type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="e.g. 20" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function InventoryLowAlerts() {
                        <p className="text-primary font-black mb-2">₹{p.price}</p>
                        
                        <div className="flex items-center gap-2">
-                         <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${isOut ? 'bg-danger/10 text-danger border-danger/20' : isLow ? 'bg-warning/10 text-warning border-warning/20' : 'bg-success/10 text-success border-success/20'}`}>
+                         <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded border ${isOut ? 'bg-danger/10 text-danger border-danger/20' : isLow ? 'bg-warning/10 text-warning border-warning/20' : 'bg-success/10 text-success border-success/20'}`}>
                            {isOut ? 'Out of Stock' : isLow ? 'Low Stock' : 'In Stock'}
                          </span>
                        </div>

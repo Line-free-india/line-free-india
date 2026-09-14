@@ -43,7 +43,7 @@ export default function CommunityBoard() {
           <h2 className="text-sm font-black text-white uppercase tracking-widest truncate">{business?.businessName}</h2>
           <div className="flex items-center gap-2 mt-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            <p className="text-[10px] font-bold text-success uppercase tracking-widest">Community Board • Live</p>
+            <p className="text-xs font-bold text-success uppercase tracking-widest">Community Board • Live</p>
           </div>
         </div>
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">💬</div>
@@ -71,7 +71,7 @@ export default function CommunityBoard() {
                    {msg.senderPhoto ? <img src={msg.senderPhoto} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xs">👤</div>}
                 </div>
                 <div className={`max-w-[80%] ${isMine ? 'text-right' : 'text-left'}`}>
-                  <p className="text-[9px] font-black text-text-dim uppercase tracking-widest mb-1 px-1">{msg.senderName}</p>
+                  <p className="text-xs font-black text-text-dim uppercase tracking-widest mb-1 px-1">{msg.senderName}</p>
                   <div className={`px-4 py-3 rounded-2xl ${isMine ? 'bg-primary text-white rounded-tr-none' : 'elite-glass border-white/5 text-text rounded-tl-none'}`}>
                     <p className="text-sm leading-relaxed">{msg.message}</p>
                   </div>

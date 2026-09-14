@@ -11,11 +11,24 @@ const NOTIF_ICONS: Record<string, string> = {
 export default function NotificationsPage() {
   const { notifications, markNotificationRead, markAllNotificationsRead, unreadCount, role, requestNotificationPermission } = useApp();
   const nav = useNavigate();
-  const [perm, setPerm] = useState(Notification.permission);
+  const [perm, setPerm] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        return Notification.permission;
+      }
+    } catch {}
+    return 'default';
+  });
 
   const handleEnablePush = async () => {
-    await requestNotificationPermission();
-    setPerm(Notification.permission);
+    try {
+      await requestNotificationPermission();
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        setPerm(Notification.permission);
+      }
+    } catch (e) {
+      console.warn('Notification permission error:', e);
+    }
   };
 
   const handleClick = async (n: any) => {
@@ -27,7 +40,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen pb-40 animate-fadeIn">
-      <div className="p-6">
+      <div className="px-5 app-header-safe pb-6">
         <BackButton to={backPath} />
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-2xl font-bold">🔔 Notifications</h1>
@@ -80,7 +93,7 @@ export default function NotificationsPage() {
                       {!n.read && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
                     </div>
                     <p className="text-text-dim text-xs mt-0.5">{n.body}</p>
-                    <p className="text-text-dim text-[10px] mt-1.5">
+                    <p className="text-text-dim text-xs mt-1.5">
                       {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>

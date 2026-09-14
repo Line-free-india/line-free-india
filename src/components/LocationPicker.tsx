@@ -61,7 +61,7 @@ export default function LocationPicker({ lat, lng, onChange, onAddressFound, isF
   
   const locateUser = useCallback(() => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported.');
+      console.warn('Geolocation is not supported.');
       return;
     }
 
@@ -82,7 +82,7 @@ export default function LocationPicker({ lat, lng, onChange, onAddressFound, isF
         setGpsLoading(false);
         setPrecisionLock(false);
         if (isFetchingAddress) isFetchingAddress(false);
-        alert('Location access denied or unavailable.');
+        console.warn('Location access denied or unavailable:', err);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -186,6 +186,8 @@ export default function LocationPicker({ lat, lng, onChange, onAddressFound, isF
           center={[mapCenter.lat, mapCenter.lng]}
           zoom={mapZoom}
           zoomControl={false}
+          scrollWheelZoom={false}
+          dragging={!L.Browser.mobile}
           className="w-full h-full"
           style={{ zIndex: 10 }}
         >
@@ -221,7 +223,7 @@ export default function LocationPicker({ lat, lng, onChange, onAddressFound, isF
                 </div>
               </div>
               <p className="mt-6 text-white font-black text-xs uppercase tracking-[0.3em] animate-pulse">Locking Position...</p>
-              <p className="mt-2 text-white/60 text-[10px] font-bold">Optimizing GPS Accuracy</p>
+              <p className="mt-2 text-white/60 text-xs font-bold">Optimizing GPS Accuracy</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -234,11 +236,11 @@ export default function LocationPicker({ lat, lng, onChange, onAddressFound, isF
         </button>
 
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none z-[400]">
-          <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[9px] font-black uppercase tracking-widest border border-white/10 shadow-xl">
+          <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-xs font-black uppercase tracking-widest border border-white/10 shadow-xl">
              GPS Active
           </div>
           {position && (
-            <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-primary text-[9px] font-mono border border-primary/20">
+            <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-primary text-xs font-mono border border-primary/20">
               {position.lat.toFixed(4)}, {position.lng.toFixed(4)}
             </div>
           )}

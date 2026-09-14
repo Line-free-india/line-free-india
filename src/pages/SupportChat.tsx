@@ -51,7 +51,7 @@ export default function SupportChat() {
           <h2 className="text-sm font-black text-white uppercase tracking-widest">Help & Support</h2>
           <div className="flex items-center gap-2 mt-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            <p className="text-[10px] font-bold text-success uppercase tracking-widest">Support Online</p>
+            <p className="text-xs font-bold text-success uppercase tracking-widest">Support Online</p>
           </div>
         </div>
         <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-xl">🎧</div>
@@ -71,7 +71,7 @@ export default function SupportChat() {
               >
                 <div className={`max-w-[85%] px-5 py-3.5 rounded-2xl ${isMine ? 'bg-primary text-white rounded-tr-none' : 'bg-card border border-white/10 text-text rounded-tl-none'}`}>
                    <p className="text-sm leading-relaxed">{msg.text}</p>
-                   <p className={`text-[8px] mt-1.5 font-bold uppercase tracking-widest ${isMine ? 'text-white/60' : 'text-text-dim'}`}>
+                   <p className={`text-xs mt-1.5 font-bold uppercase tracking-widest ${isMine ? 'text-white/60' : 'text-text-dim'}`}>
                       {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                    </p>
                 </div>
@@ -89,7 +89,7 @@ export default function SupportChat() {
              <button 
                 key={reply} 
                 onClick={() => setText(reply)}
-                className="whitespace-nowrap px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-text-dim uppercase tracking-widest"
+                className="whitespace-nowrap px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black text-text-dim uppercase tracking-widest"
              >
                 {reply}
              </button>

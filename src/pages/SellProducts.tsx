@@ -162,7 +162,7 @@ export default function SellProducts() {
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm('Delete this product?')) return;
+    if (!window.confirm('Delete this product?')) return;
     
     try {
       await deleteDoc(doc(db, 'products', productId));
@@ -209,9 +209,9 @@ export default function SellProducts() {
   };
 
   const getStockBadge = (stock: number) => {
-    if (stock === 0) return <span className="text-[9px] font-black uppercase px-2 py-1 rounded-full bg-danger/20 text-danger">Out of Stock</span>;
-    if (stock <= 5) return <span className="text-[9px] font-black uppercase px-2 py-1 rounded-full bg-warning/20 text-warning">Low Stock</span>;
-    return <span className="text-[9px] font-black uppercase px-2 py-1 rounded-full bg-success/20 text-success">In Stock</span>;
+    if (stock === 0) return <span className="text-xs font-black uppercase px-2 py-1 rounded-full bg-danger/20 text-danger">Out of Stock</span>;
+    if (stock <= 5) return <span className="text-xs font-black uppercase px-2 py-1 rounded-full bg-warning/20 text-warning">Low Stock</span>;
+    return <span className="text-xs font-black uppercase px-2 py-1 rounded-full bg-success/20 text-success">In Stock</span>;
   };
 
   if (loading) {
@@ -230,8 +230,8 @@ export default function SellProducts() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-5 blur-[100px]" style={{ background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)' }} />
       </div>
 
-      <div className="p-6 pt-14">
-        <div className="flex items-center justify-between mb-8">
+      <div className="px-5 app-header-safe pb-8">
+        <div className="flex items-center justify-between mb-6">
           <BackButton to="/barber/home" />
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -255,7 +255,7 @@ export default function SellProducts() {
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              className="fixed top-10 left-1/2 -translate-x-1/2 z-[3000] elite-glass bg-white/5 border-primary/20 px-8 py-4 rounded-3xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl flex items-center gap-3 text-primary"
+              className="fixed top-10 left-1/2 -translate-x-1/2 z-[3000] elite-glass bg-white/5 border-primary/20 px-8 py-4 rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl flex items-center gap-3 text-primary"
             >
               <div className="w-2 h-2 rounded-full bg-primary animate-ping" /> {feedback}
             </motion.div>
@@ -362,7 +362,7 @@ export default function SellProducts() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Image Upload */}
                 <div>
-                  <label className="text-[10px] font-black uppercase text-text-dim mb-3 block tracking-widest">Product Image</label>
+                  <label className="text-xs font-black uppercase text-text-dim mb-3 block tracking-widest">Product Image</label>
                   <div className="relative">
                     {imagePreview ? (
                       <div className="relative w-full h-48 rounded-2xl overflow-hidden mb-3">
@@ -387,7 +387,7 @@ export default function SellProducts() {
 
                 {/* Name */}
                 <div>
-                  <label className="text-[10px] font-black uppercase text-text-dim mb-3 block tracking-widest">Product Name *</label>
+                  <label className="text-xs font-black uppercase text-text-dim mb-3 block tracking-widest">Product Name *</label>
                   <input
                     type="text"
                     value={name}
@@ -400,7 +400,7 @@ export default function SellProducts() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-[10px] font-black uppercase text-text-dim mb-3 block tracking-widest">Description</label>
+                  <label className="text-xs font-black uppercase text-text-dim mb-3 block tracking-widest">Description</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -413,7 +413,7 @@ export default function SellProducts() {
                 {/* Price & Stock */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-black uppercase text-text-dim mb-3 block tracking-widest">Price (₹) *</label>
+                    <label className="text-xs font-black uppercase text-text-dim mb-3 block tracking-widest">Price (₹) *</label>
                     <input
                       type="number"
                       value={price}
@@ -426,7 +426,7 @@ export default function SellProducts() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black uppercase text-text-dim mb-3 block tracking-widest">Stock *</label>
+                    <label className="text-xs font-black uppercase text-text-dim mb-3 block tracking-widest">Stock *</label>
                     <input
                       type="number"
                       value={stock}

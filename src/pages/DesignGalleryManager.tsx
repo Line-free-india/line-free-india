@@ -96,7 +96,7 @@ export default function DesignGalleryManager() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-text">Tattoo Design Gallery 🖌️</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{items.length} Designs Live</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{items.length} Designs Live</p>
           </div>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function DesignGalleryManager() {
                      <div key={item.id} className="elite-glass spatial-card rounded-2xl border-white/5 overflow-hidden flex flex-col group relative">
                        {/* Tags Overlay */}
                        <div className="absolute top-2 left-2 right-2 flex justify-between z-10 pointer-events-none">
-                         <span className="text-[9px] font-black uppercase px-2 py-1 bg-black/60 backdrop-blur-md text-white rounded-md shadow-sm">
+                         <span className="text-xs font-black uppercase px-2 py-1 bg-black/60 backdrop-blur-md text-white rounded-md shadow-sm">
                            {item.size}
                          </span>
                          <span className={`w-3 h-3 rounded-full shadow-sm border border-white/20 ${item.colorType === 'black_work' ? 'bg-black' : 'bg-gradient-to-br from-red-500 to-blue-500'}`}></span>

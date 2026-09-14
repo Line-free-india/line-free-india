@@ -1,443 +1,443 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useApp, ServiceItem, getCategoryInfo, BusinessCategory } from '../store/AppContext';
-import BackButton from '../components/BackButton';
+import { useState, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useApp, ServiceItem, BusinessCategory, BUSINESS_CATEGORIES, getCategoryInfo } from '../store/AppContext';
 import LocationPicker from '../components/LocationPicker';
-import { motion } from 'framer-motion';
-import { getCategoryTheme } from '../config/categoryThemes';
-import { useResponsive } from '../hooks/useResponsive';
+import { triggerHaptic } from '../utils/haptics';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BEAUTY_NICHES = [
-  {
-    id: 'mens_salon',
-    label: "Men's Salon",
-    icon: '💈',
-    services: [
-      { id: '1', name: 'Hair Cut', price: 150, avgTime: 30 },
-      { id: '2', name: 'Beard Trim', price: 100, avgTime: 20 },
-    ],
-  },
-  {
-    id: 'ladies_parlour',
-    label: 'Beauty Parlour',
-    icon: '💅',
-    services: [
-      { id: '1', name: 'Eyebrow Threading', price: 50, avgTime: 10 },
-      { id: '2', name: 'Upper Lip Threading', price: 30, avgTime: 5 },
-    ],
-  },
-  {
-    id: 'unisex_salon',
-    label: 'Unisex Salon',
-    icon: '✂️',
-    services: [
-      { id: '1', name: 'Hair Cut', price: 200, avgTime: 30 },
-      { id: '2', name: 'Facial', price: 800, avgTime: 60 },
-    ],
-  },
-  {
-    id: 'spa_center',
-    label: 'Spa & Wellness',
-    icon: '🧖',
-    services: [
-      { id: '1', name: 'Full Body Massage', price: 1500, avgTime: 60 },
-      { id: '2', name: 'Reflexology', price: 800, avgTime: 45 },
-    ],
-  },
-  {
-    id: 'nail_studio',
-    label: 'Nail Studio',
-    icon: '💅',
-    services: [
-      { id: '1', name: 'Gel Nail Polish', price: 500, avgTime: 45 },
-      { id: '2', name: 'Nail Extensions', price: 1500, avgTime: 90 },
-      { id: '3', name: 'Nail Art', price: 100, avgTime: 15 },
-    ],
-  },
-  {
-    id: 'mehndi_artist',
-    label: 'Mehndi Artist',
-    icon: '🎨',
-    services: [
-      { id: '1', name: 'Bridal Mehndi', price: 3000, avgTime: 180 },
-      { id: '2', name: 'Party Mehndi', price: 1000, avgTime: 90 },
-      { id: '3', name: 'Arabic Design', price: 1500, avgTime: 120 },
-    ],
-  },
-  {
-    id: 'tattoo_studio',
-    label: 'Tattoo Studio',
-    icon: '🖊️',
-    services: [
-      { id: '1', name: 'Custom Tattoo', price: 5000, avgTime: 180 },
-      { id: '2', name: 'Cover-up Tattoo', price: 6000, avgTime: 240 },
-      { id: '3', name: 'Tattoo Removal Consultation', price: 500, avgTime: 30 },
-    ],
-  },
-  {
-    id: 'massage_therapy',
-    label: 'Massage Therapy Center',
-    icon: '💆',
-    services: [
-      { id: '1', name: 'Swedish Massage', price: 1500, avgTime: 60 },
-      { id: '2', name: 'Deep Tissue Massage', price: 2000, avgTime: 75 },
-      { id: '3', name: 'Aromatherapy', price: 1800, avgTime: 60 },
-    ],
-  },
-  {
-    id: 'acupuncture_clinic',
-    label: 'Acupuncture Clinic',
-    icon: '🩹',
-    services: [
-      { id: '1', name: 'Initial Consultation', price: 800, avgTime: 45 },
-      { id: '2', name: 'Acupuncture Session', price: 1200, avgTime: 60 },
-      { id: '3', name: 'Cupping Therapy', price: 1000, avgTime: 45 },
-    ],
-  },
-  {
-    id: 'makeup_artist',
-    label: 'Makeup Artist',
-    icon: '🖌️',
-    services: [
-      { id: '1', name: 'Bridal Makeup', price: 8000, avgTime: 120 },
-      { id: '2', name: 'Party Makeup', price: 2000, avgTime: 60 },
-      { id: '3', name: 'Airbrush Makeup', price: 3000, avgTime: 90 },
-    ],
-  },
-  {
-    id: 'bridal_studio',
-    label: 'Bridal Studio',
-    icon: '💍',
-    services: [
-      { id: '1', name: 'Bridal Package', price: 25000, avgTime: 480 },
-      { id: '2', name: 'Pre-Bridal Facial', price: 2000, avgTime: 60 },
-      { id: '3', name: 'Bridal Trial Makeup', price: 3000, avgTime: 90 },
-    ],
-  },
-  {
-    id: 'threading_waxing',
-    label: 'Threading / Waxing Center',
-    icon: '🪡',
-    services: [
-      { id: '1', name: 'Eyebrow Threading', price: 50, avgTime: 10 },
-      { id: '2', name: 'Full Face Threading', price: 150, avgTime: 20 },
-      { id: '3', name: 'Full Leg Waxing', price: 500, avgTime: 45 },
-    ],
-  },
-  {
-    id: 'skincare_clinic',
-    label: 'Skin Care Clinic',
-    icon: '🧴',
-    services: [
-      { id: '1', name: 'Facial Treatment', price: 1500, avgTime: 60 },
-      { id: '2', name: 'Chemical Peel', price: 3000, avgTime: 45 },
-      { id: '3', name: 'Laser Treatment', price: 5000, avgTime: 90 },
-    ],
-  },
-  {
-    id: 'hair_transplant',
-    label: 'Hair Transplant Clinic',
-    icon: '👨‍⚕️',
-    services: [
-      { id: '1', name: 'Initial Consultation', price: 500, avgTime: 45 },
-      { id: '2', name: 'PRP Therapy', price: 5000, avgTime: 90 },
-      { id: '3', name: 'FUE Grafts', price: 3000, avgTime: 120 },
-    ],
-  },
-  {
-    id: 'laser_studio',
-    label: 'Laser Studio',
-    icon: '⚡',
-    services: [
-      { id: '1', name: 'Laser Hair Removal', price: 2000, avgTime: 45 },
-      { id: '2', name: 'Skin Rejuvenation', price: 3500, avgTime: 60 },
-      { id: '3', name: 'Tattoo Removal', price: 4000, avgTime: 60 },
-    ],
-  },
-  {
-    id: 'ayurveda_beauty',
-    label: 'Ayurveda Beauty Center',
-    icon: '🌿',
-    services: [
-      { id: '1', name: 'Ayurvedic Facial', price: 1200, avgTime: 60 },
-      { id: '2', name: 'Herbal Hair Treatment', price: 1500, avgTime: 75 },
-      { id: '3', name: 'Body Massage', price: 2000, avgTime: 90 },
-    ],
-  },
-  {
-    id: 'slimming_studio',
-    label: 'Slimming / Weight Loss Studio',
-    icon: '⚖️',
-    services: [
-      { id: '1', name: 'Weight Loss Consultation', price: 1000, avgTime: 45 },
-      { id: '2', name: 'Body Contouring', price: 3000, avgTime: 90 },
-      { id: '3', name: 'Diet Planning', price: 1500, avgTime: 60 },
-    ],
-  },
-  {
-    id: 'home_salon',
-    label: 'Home Salon Service',
-    icon: '🏠',
-    services: [
-      { id: '1', name: 'Home Hair Cut', price: 300, avgTime: 45 },
-      { id: '2', name: 'Home Facial', price: 1000, avgTime: 75 },
-      { id: '3', name: 'Home Manicure', price: 600, avgTime: 60 },
-    ],
-  },
+const INDUSTRY_GROUPS = [
+  { id: 'all', label: 'All Categories', icon: '✨' },
+  { id: 'beauty', label: 'Beauty & Grooming', icon: '💈' },
+  { id: 'healthcare', label: 'Healthcare & OPD', icon: '🏥' },
+  { id: 'govt', label: 'Government & Public', icon: '🏛️' },
+  { id: 'banking', label: 'Banking & Finance', icon: '🏦' },
+  { id: 'dining', label: 'Food & Dining', icon: '🍽️' },
+  { id: 'spiritual', label: 'Religious & Darshan', icon: '🛕' },
+  { id: 'fitness', label: 'Gym & Fitness', icon: '💪' },
+  { id: 'pets', label: 'Pets & Vet Care', icon: '🐾' },
+  { id: 'education', label: 'Education & Professional', icon: '📚' },
+  { id: 'repairs', label: 'Retail & Repairs', icon: '🔧' },
 ];
 
 export default function BarberProfileSetup() {
-  const { user, saveBusinessProfile, businessProfile, t } = useApp();
+  const { user, saveBusinessProfile, businessProfile } = useApp();
   const nav = useNavigate();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
 
-  const [businessType, setBusinessType] = useState<string>(businessProfile?.businessType || 'mens_salon');
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [selectedIndustry, setSelectedIndustry] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [businessType, setBusinessType] = useState<BusinessCategory>(
+    (businessProfile?.businessType as BusinessCategory) || 'mens_salon'
+  );
   const [name, setName] = useState(businessProfile?.name || user?.displayName || '');
   const [businessName, setBusinessName] = useState(businessProfile?.businessName || '');
-  const [location, setLocation] = useState(businessProfile?.location || '');
   const [phone, setPhone] = useState(businessProfile?.phone || '');
-  const [services, setServices] = useState<ServiceItem[]>(businessProfile?.services || []);
+  const [location, setLocation] = useState(businessProfile?.location || '');
+  const [openTime, setOpenTime] = useState('09:00');
+  const [closeTime, setCloseTime] = useState('21:00');
+  const [capacity, setCapacity] = useState<number>(3);
+  const [upiId, setUpiId] = useState(businessProfile?.upiId || '');
+  const [services, setServices] = useState<ServiceItem[]>(
+    businessProfile?.services || BUSINESS_CATEGORIES[0].defaultServices
+  );
   const [lat, setLat] = useState<number | undefined>(businessProfile?.lat);
   const [lng, setLng] = useState<number | undefined>(businessProfile?.lng);
   const [fetchingAddr, setFetchingAddr] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // New step management
-  const [step, setStep] = useState<'category' | 'details'>(
-    businessProfile?.businessType ? 'details' : 'category'
-  );
+  const [specialization, setSpecialization] = useState('');
+  const [branchCode, setBranchCode] = useState('');
+  const [tableCount, setTableCount] = useState(10);
 
   const [newService, setNewService] = useState('');
   const [newPrice, setNewPrice] = useState('');
   const [newTime, setNewTime] = useState('');
   const [showAddService, setShowAddService] = useState(false);
 
-  const nicheInfo = BEAUTY_NICHES.find(n => n.id === businessType) || BEAUTY_NICHES[0];
-  const catTheme = getCategoryTheme(businessType as BusinessCategory);
+  const currentCategoryInfo = useMemo(() => getCategoryInfo(businessType), [businessType]);
 
-  const selectCategory = (id: string) => {
+  const filteredCategories = useMemo(() => {
+    return BUSINESS_CATEGORIES.filter((cat) => {
+      const matchesIndustry = selectedIndustry === 'all' || cat.industryGroup === selectedIndustry;
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        cat.label.toLowerCase().includes(q) ||
+        cat.labelHi.toLowerCase().includes(q) ||
+        cat.id.toLowerCase().includes(q);
+      return matchesIndustry && matchesSearch;
+    });
+  }, [selectedIndustry, searchQuery]);
+
+  const selectCategory = (id: BusinessCategory) => {
     setBusinessType(id);
-    const niche = BEAUTY_NICHES.find(n => n.id === id);
-    if (niche) setServices(niche.services);
-    setStep('details');
+    const cat = getCategoryInfo(id);
+    if (cat) {
+      setServices(cat.defaultServices);
+      if (cat.defaultWorkingHours) {
+        setOpenTime(cat.defaultWorkingHours.open);
+        setCloseTime(cat.defaultWorkingHours.close);
+      }
+    }
+    triggerHaptic('light');
+    setStep(2);
   };
 
   const addService = () => {
-    if (!newService || !newPrice) return;
-    setServices([...services, { id: Date.now().toString(), name: newService, price: Number(newPrice), avgTime: Number(newTime) || 30 }]);
-    setNewService(''); setNewPrice(''); setNewTime(''); setShowAddService(false);
+    if (!newService.trim() || !newPrice) return;
+    setServices([
+      ...services,
+      {
+        id: Date.now().toString(),
+        name: newService.trim(),
+        price: Number(newPrice),
+        avgTime: Number(newTime) || 30,
+      },
+    ]);
+    setNewService('');
+    setNewPrice('');
+    setNewTime('');
+    setShowAddService(false);
+    triggerHaptic('success');
   };
 
-  const removeService = (id: string) => setServices(services.filter(s => s.id !== id));
-
-  const handleContinue = async () => {
-    const profile: any = {
-      uid: user?.uid || '',
-      name: name || user?.displayName || 'Business Owner',
-      businessName: businessName || nicheInfo.label,
-      salonName: businessName || nicheInfo.label,
-      businessType: businessType as BusinessCategory,
-      location: location || '',
-      phone: phone || '',
-      photoURL: user?.photoURL || '',
-      bannerImageURL: businessProfile?.bannerImageURL || '',
-      salonImageURL: businessProfile?.bannerImageURL || '',
-      services,
-      isOpen: businessProfile?.isOpen ?? true,
-      isBreak: businessProfile?.isBreak ?? false,
-      isStopped: businessProfile?.isStopped ?? false,
-      currentToken: businessProfile?.currentToken ?? 0,
-      totalTokensToday: businessProfile?.totalTokensToday ?? 0,
-      breakStartTime: businessProfile?.breakStartTime ?? null,
-      createdAt: businessProfile?.createdAt || Date.now(),
-      lat, lng,
-    };
-    await saveBusinessProfile(profile);
-    nav('/barber/home', { replace: true });
+  const removeService = (id: string) => {
+    if (services.length <= 1) {
+      setError('Please retain at least one service on your menu.');
+      return;
+    }
+    setServices(services.filter((s) => s.id !== id));
+    triggerHaptic('light');
   };
 
-  const handleSkip = async () => {
-    const profile: any = {
-      uid: user?.uid || '',
-      name: user?.displayName || 'Business Owner',
-      businessName: nicheInfo.label,
-      salonName: nicheInfo.label,
-      businessType: businessType as BusinessCategory,
-      location: '', phone: '',
-      photoURL: user?.photoURL || '',
-      bannerImageURL: '', salonImageURL: '',
-      services: nicheInfo.services,
-      isOpen: true, isBreak: false, isStopped: false,
-      currentToken: 0, totalTokensToday: 0, breakStartTime: null,
-      createdAt: Date.now(),
-    };
-    await saveBusinessProfile(profile);
-    nav('/barber/home', { replace: true });
+  const handleStep2Next = () => {
+    setError('');
+    if (!businessName.trim()) { setError('Please enter your Business / Center / Shop name.'); triggerHaptic('error'); return; }
+    if (!name.trim()) { setError(`Please enter the ${currentCategoryInfo.terminology.provider} / Manager name.`); triggerHaptic('error'); return; }
+    if (!phone.trim() || phone.replace(/\D/g, '').length < 10) { setError('Please enter a valid 10-digit mobile number.'); triggerHaptic('error'); return; }
+    if (!location.trim()) { setError('Please enter your center address or pin on map.'); triggerHaptic('error'); return; }
+    triggerHaptic('success');
+    setStep(3);
   };
 
-  // ── Step 1: Choose Beauty Niche ──
-  if (step === 'category') {
-    const gridCols = isMobile ? 'grid-cols-2' : isTablet ? 'grid-cols-3' : 'grid-cols-4';
-    const padding = isMobile ? 'p-6' : isTablet ? 'p-8' : 'p-10';
-    const maxWidth = isMobile ? 'max-w-lg' : isTablet ? 'max-w-3xl' : 'max-w-6xl';
-    
-    return (
-      <div className="min-h-screen flex flex-col bg-bg pb-20">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#100010] via-bg to-bg px-6 pt-14 pb-10 text-center border-b border-border/50">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(108,99,255,0.08),transparent_70%)]" />
-          <BackButton to="/barber/auth" />
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className={`${isMobile ? 'w-20 h-20' : isTablet ? 'w-24 h-24' : 'w-28 h-28'} rounded-3xl mx-auto mb-4 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/20 relative z-10 border border-white/10`}
-          >
-            <span className={`${isMobile ? 'text-4xl' : isTablet ? 'text-5xl' : 'text-6xl'}`}>✨</span>
-          </motion.div>
-          <h1 className={`${isMobile ? 'text-2xl' : isTablet ? 'text-3xl' : 'text-4xl'} font-black mb-2 relative z-10`}>Choose Your Blueprint</h1>
-          <p className={`text-text-dim ${isMobile ? 'text-sm' : 'text-base'} max-w-xs mx-auto relative z-10 font-medium`}>Select your business type for a tailored interface.</p>
-        </div>
+  const handleCompleteSetup = async () => {
+    setError('');
+    if (!agreeTerms) { setError('Please accept the Partner Terms of Service and Privacy Policy.'); triggerHaptic('error'); return; }
 
-        <div className={`${padding} grid ${gridCols} gap-4 ${maxWidth} mx-auto w-full`}>
-          {BEAUTY_NICHES.map((niche, i) => (
-            <motion.button
-              key={niche.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => selectCategory(niche.id)}
-              className="relative p-5 rounded-3xl bg-card border border-border hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 flex flex-col items-center gap-3 text-center group overflow-hidden"
-              style={{ minHeight: '44px', minWidth: '44px' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-accent/0 group-hover:from-primary/5 group-hover:to-accent/5 transition-all" />
-              <span className={`${isMobile ? 'text-3xl' : 'text-4xl'} group-hover:scale-110 transition-transform relative z-10`}>
-                {niche.icon}
-              </span>
-              <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-text leading-tight relative z-10 uppercase tracking-wider`}>
-                {niche.label}
-              </span>
-            </motion.button>
+    setSubmitting(true);
+    triggerHaptic('medium');
+
+    try {
+      const ok = await saveBusinessProfile({
+        uid: user?.uid || '',
+        name: name.trim(),
+        businessName: businessName.trim(),
+        businessType,
+        phone: phone.trim(),
+        location: location.trim(),
+        lat,
+        lng,
+        openTime,
+        closeTime,
+        capacity,
+        upiId: upiId.trim() || undefined,
+        services,
+        isOpen: true,
+        specialization: specialization.trim() || undefined,
+        branchCode: branchCode.trim() || undefined,
+        tableCount: currentCategoryInfo.industryGroup === 'dining' ? tableCount : undefined,
+      });
+
+      if (ok) {
+        triggerHaptic('success');
+        nav('/barber/home');
+      } else {
+        setError('Could not save business details. Please check connection and retry.');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Setup error. Please retry.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '12px 14px', background: 'var(--color-bg)', border: '1.5px solid var(--color-border)',
+    borderRadius: 12, fontSize: 15, color: 'var(--color-text)', outline: 'none', fontFamily: 'inherit',
+    transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
+  };
+  const inputFocusHandler = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = 'var(--color-primary)';
+    e.target.style.boxShadow = '0 0 0 3px rgba(var(--color-primary-rgb), 0.1)';
+  };
+  const inputBlurHandler = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = 'var(--color-border)';
+    e.target.style.boxShadow = 'none';
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+      {/* Background */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 60%), var(--color-bg)`,
+        zIndex: 0,
+      }} />
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+        style={{
+          padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'var(--color-card)', borderBottom: '1px solid var(--color-border)',
+          position: 'sticky', top: 0, zIndex: 40, backdropFilter: 'blur(20px)',
+        }}
+      >
+        <button
+          onClick={() => { setError(''); step > 1 ? setStep((step - 1) as 1 | 2) : nav('/barber/auth'); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', color: 'var(--color-primary)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back
+        </button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ width: step === i ? 16 : 6, height: 4, borderRadius: 2, background: step >= i ? 'var(--color-primary)' : 'var(--color-border)', transition: 'width 0.3s' }} />
           ))}
         </div>
-      </div>
-    );
-  }
+      </motion.div>
 
-  // ── Step 2: Business Details ──
-  const padding = isMobile ? 'p-6' : isTablet ? 'p-8' : 'p-10';
-  const maxWidth = isMobile ? 'max-w-sm' : isTablet ? 'max-w-md' : 'max-w-4xl';
-  const avatarSize = isMobile ? 'w-24 h-24' : isTablet ? 'w-28 h-28' : 'w-32 h-32';
-  
-  return (
-    <div className={`min-h-screen flex flex-col ${padding} pb-40 bg-bg animate-fadeIn`}>
-      <div className="fixed inset-0 pointer-events-none opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
-      <BackButton to="/barber/auth" />
-
-      <div className="text-center mb-8 mt-2">
-        <div 
-          className={`${avatarSize} rounded-[2.5rem] mx-auto mb-4 flex items-center justify-center ring-4 ring-white/5 shadow-2xl bg-gradient-to-br from-primary/20 to-accent/10`}
-        >
-          {user?.photoURL ? (
-            <img src={user.photoURL} className={`${avatarSize} rounded-[2.5rem] object-cover`} alt="" />
-          ) : (
-            <span className={`${isMobile ? 'text-5xl' : 'text-6xl'} drop-shadow-xl`}>{nicheInfo.icon}</span>
+      <div style={{ flex: 1, position: 'relative', zIndex: 1, padding: '24px 20px 40px', maxWidth: 800, margin: '0 auto', width: '100%' }}>
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16 }}>⚠️</span>
+              <span style={{ fontSize: 13, color: 'var(--color-danger)', fontWeight: 600 }}>{error}</span>
+            </motion.div>
           )}
-        </div>
-        <h1 className={`${isMobile ? 'text-3xl' : isTablet ? 'text-4xl' : 'text-5xl'} font-black tracking-tighter`}>{t('profile.setup')}</h1>
-        <button
-          onClick={() => setStep('category')}
-          className="mt-3 text-[10px] uppercase tracking-widest text-text-dim font-black bg-white/5 px-4 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors"
-          style={{ minHeight: '44px', minWidth: '44px' }}
-        >
-          {nicheInfo.icon} {nicheInfo.label} — Switch Blueprint
-        </button>
-      </div>
+        </AnimatePresence>
 
-      <div className={`space-y-6 ${maxWidth} mx-auto w-full relative z-10`}>
-        <div className="space-y-4">
-          <div className="premium-input-group">
-            <label className="premium-label">Identity</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="premium-input" style={{ minHeight: '44px' }} />
-          </div>
-          <div className="premium-input-group">
-            <label className="premium-label">Empire Name</label>
-            <input value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g., Stellar Studio" className="premium-input" style={{ minHeight: '44px' }} />
-          </div>
-          <div className="premium-input-group relative">
-            <label className="premium-label">Location Headquarters</label>
-            <input
-              value={fetchingAddr ? 'Calculating Coordinates...' : location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="Business Address"
-              className={`premium-input ${fetchingAddr ? 'text-[#00F0FF] animate-pulse border-[#00F0FF]' : ''}`}
-              disabled={fetchingAddr}
-              style={{ minHeight: '44px' }}
-            />
-            {fetchingAddr && (
-              <div className="absolute right-4 top-[38px]">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div>
-           <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-3 block ml-1">Orbital Map Data</label>
-           <div className="rounded-3xl overflow-hidden border border-white/5 shadow-inner">
-             <LocationPicker
-               lat={lat} lng={lng}
-               onChange={(l, g) => { setLat(l); setLng(g); }}
-               onAddressFound={(addr) => setLocation(addr)}
-               isFetchingAddress={setFetchingAddr}
-             />
-           </div>
-        </div>
-
-        {/* Services */}
-        <div>
-          <label className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-3 block ml-1">Service Arsenal</label>
-          <div className="space-y-3">
-            {services.map(s => (
-              <motion.div layout key={s.id} className="flex items-center gap-3 p-4 bg-card/50 backdrop-blur-md rounded-2xl border border-white/5 group relative overflow-hidden" style={{ minHeight: '44px' }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="flex-1 relative z-10">
-                  <p className="font-bold text-sm tracking-tight">{s.name}</p>
-                  <p className="text-text-dim text-[10px] font-black uppercase tracking-wider">₹{s.price} · {s.avgTime} MIN</p>
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+              <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                <div style={{ width: 64, height: 64, borderRadius: 20, background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(139, 92, 246, 0.25)', fontSize: 28 }}>
+                  🏪
                 </div>
-                <button onClick={() => removeService(s.id)} className="text-rose-500/40 hover:text-rose-500 p-2 transition-colors relative z-10" style={{ minHeight: '44px', minWidth: '44px' }}>✕</button>
-              </motion.div>
-            ))}
-          </div>
-
-          {showAddService ? (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-4 p-5 bg-card rounded-[2rem] border border-primary/20 space-y-4 shadow-2xl shadow-primary/10">
-              <input value={newService} onChange={e => setNewService(e.target.value)} placeholder="Service Title" className="input-field bg-bg/50 border-white/5" style={{ minHeight: '44px' }} />
-              <div className="flex gap-3">
-                <input value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="Price ₹" className="input-field bg-bg/50 border-white/5" type="number" style={{ minHeight: '44px' }} />
-                <input value={newTime} onChange={e => setNewTime(e.target.value)} placeholder="Min" className="input-field bg-bg/50 border-white/5" type="number" style={{ minHeight: '44px' }} />
+                <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text)', letterSpacing: -0.5, marginBottom: 4 }}>Select Category</h2>
+                <p style={{ fontSize: 14, color: 'var(--color-text-dim)', fontWeight: 500 }}>Choose from 30+ queue categories.</p>
               </div>
-              <div className="flex gap-2 pt-2">
-                <button onClick={addService} className="gagan-btn flex-1 py-3" style={{ width: 'auto', height: 'auto', borderRadius: '12px', minHeight: '44px' }}>Add Service</button>
-                <button onClick={() => setShowAddService(false)} className="px-4 py-3 rounded-xl bg-white/5 text-text-dim text-xs font-bold" style={{ minHeight: '44px', minWidth: '44px' }}>✕</button>
+
+              {/* Search */}
+              <div style={{ position: 'relative', marginBottom: 20 }}>
+                <input type="text" placeholder="Search categories..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: 40 }} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }}>
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 12, marginBottom: 12, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+                {INDUSTRY_GROUPS.map(grp => (
+                  <button key={grp.id} onClick={() => setSelectedIndustry(grp.id)}
+                    style={{
+                      padding: '8px 16px', borderRadius: 100, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+                      background: selectedIndustry === grp.id ? 'var(--color-primary)' : 'var(--color-card)',
+                      color: selectedIndustry === grp.id ? '#fff' : 'var(--color-text-dim)',
+                      border: `1px solid ${selectedIndustry === grp.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      boxShadow: selectedIndustry === grp.id ? '0 4px 12px rgba(var(--color-primary-rgb), 0.2)' : 'none',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                    }}>
+                    <span>{grp.icon}</span>
+                    <span>{grp.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
+                {filteredCategories.map(cat => (
+                  <motion.button key={cat.id} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => selectCategory(cat.id)}
+                    style={{
+                      padding: '16px', borderRadius: 20, textAlign: 'left', cursor: 'pointer',
+                      background: 'var(--color-card)', border: '1.5px solid var(--color-border)',
+                      display: 'flex', flexDirection: 'column', gap: 12,
+                      boxShadow: 'var(--shadow-sm)', transition: 'border-color 0.2s',
+                    }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 28 }}>{cat.icon}</span>
+                      <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>
+                        {cat.terminology.provider}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>{cat.label}</h3>
+                      <p style={{ fontSize: 11, color: 'var(--color-text-dim)', fontWeight: 500 }}>{cat.labelHi}</p>
+                    </div>
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
-          ) : (
-            <button onClick={() => setShowAddService(true)} className="mt-4 w-full p-4 rounded-2xl border-2 border-dashed border-white/10 text-text-dim text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/5 transition-all active:scale-95" style={{ minHeight: '44px' }}>
-              + Deploy New Service
-            </button>
           )}
-        </div>
-      </div>
 
-      <div className={`mt-12 space-y-4 ${maxWidth} mx-auto w-full relative z-20`}>
-        <button
-          onClick={handleContinue}
-          className="khel-btn mt-4"
-          style={{ minHeight: '44px' }}
-        >
-          Activate Core Dashboard →
-        </button>
-        <button onClick={handleSkip} className="w-full py-4 rounded-2xl text-text-dim text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors" style={{ minHeight: '44px' }}>
-          Initialize with defaults
-        </button>
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} style={{ maxWidth: 500, margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
+                  {currentCategoryInfo.icon}
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: -0.5, marginBottom: 4 }}>Details & Operations</h2>
+                <p style={{ fontSize: 13, color: 'var(--color-text-dim)', fontWeight: 500 }}>Configuring for: <strong style={{ color: 'var(--color-primary)' }}>{currentCategoryInfo.label}</strong></p>
+              </div>
+
+              <div style={{ background: 'var(--color-card)', borderRadius: 24, padding: 20, border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Business Name</label>
+                  <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g. City Health Clinic" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>{currentCategoryInfo.terminology.provider} Name</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Dr. Rajesh Sharma" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                </div>
+                {currentCategoryInfo.industryGroup === 'healthcare' && (
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Specialization</label>
+                    <input type="text" value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="e.g. MBBS, MD" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                )}
+                {currentCategoryInfo.id === 'bank_branch' && (
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Branch Code / IFSC</label>
+                    <input type="text" value={branchCode} onChange={e => setBranchCode(e.target.value)} placeholder="e.g. SBIN0001234" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                )}
+                {currentCategoryInfo.industryGroup === 'dining' && (
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Total Tables</label>
+                    <input type="number" value={tableCount} onChange={e => setTableCount(Number(e.target.value))} placeholder="10" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                )}
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Official Mobile</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. 9876543210" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Center Address</label>
+                  <input type="text" value={fetchingAddr ? 'Detecting...' : location} onChange={e => setLocation(e.target.value)} placeholder="Full address" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} disabled={fetchingAddr} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Pin Exact Location</label>
+                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                    <LocationPicker lat={lat} lng={lng} onChange={(l, g) => { setLat(l); setLng(g); }} onAddressFound={addr => setLocation(addr)} isFetchingAddress={setFetchingAddr} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 8 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Open Time</label>
+                    <input type="time" value={openTime} onChange={e => setOpenTime(e.target.value)} style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Close Time</label>
+                    <input type="time" value={closeTime} onChange={e => setCloseTime(e.target.value)} style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>Active Counters</label>
+                    <input type="number" min="1" max="50" value={capacity} onChange={e => setCapacity(Number(e.target.value))} style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>UPI ID (Optional)</label>
+                    <input type="text" value={upiId} onChange={e => setUpiId(e.target.value)} placeholder="merchant@upi" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={handleStep2Next} className="premium-btn premium-btn-primary" style={{ width: '100%', padding: '14px', fontSize: 16, marginTop: 20 }}>
+                Continue to Services
+              </button>
+            </motion.div>
+          )}
+
+          {step === 3 && (
+            <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} style={{ maxWidth: 500, margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
+                  📋
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: -0.5, marginBottom: 4 }}>Services & Legal</h2>
+                <p style={{ fontSize: 13, color: 'var(--color-text-dim)', fontWeight: 500 }}>Set up what you offer</p>
+              </div>
+
+              <div style={{ background: 'var(--color-card)', borderRadius: 24, padding: 20, border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text)' }}>Services ({services.length})</span>
+                  <button onClick={() => setShowAddService(!showAddService)} style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', background: 'none', cursor: 'pointer' }}>
+                    {showAddService ? 'Cancel' : '+ Add New'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {services.map(s => (
+                    <div key={s.id} style={{ padding: '12px 14px', borderRadius: 16, background: 'var(--color-bg)', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>{s.name}</p>
+                        <p style={{ fontSize: 12, color: 'var(--color-text-dim)', fontWeight: 500 }}>{s.price > 0 ? `₹${s.price}` : 'Free'} • {s.avgTime} mins</p>
+                      </div>
+                      <button onClick={() => removeService(s.id)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {showAddService && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
+                      <div style={{ marginTop: 12, padding: 16, background: 'rgba(139, 92, 246, 0.05)', borderRadius: 16, border: '1px solid rgba(139, 92, 246, 0.2)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <input type="text" value={newService} onChange={e => setNewService(e.target.value)} placeholder="Service Name" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                          <input type="number" value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="Price (₹)" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                          <input type="number" value={newTime} onChange={e => setNewTime(e.target.value)} placeholder="Mins" style={inputStyle} onFocus={inputFocusHandler} onBlur={inputBlurHandler} />
+                        </div>
+                        <button onClick={addService} className="premium-btn premium-btn-primary" style={{ padding: 10, fontSize: 14, width: '100%' }}>Add Service</button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div style={{ padding: 16, background: 'rgba(59, 130, 246, 0.05)', borderRadius: 16, border: '1px solid rgba(59, 130, 246, 0.1)', marginBottom: 24 }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
+                  <div style={{ position: 'relative', marginTop: 2 }}>
+                    <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
+                      style={{ appearance: 'none', width: 20, height: 20, borderRadius: 6, border: `2px solid ${agreeTerms ? 'var(--color-primary)' : 'var(--color-border)'}`, background: agreeTerms ? 'var(--color-primary)' : 'transparent', outline: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+                    />
+                    {agreeTerms && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 4, left: 4, pointerEvents: 'none' }}>
+                        <path d="M20 6L9 17l-5-5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-dim)', lineHeight: 1.5, fontWeight: 500 }}>
+                    I register as an authorized partner. I agree to the <Link to="/terms" style={{ color: 'var(--color-primary)' }}>Terms</Link>, <Link to="/privacy" style={{ color: 'var(--color-primary)' }}>Privacy Policy</Link>, and <Link to="/refund-policy" style={{ color: 'var(--color-primary)' }}>Refund Policy</Link>.
+                  </p>
+                </label>
+              </div>
+
+              <button onClick={handleCompleteSetup} disabled={submitting} className="premium-btn premium-btn-primary" style={{ width: '100%', padding: '16px', fontSize: 16, fontWeight: 800 }}>
+                {submitting ? 'Setting up Dashboard...' : '🚀 Complete Setup'}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

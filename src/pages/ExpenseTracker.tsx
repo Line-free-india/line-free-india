@@ -54,7 +54,7 @@ export default function ExpenseTracker() {
       <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-red-400">Expense Tracker 📊</h1><p className="text-[10px] text-red-200/50 font-bold uppercase tracking-widest">This Month: ₹{monthlyTotal}</p></div>
+          <div><h1 className="font-black text-lg text-red-400">Expense Tracker 📊</h1><p className="text-xs text-red-200/50 font-bold uppercase tracking-widest">This Month: ₹{monthlyTotal}</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -70,16 +70,16 @@ export default function ExpenseTracker() {
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button onClick={() => setFilterCat('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${filterCat==='all'?'bg-red-500 text-white':'bg-card border border-border text-text-dim'}`}>All (₹{totalSpent})</button>
-          {categories.map(c => { const ct = expenses.filter(e=>e.category===c).reduce((a,e)=>a+e.amount,0); return ct > 0 ? <button key={c} onClick={() => setFilterCat(c)} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${filterCat===c?'bg-red-500 text-white':'bg-card border border-border text-text-dim'}`}>{c}</button> : null; })}
+          <button onClick={() => setFilterCat('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${filterCat==='all'?'bg-red-500 text-white':'bg-card border border-border text-text-dim'}`}>All (₹{totalSpent})</button>
+          {categories.map(c => { const ct = expenses.filter(e=>e.category===c).reduce((a,e)=>a+e.amount,0); return ct > 0 ? <button key={c} onClick={() => setFilterCat(c)} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${filterCat===c?'bg-red-500 text-white':'bg-card border border-border text-text-dim'}`}>{c}</button> : null; })}
         </div>
         <div className="space-y-2">
           {filtered.length === 0 ? (<div className="text-center py-8 border border-dashed border-border rounded-3xl opacity-50 bg-card"><span className="text-3xl block mb-2">💸</span><p className="text-xs font-bold text-text-dim">No expenses logged.</p></div>
           ) : filtered.map(e => (
             <div key={e.id} className="flex items-center gap-3 p-3 rounded-2xl elite-glass spatial-card group">
-              <div className="flex-1"><p className="text-xs font-bold text-red-100">{e.description}</p><p className="text-[9px] text-text-dim font-bold">{new Date(e.date).toLocaleDateString()} • {e.category} • {e.paymentMethod}</p></div>
+              <div className="flex-1"><p className="text-xs font-bold text-red-100">{e.description}</p><p className="text-xs text-text-dim font-bold">{new Date(e.date).toLocaleDateString()} • {e.category} • {e.paymentMethod}</p></div>
               <p className="text-sm font-black text-red-400">₹{e.amount}</p>
-              <button onClick={() => deleteExp(e.id)} className="w-6 h-6 rounded-md bg-danger/10 text-danger flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+              <button onClick={() => deleteExp(e.id)} className="w-6 h-6 rounded-md bg-danger/10 text-danger flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
             </div>
           ))}
         </div>

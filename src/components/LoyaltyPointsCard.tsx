@@ -37,7 +37,7 @@ export default function LoyaltyPointsCard({ points, onCardClick }: LoyaltyPoints
     >
       <div className="flex items-center justify-between">
         <div className="text-left">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-1">
+          <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-1">
             Your Rewards
           </p>
           <p className="text-3xl font-black text-gold leading-none mb-2">

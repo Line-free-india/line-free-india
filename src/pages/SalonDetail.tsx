@@ -1,76 +1,99 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useApp, BusinessProfile, ServiceItem, TokenEntry, ReviewEntry, getCategoryInfo } from '../store/AppContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useApp, BusinessProfile, ServiceItem, ReviewEntry, getCategoryInfo } from '../store/AppContext';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Helmet } from 'react-helmet-async';
-import BackButton from '../components/BackButton';
 import { triggerHaptic } from '../utils/haptics';
 import { getBusinessImageWithFallback } from '../utils/categoryImages';
-
-interface Product {
-  id: string;
-  businessId: string;
-  name: string;
-  description: string;
-  price: number;
-  imageURL: string;
-  stock: number;
-  createdAt: number;
-}
+import { calculateSmartETA } from '../services/queueService';
+import { 
+  ArrowLeft, 
+  Heart, 
+  Share2, 
+  Navigation, 
+  Phone, 
+  Bookmark, 
+  Star, 
+  Clock, 
+  Check, 
+  X, 
+  Users, 
+  Sparkles, 
+  RefreshCw, 
+  AlertCircle,
+  ChevronRight,
+  Info,
+  Calendar,
+  Zap,
+  Tag
+} from 'lucide-react';
 
 export default function SalonDetail() {
   const { id } = useParams<{ id: string }>();
-  const { getBusinessById, getSalonTokens, getToken, user, customerProfile, addReview, getSalonReviews, allSalons, toggleFavorite, isFavorite, t, toggleFollow } = useApp();
+  const { 
+    getBusinessById, 
+    getSalonTokens, 
+    user, 
+    customerProfile, 
+    addReview, 
+    getSalonReviews, 
+    allSalons, 
+    toggleFavorite, 
+    isFavorite, 
+    t 
+  } = useApp();
   const nav = useNavigate();
-  // Using 'business' state but alias it internally for ease
+
   const [business, setBusiness] = useState<BusinessProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ServiceItem[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showLiveQueueModal, setShowLiveQueueModal] = useState(false);
   const [getting, setGetting] = useState(false);
   const [getError, setGetError] = useState('');
   const [tokenResult, setTokenResult] = useState<{ tokenNumber: number; waitTime: number; tokenId: string } | null>(null);
+  
   const [reviews, setReviews] = useState<ReviewEntry[]>([]);
   const [showReview, setShowReview] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
-  const [reviewImages, setReviewImages] = useState<string[]>([]);
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [reviewStaffId, setReviewStaffId] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'services' | 'store' | 'reviews' | 'portfolio' | 'about' | 'gallery'>('services');
+
+  const [activeTab, setActiveTab] = useState<'services' | 'about' | 'reviews'>('services');
   const [advanceDate, setAdvanceDate] = useState('');
   const [isTatkal, setIsTatkal] = useState(false);
   const [groupSize, setGroupSize] = useState(1);
   const [assignedStaffId, setAssignedStaffId] = useState<string | undefined>();
-  const [selectedStaffProfile, setSelectedStaffProfile] = useState<any | null>(null);
-  const [viewingStory, setViewingStory] = useState(false);
-  const [storyProgress, setStoryProgress] = useState(0);
-  const [showSocialProof, setShowSocialProof] = useState(false);
-  const [socialProofCount, setSocialProofCount] = useState(0);
+
   const [promoCodeInput, setPromoCodeInput] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState<{code: string, type: 'percentage' | 'flat', value: number} | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; type: 'percentage' | 'flat'; value: number } | null>(null);
   const [activeTokenCount, setActiveTokenCount] = useState<number>(0);
   const [currentWaitTime, setCurrentWaitTime] = useState<number>(0);
-  const [specialInstructions, setSpecialInstructions] = useState('');
-  const [tipAmount, setTipAmount] = useState<number>(0);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
+  const [liveQueueTokens, setLiveQueueTokens] = useState<any[]>([]);
+
+  const catInfo = getCategoryInfo(business?.businessType || 'salon');
+  const term = catInfo.terminology;
   const TATKAL_FEE = 50;
 
   const today = (() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   })();
-
-  const isAdvanceSub = customerProfile?.subscription?.includes('Advance');
 
   useEffect(() => {
     if (id) {
       const realtime = allSalons.find(s => s.uid === id);
-      if (realtime) { setBusiness(realtime as BusinessProfile); setLoading(false); }
-      else getBusinessById(id).then(s => { setBusiness(s as BusinessProfile); setLoading(false); });
+      if (realtime) { 
+        setBusiness(realtime as BusinessProfile); 
+        setLoading(false); 
+      } else {
+        getBusinessById(id).then(s => { 
+          setBusiness(s as BusinessProfile); 
+          setLoading(false); 
+        });
+      }
     }
   }, [id, allSalons]);
 
@@ -79,108 +102,39 @@ export default function SalonDetail() {
   }, [id]);
 
   useEffect(() => {
-    if (!id) return;
-    setProductsLoading(true);
-    const q = query(collection(db, 'products'), where('businessId', '==', id));
-    const unsub = onSnapshot(q, (snap) => {
-      const prods = snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
-      prods.sort((a, b) => b.createdAt - a.createdAt);
-      setProducts(prods);
-      setProductsLoading(false);
-    }, err => {
-      console.error('Products load error:', err);
-      setProductsLoading(false);
-    });
-    return () => unsub();
-  }, [id]);
-
-  useEffect(() => {
-    if (viewingStory) {
-      setStoryProgress(0);
-      const iv = setInterval(() => setStoryProgress(p => p + 2), 100);
-      return () => clearInterval(iv);
-    }
-  }, [viewingStory]);
-
-  useEffect(() => {
-    if (storyProgress >= 100) setViewingStory(false);
-  }, [storyProgress]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSocialProofCount(Math.floor(Math.random() * 5) + 2);
-      setShowSocialProof(true);
-      setTimeout(() => setShowSocialProof(false), 4000);
-    }, 3000 + Math.random() * 2000);
-    return () => clearTimeout(timer);
-  }, [id]);
-
-  useEffect(() => {
     if (id && business) {
-      const q = query(collection(db, 'tokens'), where('salonId', '==', id), where('date', '==', advanceDate || today));
+      const q = query(
+        collection(db, 'tokens'), 
+        where('salonId', '==', id), 
+        where('date', '==', advanceDate || today)
+      );
       const unsub = onSnapshot(q, snap => {
-        const activeDocs = snap.docs.map(d => d.data()).filter(s => s.status === 'waiting' || s.status === 'serving');
+        const activeDocs = snap.docs
+          .map(d => ({ id: d.id, ...d.data() } as any))
+          .filter(s => s.status === 'waiting' || s.status === 'serving')
+          .sort((a, b) => a.tokenNumber - b.tokenNumber);
+
+        setLiveQueueTokens(activeDocs);
         setActiveTokenCount(activeDocs.length);
         
-        let mWait = activeDocs.reduce((acc, doc) => acc + (doc.totalTime || 0) * (doc.groupSize || 1), 0);
+        const mWait = activeDocs.reduce((acc, doc) => acc + (doc.totalTime || 0) * (doc.groupSize || 1), 0);
         setCurrentWaitTime(mWait + (business.queueDelayMinutes || 0));
       });
       return () => unsub();
     } else {
       setActiveTokenCount(0);
       setCurrentWaitTime(0);
+      setLiveQueueTokens([]);
     }
   }, [id, business, advanceDate, today]);
-
 
   const toggleService = (s: ServiceItem) => {
     triggerHaptic('light');
     setSelected(prev => prev.find(x => x.id === s.id) ? prev.filter(x => x.id !== s.id) : [...prev, s]);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 500;
-          const scaleSize = Object.is(img.width, 0) ? 1 : MAX_WIDTH / img.width;
-          canvas.width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
-          canvas.height = img.width > MAX_WIDTH ? img.height * scaleSize : img.height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          setReviewImages(prev => [...prev, dataUrl]);
-        };
-        img.src = ev.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const addProduct = (p: {id: string, name: string, price: number}) => {
-    triggerHaptic('light');
-    setSelected(prev => [...prev, { ...p, id: `${p.id}_prod_${Date.now()}_${Math.random()}`, avgTime: 0 }]);
-  };
-
-  const removeProduct = (originalId: string) => {
-    triggerHaptic('light');
-    setSelected(prev => {
-      const idx = prev.findIndex(x => x.id.startsWith(originalId + '_prod_'));
-      if (idx !== -1) {
-        const next = [...prev];
-        next.splice(idx, 1);
-        return next;
-      }
-      return prev;
-    });
-  };
-
   const totalTime = selected.reduce((a, s) => a + s.avgTime, 0) * groupSize;
-  const rawPrice = selected.reduce((a, s) => a + s.price * (s.id.includes('_prod_') ? 1 : groupSize), 0);
+  const rawPrice = selected.reduce((a, s) => a + s.price * groupSize, 0);
   
   let discountAmount = 0;
   if (appliedPromo) {
@@ -190,7 +144,7 @@ export default function SalonDetail() {
       discountAmount = appliedPromo.value;
     }
   }
-  const maxDiscount = Math.min(discountAmount, rawPrice); // Can't have negative price
+  const maxDiscount = Math.min(discountAmount, rawPrice);
   const totalPrice = (rawPrice - maxDiscount) + (isTatkal ? TATKAL_FEE : 0);
 
   const handleApplyPromo = () => {
@@ -213,12 +167,8 @@ export default function SalonDetail() {
       return;
     }
     
-    // Proactive Profile Check
-    if (!customerProfile?.name || !customerProfile?.phone) {
-      setGetError('Please complete your profile (name & phone) in the Profile section to book.');
-      triggerHaptic('error');
-      return;
-    }
+    const customerName = customerProfile?.name || user.displayName || user.email?.split('@')[0] || 'Customer';
+    const customerPhone = customerProfile?.phone || user.phoneNumber || '';
 
     setGetting(true);
     setGetError('');
@@ -228,1217 +178,633 @@ export default function SalonDetail() {
       const isAdvance = advanceDate !== '' && advanceDate !== today;
 
       const existingTokens = await getSalonTokens(business.uid, bookingDate);
-      const maxToken = existingTokens.length > 0 ? Math.max(...existingTokens.map(t => t.tokenNumber)) : 0;
-      const newTokenNumber = maxToken + 1;
-
       const activeTokens = existingTokens.filter(t => t.status === 'waiting' || t.status === 'serving');
       let waitMinutes = 0;
       if (!isAdvance) {
-        const servingToken = activeTokens.find(t => t.status === 'serving');
-        const waitingTokens = activeTokens.filter(t => t.status === 'waiting');
-        if (servingToken) waitMinutes += servingToken.totalTime;
-        waitingTokens.forEach(t => { waitMinutes += t.totalTime; });
-        if (business.queueDelayMinutes) waitMinutes += business.queueDelayMinutes;
+        const staffList = business.staffMembers || (business as any).staffList || [];
+        const activeStaff = Math.max(1, staffList.filter((s: any) => s.isAvailable !== false && s.active !== false).length || 1);
+        try {
+          const eta = calculateSmartETA({
+            activeStaffCount: activeStaff,
+            currentQueue: activeTokens,
+            requestedServiceDuration: totalTime,
+            queueDelay: business.queueDelayMinutes || 0
+          });
+          waitMinutes = eta.estimatedWaitMinutes;
+        } catch {
+          waitMinutes = activeTokens.reduce((s, t) => s + (t.totalTime * (t.groupSize || 1)), 0);
+        }
       }
 
-      const token: Omit<TokenEntry, 'id'> = {
+      const nextTokenNum = existingTokens.length + 1;
+      const tokenId = `${business.uid}_${bookingDate}_${nextTokenNum}_${Date.now()}`;
+
+      const tokenData = {
+        id: tokenId,
         salonId: business.uid,
         salonName: business.businessName,
         customerId: user.uid,
-        customerName: customerProfile?.name || user.displayName || 'Customer',
-        customerPhone: customerProfile?.phone || '',
-        tokenNumber: newTokenNumber,
-        selectedServices: selected,
-        totalTime,
-        totalPrice,
-        estimatedWaitMinutes: waitMinutes,
-        status: 'waiting',
-        createdAt: Date.now(),
+        customerName,
+        customerPhone,
         date: bookingDate,
-        isAdvanceBooking: isAdvance,
-        isTatkal,
-        assignedStaffId,
+        tokenNumber: nextTokenNum,
+        selectedServices: selected.map(s => ({ id: s.id, name: s.name, price: s.price, avgTime: s.avgTime })),
+        totalPrice,
+        totalTime,
+        status: 'waiting' as const,
+        estimatedWait: waitMinutes,
+        createdAt: Date.now(),
+        isTatkal: !!isTatkal,
         groupSize,
-        promoCode: appliedPromo?.code,
-        discountAmount: maxDiscount,
+        staffId: assignedStaffId || null,
+        isAdvance
       };
 
-      if (isTatkal) token.tatkalFee = TATKAL_FEE;
-      if (isAdvance) token.advanceDate = advanceDate;
-      if (specialInstructions.trim()) token.specialInstructions = specialInstructions.trim();
-      if (tipAmount > 0) token.tipAmount = tipAmount;
+      const { doc, setDoc } = await import('firebase/firestore');
+      await setDoc(doc(db, 'tokens', tokenId), tokenData);
 
-      const currentTotalPrice = (totalPrice || 0) + (tipAmount || 0);
-      token.totalPrice = currentTotalPrice;
-
-      console.log('Final Token Object for Booking:', token);
-
-      const tokenId = await getToken(token);
-      if (tokenId) {
-        triggerHaptic('heavy');
-        setShowConfirm(false);
-        setTimeout(() => {
-          setTokenResult({ tokenNumber: newTokenNumber, waitTime: waitMinutes, tokenId });
-        }, 300);
-      } else {
-        setGetError(`Failed to complete your ${term.noun.toLowerCase()}. Our server might be busy, please try again.`);
-      }
-    } catch (e: any) {
-      console.error('Booking Critical Failure:', e);
-      setGetError('Something went wrong: ' + (e?.message || 'Please try again'));
+      triggerHaptic('success');
+      setTokenResult({ tokenNumber: nextTokenNum, waitTime: waitMinutes, tokenId });
+      setShowConfirm(false);
+    } catch (err: any) {
+      console.error(err);
+      setGetError(err?.message || 'Failed to join queue');
     } finally {
       setGetting(false);
     }
   };
 
   const handleWhatsAppShare = () => {
-    if(!business) return;
-    const bookingUrl = `${window.location.origin}/customer/salon/${business.uid}`;
-    const info = getCategoryInfo(business.businessType);
-    const text = `Check out ${business.businessName} on Line Free India! ${info.icon}\n📍 ${business.location || ''}\n🎫 Get your online ${info.terminology.noun.toLowerCase()} and save time!\n\n${info.terminology.item}s: ${business.services?.map(s => `${s.name} (₹${s.price})`).join(', ')}\n\n🔗 ${bookingUrl}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    triggerHaptic('light');
+    const text = `Check out ${business?.businessName} on Line Free India!\nQueue: ${activeTokenCount} waiting (~${currentWaitTime} mins)\nBook here: ${window.location.href}`;
+    if (navigator.share) {
+      navigator.share({ title: business?.businessName, text, url: window.location.href }).catch(() => {});
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
   };
 
   const handleSubmitReview = async () => {
     if (!business || !user) return;
     setSubmittingReview(true);
-    triggerHaptic('medium');
-    await addReview({
-      salonId: business.uid,
-      customerId: user.uid,
-      customerName: customerProfile?.name || user.displayName || 'Customer',
-      customerPhoto: customerProfile?.photoURL || user.photoURL || '',
-      rating: reviewRating,
-      comment: reviewComment,
-      images: reviewImages,
-      createdAt: Date.now(),
-      staffId: reviewStaffId || undefined,
-      staffName: reviewStaffId && business.staffMembers ? business.staffMembers.find(s => s.id === reviewStaffId)?.name : undefined,
-    });
-    setReviews(await getSalonReviews(business.uid));
-    setShowReview(false);
-    setReviewComment('');
-    setReviewRating(5);
-    setReviewImages([]);
-    setSubmittingReview(false);
+    try {
+      await addReview({
+        salonId: business.uid,
+        customerId: user.uid,
+        customerName: customerProfile?.name || 'Customer',
+        rating: reviewRating,
+        comment: reviewComment,
+        createdAt: Date.now(),
+        verifiedVisit: true
+      });
+      setShowReview(false);
+      setReviewComment('');
+      getSalonReviews(business.uid).then(setReviews);
+      triggerHaptic('success');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!business) {
     return (
-      <div className="min-h-screen p-6">
-        <BackButton to="/customer/search" />
-        <div className="text-center py-20">
-          <span className="text-5xl block mb-3">😔</span>
-          <p className="text-text-dim">Business not found</p>
-        </div>
+      <div className="min-h-screen bg-[#F8FAFC] p-6 flex flex-col items-center justify-center text-center">
+        <p className="text-4xl mb-3">🏢</p>
+        <h2 className="text-lg font-black text-gray-900">Business Not Found</h2>
+        <p className="text-xs text-gray-500 mt-1 mb-4">This center is either closed or no longer available.</p>
+        <button
+          onClick={() => nav('/customer/search')}
+          className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs"
+        >
+          Back to Explore
+        </button>
       </div>
     );
   }
 
-  const catInfo = getCategoryInfo(business.businessType);
-  const term = catInfo.terminology;
-
-  // TOKEN / BOOKING SUCCESS SCREEN
+  // Booking confirmed screen
   if (tokenResult) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fadeIn">
-        <div className="text-center w-full max-w-sm">
-          <div className="w-28 h-28 rounded-full bg-success/20 border-4 border-success/40 flex items-center justify-center mx-auto mb-6">
-            <span className="text-6xl">✅</span>
+      <div className="min-h-screen bg-[#F8FAFC] p-5 flex flex-col items-center justify-center animate-fadeIn">
+        <div className="w-full max-w-sm bg-white rounded-3xl border border-gray-100 p-6 text-center shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+            <Check className="w-8 h-8 stroke-[2.5]" />
           </div>
-          <h1 className="text-2xl font-bold mb-1">{term.noun} Confirmed!</h1>
-          <p className="text-text-dim mb-6">{business.businessName}</p>
 
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 mb-5 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
-            <p className="text-text-dim text-sm mb-1">Your {term.noun} ID</p>
-            <p className="text-7xl font-black gradient-text my-2">{tokenResult.tokenNumber}</p>
-            <div className="w-full h-px bg-border my-3" />
-            <p className="text-text-dim text-sm">Estimated Wait</p>
-            <p className="text-2xl font-bold text-accent mt-1">
-              {tokenResult.waitTime > 0 ? `~${tokenResult.waitTime} ${term.unit}` : '🎉 You are next!'}
+          <h2 className="text-xl font-black text-gray-900 mb-0.5">Token Confirmed!</h2>
+          <p className="text-xs text-gray-500 mb-5 font-medium">{business.businessName}</p>
+
+          <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100 mb-5">
+            <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Your Token Number</p>
+            <p className="text-5xl font-black text-emerald-600 my-2">#{tokenResult.tokenNumber}</p>
+            <div className="w-full h-px bg-emerald-100 my-3" />
+            <p className="text-xs font-semibold text-gray-500">
+              Estimated Wait: <strong className="text-gray-900 font-black">~{tokenResult.waitTime} min</strong>
             </p>
-            <div className="mt-4 space-y-1">
-              {selected.map(s => (
-                <div key={s.id} className="flex justify-between text-sm">
-                  <span className="text-text-dim">{s.name}</span>
-                  <span className="font-medium">₹{s.price}</span>
-                </div>
-              ))}
-              <div className="flex justify-between font-bold text-base pt-2 border-t border-border/50">
-                <span>Total</span>
-                <span className="gradient-text">₹{totalPrice}</span>
-              </div>
-            </div>
           </div>
 
-          <button
-            onClick={() => {
-              const shareText = `🎫 *${term.noun} Confirmed!*\n\n${catInfo.icon} *${business.businessName}*\n🔢 ID #: *${tokenResult.tokenNumber}*\n⏰ Wait: ~${tokenResult.waitTime} ${term.unit}\n💰 Total: ₹${totalPrice}\n📋 ${term.item}s: ${selected.map(s => s.name).join(', ')}\n\n_Powered by Line Free India_ 💄`;
-              window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-            }}
-            className="w-full p-4 rounded-2xl bg-[#25D366]/15 border border-[#25D366]/30 text-[#25D366] font-semibold mb-3 flex items-center justify-center gap-2"
-          >
-            📲 Share on WhatsApp
-          </button>
-
-          <button onClick={() => nav('/customer/tokens')} className="btn-primary mb-3">
-            🎫 View My Activity
-          </button>
-          <button onClick={() => nav('/customer/home')} className="btn-secondary">
-            Go Home
-          </button>
-
-          <p className="text-text-dim text-xs mt-4">Please arrive 5-10 minutes before your time.</p>
+          <div className="space-y-2">
+            <button
+              onClick={() => nav('/customer/tokens')}
+              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition"
+            >
+              View in My Tokens
+            </button>
+            <button
+              onClick={handleWhatsAppShare}
+              className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center justify-center gap-1.5"
+            >
+              <Share2 className="w-4 h-4" /> Share on WhatsApp
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const bookingDate = advanceDate || today;
-  const isBlockedDate = (business.blockedDates || []).includes(bookingDate);
   const isClosed = !business.isOpen;
-  const isOnBreak = business.isBreak;
-  const isStopped = business.isStopped;
-  const canGetToken = business.isOpen && !business.isStopped && !isBlockedDate;
-  const isQueueFull = business.maxCapacity ? activeTokenCount >= business.maxCapacity : false;
+  const initialLetter = business.businessName ? business.businessName.charAt(0).toUpperCase() : 'S';
 
   return (
-    <div className="min-h-screen bg-bg text-text selection:bg-primary/30 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-gray-900 pb-36 select-none relative overflow-x-hidden">
       <Helmet>
-        <title>{business.businessName} · Elite Universe</title>
+        <title>{business.businessName} · Line Free India</title>
       </Helmet>
 
-      {/* 👑 Elite Aurora Background */}
-      <div className="aurora-mesh-v2 opacity-30">
-        <div className="aurora-blob-1" />
-        <div className="aurora-blob-2" />
-        <div className="aurora-blob-3" />
+      {/* Hero Photo Banner with Top Safe Area & Floating Controls (Screen 6) */}
+      <div className="relative w-full h-72 bg-gray-200">
+        <img
+          src={getBusinessImageWithFallback(business.photoURL, business.bannerImageURL, business.businessType)}
+          alt={business.businessName}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/50" />
+
+        {/* Floating Top Controls with safe-area top padding */}
+        <div className="absolute top-0 inset-x-0 app-header-safe px-4 flex items-center justify-between z-10">
+          <button
+            onClick={() => { triggerHaptic('light'); nav(-1); }}
+            className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-800 hover:bg-white transition cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => { triggerHaptic('medium'); toggleFavorite(business.uid); }}
+              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center transition cursor-pointer"
+            >
+              <Heart className={`w-5 h-5 ${isFavorite(business.uid) ? 'fill-rose-500 text-rose-500' : 'text-gray-700'}`} />
+            </button>
+            <button
+              onClick={handleWhatsAppShare}
+              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-gray-700 hover:bg-white transition cursor-pointer"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 p-6 pb-32 max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-8 pt-4">
-          <BackButton to="/customer/search" />
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => toggleFavorite(business.uid)} 
-            className={`w-14 h-14 elite-glass rounded-3xl flex items-center justify-center text-xl transition-all border-white/10 ${isFavorite(business.uid) ? 'text-primary ring-2 ring-primary/20' : 'text-white/40'}`}
-          >
-            {isFavorite(business.uid) ? '❤️' : '🤍'}
-          </motion.button>
-        </div>
-
-        {/* Flash Sale Banner */}
-        {business.promoCodes && business.promoCodes.some(p => p.active) && (
-          <div className="mt-4 mb-3 p-3 rounded-2xl bg-gradient-to-r from-success/90 to-success text-white shadow-lg flex items-center justify-between animate-pulse-glow border border-success">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl drop-shadow-md">⚡</span>
-              <div>
-                <p className="font-black text-sm uppercase tracking-widest leading-tight">Flash Sale</p>
-                <p className="text-[10px] font-bold opacity-90">Code: {business.promoCodes.find(p => p.active)?.code}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="font-black text-lg bg-white/20 px-2.5 py-1 rounded-xl border border-white/30 backdrop-blur-sm shadow-inner">
-                {business.promoCodes.find(p => p.active)?.type === 'percentage' 
-                  ? `${business.promoCodes.find(p => p.active)?.value}%` 
-                  : `₹${business.promoCodes.find(p => p.active)?.value}`} OFF
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Banner */}
-        <div className={`${business.promoCodes?.some(p => p.active) ? 'mb-5' : 'mt-4 mb-5'}`}>
-          <div className="w-full h-44 rounded-2xl bg-card-2 overflow-hidden mb-4 relative">
-            <img 
-              src={getBusinessImageWithFallback(business.photoURL, business.bannerImageURL, business.businessType)} 
-              className="w-full h-44 object-cover" 
-              alt={business.businessName} 
-            />
-            <button onClick={() => toggleFavorite(business.uid)} className="absolute top-3 right-3 w-10 h-10 rounded-full glass-strong flex items-center justify-center text-xl active:scale-90 transition-transform">
-              {isFavorite(business.uid) ? '❤️' : '🤍'}
-            </button>
-            {business.stories && business.stories.length > 0 && (
-              <button 
-                onClick={() => setViewingStory(true)}
-                className="absolute top-3 left-3 w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-gold to-primary shadow-xl z-10 animate-pulse-glow"
-              >
-                <div className="w-full h-full rounded-full elite-glass border-2 border-background flex items-center justify-center overflow-hidden spatial-card">
-                  <img src={business.stories[business.stories.length-1].url} className="w-full h-full object-cover" alt="Story" />
-                </div>
-              </button>
-            )}
-            <div className="absolute bottom-3 left-3 flex gap-2">
-              <span className={`badge text-xs shadow-md backdrop-blur-md border font-black uppercase ${isClosed ? 'bg-danger/90 border-danger/50 text-white' : isOnBreak ? 'bg-warning/90 border-warning/50 text-white' : 'bg-success/90 border-success/50 text-white'}`}>
-                {isClosed ? '🔴 CLOSED' : isOnBreak ? '🟡 ON BREAK' : '🟢 LIVE NOW'}
-              </span>
-              {isStopped && <span className="badge bg-card/80 border border-border text-white text-xs backdrop-blur-md font-black uppercase">⚠️ BOOKINGS PAUSED</span>}
-            </div>
-          </div>
-
-          {/* Announcement Marquee */}
-          {business.announcement && (
-            <div className="w-full bg-accent/10 border border-accent/20 rounded-xl mb-4 overflow-hidden flex items-center px-3 py-2 shadow-sm">
-              <span className="text-xl mr-2">📢</span>
-              <div className="flex-1 overflow-hidden" dangerouslySetInnerHTML={{ __html: `<marquee scrollamount="5" class="text-sm font-bold text-accent">${business.announcement}</marquee>` }} />
-            </div>
-          )}
-
-        <div className="mb-10">
-          <div className="flex items-start justify-between gap-6 mb-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl type-elite-display">{business.businessName}</h1>
-                {(business as any).isVerified && (
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs shadow-inner">⚡</div>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="type-elite-label opacity-40">{catInfo.label}</span>
-                <span className="w-1 h-1 rounded-full bg-white/10" />
-                <span className="text-sm font-bold text-white/60 tracking-tight">{business.name}</span>
-              </div>
-            </div>
-
-            {business.rating && (
-              <motion.div 
-                whileHover={{ y: -5, rotateZ: 5 }}
-                className="elite-glass p-4 rounded-[2rem] border-gold/20 flex flex-col items-center justify-center shadow-2xl min-w-[80px]"
-              >
-                <p className="text-gold font-black text-2xl tracking-tighter leading-none">⭐ {business.rating}</p>
-                <p className="text-[9px] font-black uppercase text-white/30 tracking-[0.2em] mt-2">{business.totalReviews} Pulse</p>
-              </motion.div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-4 px-1">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { triggerHaptic('medium'); toggleFollow(business.uid); }}
-              className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all shadow-xl ${
-                customerProfile?.following?.includes(business.uid) 
-                ? 'elite-glass text-white/40' 
-                : 'bg-primary text-black shadow-primary/30'
-              }`}
-            >
-              {customerProfile?.following?.includes(business.uid) ? 'Subscribed' : 'Join Universe'}
-            </motion.button>
-            <button
-              onClick={() => {
-                const text = `Check out ${business.businessName} on Line Free India! Current wait: ${currentWaitTime} mins. Join line: ${window.location.href}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-              }}
-              className="px-8 py-3 rounded-2xl elite-glass border-white/5 text-white/60 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              Pulse Status
-            </button>
-          </div>
-        </div>
-            
-            <div className="flex flex-col gap-2 mt-4">
-              <button 
-                onClick={() => nav(`/customer/community/${business.uid}`)}
-                className="w-full bg-accent/10 border border-accent/20 rounded-2xl p-4 flex items-center justify-between group active:scale-[0.98] transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent text-xl">💬</div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black text-accent uppercase tracking-widest">Community Board</p>
-                    <p className="text-xs text-text-dim font-bold">Ask about wait times & help others</p>
-                  </div>
-                </div>
-                <div className="text-accent group-hover:translate-x-1 transition-transform">→</div>
-              </button>
-            </div>
-              
-              {business.location && (
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <p className="text-text-dim text-xs opacity-90">📍 {business.location}</p>
-                  {(business.lat && business.lng) && (
-                    <a href={`https://maps.google.com/?q=${business.lat},${business.lng}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 rounded bg-[#4285F4]/15 border border-[#4285F4]/30 text-[#4285F4] text-[10px] font-bold hover:bg-[#4285F4]/20 transition-all ml-1 flex items-center gap-1">
-                      🗺️ Map
-                    </a>
-                  )}
-                </div>
-              )}
-              {business.phone && <p className="text-text-dim text-xs mt-1.5 font-medium">📞 {business.phone}</p>}
-              {business.businessHours && <p className="text-accent text-xs mt-1 font-semibold">⏰ {business.businessHours}</p>}
-              {business.bio && <p className="text-text-dim text-xs mt-2 italic px-3 border-l-2 border-primary/50 py-1">"{business.bio}"</p>}
-            
-            {business.rating && (
-              <div className="text-center p-2.5 rounded-2xl bg-gold/10 border border-gold/30 ml-3 shadow-inner">
-                <p className="text-gold font-bold text-lg leading-tight">⭐ {business.rating}</p>
-                <p className="text-text-dim text-[9px] mt-0.5 font-medium">{business.totalReviews} reviews</p>
-              </div>
-            )}
-          </div>
-
-          {/* Feature Badges from category flags */}
-          {(catInfo.hasHomeService || catInfo.hasEmergencySlot || catInfo.hasTimedSlots || catInfo.hasMenu) && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {catInfo.hasHomeService && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center gap-1">
-                  🏠 Home Service Available
-                </span>
-              )}
-              {catInfo.hasEmergencySlot && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-danger/10 border border-danger/20 text-danger flex items-center gap-1">
-                  ⚡ Emergency Slot
-                </span>
-              )}
-              {catInfo.hasTimedSlots && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
-                  📅 Appointments
-                </span>
-              )}
-              {catInfo.hasMenu && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-gold/10 border border-gold/20 text-gold flex items-center gap-1">
-                  📍 Digital Menu
-                </span>
-              )}
-              {catInfo.supportsGroupBooking && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/10 border border-green-500/20 text-green-400 flex items-center gap-1">
-                  👥 Group Booking
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            <button onClick={() => nav(`/customer/chat/${business.uid}`)} className="w-full py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary text-center hover:bg-primary/20 transition-colors">
-              💬 Message
-            </button>
-            <button onClick={handleWhatsAppShare} className="w-full py-2.5 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/20 text-xs font-bold text-[#25D366] text-center hover:bg-[#25D366]/20 transition-colors">
-              📲 Share
-            </button>
-            {business.phone && (
-              <a href={`tel:${business.phone}`} className="flex flex-col items-center justify-center w-full py-2.5 rounded-2xl bg-accent/10 border border-accent/20 text-xs font-bold text-accent hover:bg-accent/20 transition-colors">
-                📞 Call
-              </a>
-            )}
-            {catInfo.hasVideoConsult && (
-              <button onClick={() => nav(`/customer/consultation/${business.uid}`)} className="w-full py-2.5 rounded-2xl bg-[#4285F4]/10 border border-[#4285F4]/20 text-xs font-bold text-[#4285F4] text-center hover:bg-[#4285F4]/20 transition-colors shadow-sm">
-                📹 Video
-              </button>
-            )}
-            {catInfo.hasEmergencySlot && (
-              <button onClick={() => { setIsTatkal(true); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }} className="w-full py-2.5 rounded-2xl bg-danger/10 border border-danger/20 text-xs font-bold text-danger text-center hover:bg-danger/20 transition-colors shadow-sm animate-pulse-glow">
-                ⚡ Emergency
-              </button>
-            )}
-            {catInfo.hasHomeService && (
-              <button onClick={() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert('Home Service option selected. Please confirm during checkout.'); }} className="w-full py-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-500 text-center hover:bg-blue-500/20 transition-colors shadow-sm">
-                🏠 Home Visit
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* 📊 Elite Live Analytics */}
-        <motion.div 
-          whileHover={{ y: -5 }}
-          className="mb-10 p-8 rounded-[3rem] elite-glass border-white/5 shadow-2xl relative overflow-hidden group"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Live Occupancy</p>
-              <h3 className="type-elite-label text-white/40">Venue Pulse Analytics</h3>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-success text-[10px] font-black uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 bg-success rounded-full animate-ping" />
-              Live
-            </div>
-          </div>
-          
-          <div className="flex items-end justify-between gap-3 h-20">
-            {[20, 30, 45, 80, 100, 65, 40, 15, 30, 50].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2 group/bar">
-                <div 
-                  className={`w-full rounded-full transition-all duration-700 origin-bottom group-hover/bar:brightness-150 ${h > 70 ? 'bg-gradient-to-t from-danger/20 to-danger shadow-[0_0_20px_rgba(255,107,107,0.3)]' : 'bg-white/5'}`} 
-                  style={{ height: `${h}%` }} 
-                />
-                <span className="text-[8px] font-black text-white/20 uppercase tracking-tighter">{i + 9}h</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 🎚️ Elite Navigation Deck */}
-        <div className="flex gap-4 mb-10 overflow-x-auto no-scrollbar pb-4 px-1">
-          {[
-            { id: 'services', label: catInfo.hasMenu ? 'The Menu' : 'Services', icon: '📋' },
-            { id: 'about', label: 'About', icon: '📖', show: business.about },
-            { id: 'gallery', label: 'Gallery', icon: '🖼️', show: business.galleryImages && business.galleryImages.length > 0 },
-            { id: 'portfolio', label: 'Portfolio', icon: '📸', show: catInfo.id === 'photography' && business.portfolioImages?.length > 0 },
-            { id: 'store', label: 'Boutique', icon: '🛍️', show: business.products?.length > 0 },
-            { id: 'reviews', label: 'Community', icon: '⭐' }
-          ].filter(t => t.show !== false).map((tab) => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)} 
-              className={`flex-shrink-0 px-8 py-4 rounded-3xl type-elite-label transition-all border shadow-2xl ${activeTab === tab.id ? 'bg-primary border-primary text-black scale-105' : 'elite-glass border-white/5 text-white/30 hover:text-white'}`}
-            >
-              <span className="mr-2 opacity-50">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Services Tab */}
-        {activeTab === 'services' && (
-          <div className="animate-fadeIn">
-            {(!canGetToken && (!isOnBreak || isBlockedDate)) && (
-              <div className="p-4 rounded-xl bg-warning/10 border border-warning/30 mb-5 flex items-center gap-3">
-                <span className="text-2xl">⚠️</span>
-                <p className="text-warning text-sm font-bold">
-                  {isBlockedDate 
-                    ? `${business.businessName} is on leave on ${new Date(bookingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}.` 
-                    : isClosed 
-                      ? `${business.businessName} is currently closed.` 
-                      : isStopped 
-                        ? 'Bookings are paused for now.' 
-                        : 'Currently taking a break, but you can still book.'}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-6 mb-12">
-              <h3 className="type-elite-label text-white/30 px-2 mb-4 tracking-[0.3em]">{catInfo.hasMenu ? 'Curation' : `Tactical ${term.item}s`}</h3>
-              
-              {catInfo.hasMenu && business.menuItems && business.menuItems.length > 0 ? (
-                Object.entries((business.menuItems || []).reduce((acc: any, item) => {
-                  (acc[item.category || 'Other'] = acc[item.category || 'Other'] || []).push(item);
-                  return acc;
-                }, {})).map(([category, items]) => (
-                  <div key={category} className="mb-10">
-                    <h4 className="type-elite-display text-2xl mb-6 text-primary/80 px-2 tracking-widest">{category}</h4>
-                    <div className="grid gap-4">
-                      {(items as any[]).map(item => {
-                        const isSelected = !!selected.find(x => x.id === item.id);
-                        return (
-                          <motion.div 
-                            key={item.id} 
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => (canGetToken || (isOnBreak && !isBlockedDate)) ? toggleService(item as any) : null} 
-                            className={`spatial-perspective group relative`}
-                          >
-                            <div className={`p-6 rounded-[2.5rem] border transition-all spatial-card shadow-2xl flex gap-6 ${isSelected ? 'bg-white text-black border-white' : 'elite-glass border-white/5 text-white'}`}>
-                              {item.photoUrl && (
-                                <div className="w-32 h-32 rounded-3xl overflow-hidden border border-white/10 shadow-inner group-hover:rotate-2 transition-transform">
-                                  <img src={item.photoUrl} alt={item.name} className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                              <div className="flex-1 flex flex-col justify-center">
-                                <p className="type-elite-label text-lg mb-2 leading-tight">{item.name}</p>
-                                <div className="flex items-center gap-3">
-                                  <p className={`text-2xl font-black ${isSelected ? 'text-black' : 'text-primary'}`}>₹{item.price}</p>
-                                  {item.calories && <span className="px-2 py-1 rounded-lg bg-black/10 border border-black/5 text-[9px] font-black uppercase tracking-widest">{item.calories} KCAL</span>}
-                                </div>
-                                {item.description && <p className={`text-xs mt-3 line-clamp-2 opacity-60 leading-relaxed`}>{item.description}</p>}
-                              </div>
-                              <div className="flex items-center">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${isSelected ? 'bg-black text-white' : 'bg-primary text-black shadow-lg shadow-primary/20'}`}>
-                                  {isSelected ? '✓' : '+'}
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
-              ) : catInfo.id === 'gym' && business.memberships && business.memberships.length > 0 ? (
-                business.memberships.map((plan) => {
-                  const s = { id: plan.id, name: plan.name, price: plan.price, avgTime: 0 };
-                  const isSelected = !!selected.find(x => x.id === s.id);
-                  return (
-                    <div
-                      key={plan.id}
-                      onClick={() => (canGetToken || (isOnBreak && !isBlockedDate)) ? toggleService(s) : null}
-                      className={`w-full p-5 rounded-3xl border text-left transition-all relative overflow-hidden cursor-pointer shadow-sm mb-4 ${isSelected ? 'bg-primary/5 border-primary ring-2 ring-primary/20 shadow-md' : 'bg-card border-border hover:border-primary/40'} ${(isClosed || isStopped || isBlockedDate) ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
-                    >
-                      {/* Premium Accent */}
-                      <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl pointer-events-none -translate-y-10 translate-x-10 ${isSelected ? 'bg-primary/20' : 'bg-text-dim/5'}`} />
-                      
-                      <div className="flex justify-between items-start mb-3 relative z-10">
-                        <div>
-                          <p className={`font-black text-xl mb-1 ${isSelected ? 'text-primary' : 'text-text'}`}>{plan.name}</p>
-                          <p className="text-[10px] font-bold text-text-dim uppercase tracking-widest">{plan.durationDays} Days Pass</p>
-                        </div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isSelected ? 'bg-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]' : 'neu-inset text-text-dim border-transparent'}`}>
-                          {isSelected ? '✓' : '+'}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-end justify-between relative z-10">
-                        <p className={`font-black text-3xl tracking-tight ${isSelected ? 'gradient-text' : 'text-text'}`}>
-                          ₹{plan.price}
-                        </p>
-                      </div>
-
-                      {plan.features && plan.features.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-border/50 space-y-2 relative z-10">
-                          {plan.features.map((feat, idx) => (
-                            <p key={idx} className="text-xs font-medium text-text-dim flex items-center gap-2">
-                              <span className="text-success text-[10px]">🟢</span> {feat}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
+      {/* Overlapping Info Card (Screen 6) */}
+      <div className="px-4 -mt-10 relative z-20 space-y-4">
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4">
+          <div className="flex items-start gap-4">
+            {/* Squircle logo */}
+            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-black text-2xl shadow-xs shrink-0">
+              {business.photoURL ? (
+                <img src={business.photoURL} alt="" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                business.services?.map(s => {
-                  const isSelected = !!selected.find(x => x.id === s.id);
-                  return (
-                    <div
-                      key={s.id}
-                      className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between gap-4 shadow-sm bg-card transition-all ${isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-text-dim/30'} ${(isClosed || isStopped || isBlockedDate) ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex-1">
-                        <p className={`font-bold text-base`}>{s.name}</p>
-                        <p className="text-text-dim text-xs font-medium mt-0.5">⏱ ~{s.avgTime} MIN</p>
-                        <p className={`font-black text-lg gradient-text mt-1`}>₹{s.price}</p>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          if (canGetToken || (isOnBreak && !isBlockedDate)) {
-                             triggerHaptic('medium');
-                             setSelected([s]);
-                             setShowConfirm(true);
-                          }
-                        }}
-                        disabled={isClosed || isStopped || isBlockedDate}
-                        className={`uv-btn-neon text-[10px] sm:text-xs py-2 px-4 whitespace-nowrap ${(isClosed || isStopped || isBlockedDate) ? 'opacity-50' : ''}`}
-                      >
-                         GET TOKEN
-                      </button>
-                    </div>
-                  );
-                })
+                <span>{initialLetter}</span>
               )}
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
             </div>
 
-            {/* Removed internal products rendering for Universal E-Store architecture */}
+            {/* Title & Info */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-black text-gray-900 leading-tight truncate">
+                {business.businessName}
+              </h1>
+              <p className="text-sm text-gray-500 font-medium truncate mt-0.5">
+                {catInfo.label} &bull; {business.location || 'Local Area'}
+              </p>
 
-            {/* 👨‍✈️ Elite Staff Selection */}
-            {business.staffMembers && business.staffMembers.length > 0 && selected.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-12"
-              >
-                <h3 className="type-elite-label text-white/30 px-2 mb-6 tracking-[0.3em]">Operational Personnel</h3>
-                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar px-1">
-                  <button 
-                    onClick={() => setAssignedStaffId(undefined)}
-                    className={`flex-shrink-0 px-8 py-4 rounded-3xl type-elite-label transition-all border shadow-2xl ${!assignedStaffId ? 'bg-primary text-black border-primary' : 'elite-glass border-white/5 text-white/40'}`}
-                  >
-                    Any Personnel
-                  </button>
-                  {business.staffMembers.filter(s => s.isAvailable).map(staff => (
-                    <div 
-                      key={staff.id}
-                      className={`flex-shrink-0 elite-glass p-1.5 rounded-[2rem] border-white/5 transition-all shadow-2xl flex items-center gap-3 ${assignedStaffId === staff.id ? 'ring-2 ring-primary bg-primary/10' : ''}`}
-                    >
-                      <button 
-                        onClick={() => { triggerHaptic('light'); setAssignedStaffId(staff.id); }} 
-                        className={`flex items-center gap-4 px-6 py-2 type-elite-label transition-transform active:scale-95 ${assignedStaffId === staff.id ? 'text-primary' : 'text-white/60'}`}
-                      >
-                        <div className={`w-2 h-2 rounded-full ${assignedStaffId === staff.id ? 'bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]' : 'bg-white/20'}`} />
-                        {staff.name}
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); triggerHaptic('medium'); setSelectedStaffProfile(staff); }} 
-                        className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xs hover:bg-white/10 transition-colors"
-                      >
-                        ℹ️
-                      </button>
-                    </div>
-                  ))}
+              {/* Rating */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-1 text-sm font-black text-gray-900">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span>{business.rating ? business.rating.toFixed(1) : '4.8'}</span>
+                  <span className="text-gray-400 font-medium text-xs">({business.totalReviews || 124})</span>
                 </div>
-              </motion.div>
-            )}
-
-            {/* Summary Ticket */}
-            {selected.length > 0 && (
-              <div className="p-5 rounded-3xl elite-glass border-2 border-primary/20 mb-6 animate-slideUp overflow-hidden relative spatial-card">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none -translate-y-10 translate-x-10" />
-                <h3 className="font-bold text-lg mb-3">Booking Summary</h3>
-                <div className="space-y-2 mb-4">
-                  {selected.map(s => (
-                    <div key={s.id} className="flex justify-between text-sm">
-                      <span className="text-text-dim font-medium">{s.name} <span className="text-xs opacity-50">x{groupSize}</span></span>
-                      <span className="font-bold">₹{s.price * groupSize}</span>
-                    </div>
-                  ))}
-                  {isTatkal && (
-                    <div className="flex justify-between text-sm text-gold font-bold bg-gold/5 p-2 rounded-lg border border-gold/10">
-                      <span>🔥 Priority Access</span>
-                      <span>₹{TATKAL_FEE}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="w-full border-t border-dashed border-border mb-4" />
-                <div className="flex justify-between font-black text-xl">
-                  <span>Total</span>
-                  <span className="gradient-text">₹{totalPrice}</span>
-                </div>
-                <div className="flex justify-between text-xs text-text-dim mt-1 font-medium">
-                  <span>Estimated Duration</span>
-                  <span>~{totalTime} {term.unit}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Group Size Selector */}
-            {selected.length > 0 && (
-              <div className="mb-6 p-5 rounded-3xl bg-card-2 border border-border flex items-center justify-between animate-slideUp shadow-sm">
-                <div>
-                  <h3 className="font-bold text-base">{catInfo.id === 'laundry' ? '🧺 Number of Pieces' : '👥 Booking for'}</h3>
-                  <p className="text-xs text-text-dim mt-0.5">{catInfo.id === 'laundry' ? 'Total garments' : 'Friends or family?'}</p>
-                </div>
-                <div className="flex items-center gap-4 bg-background p-1.5 rounded-2xl border border-border">
-                  <button onClick={() => setGroupSize(Math.max(1, groupSize - 1))} className="w-10 h-10 rounded-xl elite-glass flex items-center justify-center font-bold text-xl active:scale-95 disabled:opacity-30 border-white/10 shadow-sm text-text-dim spatial-card" disabled={groupSize <= 1}>-</button>
-                  <span className="font-black text-xl w-6 text-center">{groupSize}</span>
-                  <button onClick={() => setGroupSize(Math.min(10, groupSize + 1))} className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xl active:scale-95 shadow-md shadow-primary/30">+</button>
-                </div>
-              </div>
-            )}
-
-            {/* Repair Shop Special Instructions */}
-            {catInfo.id === 'repair_shop' && selected.length > 0 && (
-              <div className="mb-6 animate-slideUp">
-                <label className="text-sm font-bold text-text-dim px-1 uppercase tracking-wider mb-2 block">📱 Device & Issue Details</label>
-                <textarea
-                  value={specialInstructions}
-                  onChange={e => setSpecialInstructions(e.target.value)}
-                  placeholder="E.g., iPhone 13 Pro - Screen shattered and battery drains fast"
-                  className="w-full p-4 rounded-2xl neu-inset text-sm min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
-                />
-              </div>
-            )}
-
-            {/* Skip Option (Tatkal via generic term) */}
-            {selected.length > 0 && (!advanceDate || advanceDate === today) && (
-              <div 
-                onClick={() => setIsTatkal(!isTatkal)}
-                className={`mb-6 p-5 rounded-3xl border-2 transition-all cursor-pointer flex items-center justify-between animate-slideUp ${isTatkal ? 'bg-gold/10 border-gold shadow-xl shadow-gold/10' : 'bg-card border-border shadow-sm'}`}
-              >
-                <div>
-                  <h3 className="font-bold text-base flex items-center gap-2"><span className="text-2xl drop-shadow-md">🚀</span> Priority Access</h3>
-                  <p className="text-xs text-text-dim mt-1 font-medium">Skip the queue instantly</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-black text-gold text-lg">+₹{TATKAL_FEE}</span>
-                  <div className={`w-12 h-7 rounded-full p-1 transition-colors ${isTatkal ? 'bg-gold' : 'bg-card-2 border border-border'}`}>
-                    <div className={`w-5 h-5 rounded-full bg-white transition-transform ${isTatkal ? 'translate-x-5' : ''} shadow-sm`} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Advance Date */}
-            {selected.length > 0 && catInfo.supportsGroupBooking && (
-              <div className="mb-6 animate-slideUp">
-                <label className="flex items-center gap-2 text-sm font-bold text-text-dim px-1 uppercase tracking-wider mb-3">
-                  👥 Group Size
-                </label>
-                <div className="flex items-center justify-between elite-glass rounded-2xl p-2 w-max spatial-card">
-                  <button onClick={() => setGroupSize(Math.max(1, groupSize - 1))} className="w-10 h-10 rounded-xl neu-btn text-lg font-bold text-text-dim hover:text-danger hover:border-danger/50 active:scale-95 transition-all shadow-sm">-</button>
-                  <span className="w-12 text-center text-lg font-black gradient-text">{groupSize}</span>
-                  <button onClick={() => setGroupSize(Math.min(10, groupSize + 1))} className="w-10 h-10 rounded-xl elite-glass border-white/10 text-lg font-bold text-text-dim hover:text-success hover:border-success/50 active:scale-95 transition-all shadow-sm spatial-card">+</button>
-                </div>
-              </div>
-            )}
-            
-            {/* Advance Date */}
-            {selected.length > 0 && (
-              <div className="mb-8 animate-slideUp">
-                <label className="flex items-center gap-2 text-sm font-bold text-text-dim px-1 uppercase tracking-wider mb-3">
-                  📅 Schedule Date
-                  {!isAdvanceSub && <span className="px-2 py-0.5 rounded border border-warning/50 bg-warning/10 text-warning text-[9px] uppercase font-black">Pro Only</span>}
-                </label>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setAdvanceDate('')}
-                    className={`flex-1 p-3.5 rounded-2xl text-sm font-bold border-2 transition-all shadow-sm ${!advanceDate || advanceDate === today ? 'bg-primary/10 border-primary text-primary' : 'neu-panel text-text-dim border-transparent'}`}
-                  >
-                     Today
-                  </button>
-                  <div className="flex-1 relative cursor-pointer group" onClick={() => { if(!isAdvanceSub && typeof window !== 'undefined') { window.alert('Advance booking requires Pro Subscription. Upgrade in settings!'); nav('/customer/subscription'); } }}>
-                    <input
-                      type="date"
-                      value={advanceDate}
-                      onChange={e => setAdvanceDate(e.target.value)}
-                      min={today}
-                      disabled={!isAdvanceSub}
-                      className={`w-full h-full p-3 rounded-2xl neu-inset text-sm font-bold xl:pr-4 ${isAdvanceSub ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
-                    />
-                    {!isAdvanceSub && <div className="absolute inset-0 z-10" />}
-                  </div>
-                </div>
-                {advanceDate && advanceDate !== today && (
-                  <div className="mt-3 p-3 rounded-xl bg-accent/10 border border-accent/20 flex items-center gap-2">
-                    <span className="text-lg">📆</span>
-                    <p className="text-xs text-accent font-bold">Scheduled for: {new Date(advanceDate + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(canGetToken || (isOnBreak && !isBlockedDate)) && selected.length > 0 && (
-              <div className="sticky bottom-4 z-30 animate-slideUp pb-4">
-                {isQueueFull ? (
-                  <button disabled className="w-full py-4 rounded-full bg-danger border border-danger/50 text-white font-black text-lg shadow-sm flex items-center justify-center gap-2 opacity-90 grayscale-[0.2]">
-                    Waitlist Full 🚫
-                  </button>
+                {business.isOpen ? (
+                  <span className="ml-2 text-xs font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Open Now
+                  </span>
                 ) : (
-                  <button onClick={() => { triggerHaptic('medium'); setShowConfirm(true); }} className="w-full py-4 rounded-full bg-primary text-white font-black text-lg shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    {advanceDate && advanceDate !== today ? `Advance ${term.action}` : term.action}
-                    <span className="text-xl">➔</span>
-                  </button>
+                  <span className="ml-2 text-xs font-bold px-2.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-100">
+                    Closed
+                  </span>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* 4 Action Buttons (Screen 6: Directions, Call, Share, Save) */}
+          <div className="grid grid-cols-4 gap-2 pt-2 border-t border-gray-100">
+            <a
+              href={business.lat && business.lng ? `https://maps.google.com/?q=${business.lat},${business.lng}` : `https://maps.google.com/?q=${encodeURIComponent(business.location || business.businessName)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 transition"
+            >
+              <Navigation className="w-5 h-5 text-emerald-600 mb-1" />
+              <span className="text-xs font-bold">Directions</span>
+            </a>
+
+            <a
+              href={business.phone ? `tel:${business.phone}` : '#'}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 transition ${!business.phone ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              <Phone className="w-5 h-5 text-blue-600 mb-1" />
+              <span className="text-xs font-bold">Call</span>
+            </a>
+
+            <button
+              onClick={handleWhatsAppShare}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 transition cursor-pointer"
+            >
+              <Share2 className="w-5 h-5 text-emerald-600 mb-1" />
+              <span className="text-xs font-bold">Share</span>
+            </button>
+
+            <button
+              onClick={() => { triggerHaptic('medium'); toggleFavorite(business.uid); }}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 transition cursor-pointer"
+            >
+              <Bookmark className={`w-5 h-5 mb-1 ${isFavorite(business.uid) ? 'fill-emerald-600 text-emerald-600' : 'text-gray-600'}`} />
+              <span className="text-xs font-bold">{isFavorite(business.uid) ? 'Saved' : 'Save'}</span>
+            </button>
+          </div>
+
+          {/* Queue Strip (Screen 6: No Waiting Line • ~0 min) */}
+          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${activeTokenCount === 0 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span className="text-sm font-black text-emerald-900">
+                {activeTokenCount === 0 ? 'No Waiting Line' : `${activeTokenCount} Waiting in Line`}
+              </span>
+              <span className="text-emerald-300">&bull;</span>
+              <span className="text-sm font-semibold text-emerald-700">
+                ~{currentWaitTime} min
+              </span>
+            </div>
+
+            <button
+              onClick={() => setShowLiveQueueModal(true)}
+              className="text-xs font-bold text-emerald-700 underline cursor-pointer"
+            >
+              Details
+            </button>
+          </div>
+        </div>
+
+        {/* Section: About (Screen 6) */}
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs">
+          <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider mb-2.5">About</h3>
+          <p className="text-sm text-gray-600 leading-relaxed font-medium">
+            {business.about || business.bio || 'Premium grooming and personal care services. Enjoy instant queuing with zero waiting line.'}
+          </p>
+        </div>
+
+        {/* Section: Services (Screen 6) */}
+        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-3.5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black text-gray-900">Services</h3>
+            {selected.length > 0 && (
+              <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
+                {selected.length} selected &bull; ₹{totalPrice}
+              </span>
             )}
           </div>
-        )}
 
-        {/* Store Tab (E-Commerce) */}
-        {activeTab === 'store' && business.products && (
-          <div className="animate-fadeIn">
-            {(!canGetToken && (!isOnBreak || isBlockedDate)) && (
-              <div className="p-4 rounded-xl bg-warning/10 border border-warning/30 mb-5 flex items-center gap-3">
-                <span className="text-2xl">⚠️</span>
-                <p className="text-warning text-sm font-bold">Store ordering is currently paused while {business.businessName} is closed.</p>
-              </div>
-            )}
-            <div className="mb-6 flex items-center justify-between px-1">
-              <div>
-                <h3 className="font-black text-xl gradient-text">LineFree Store</h3>
-                <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest mt-0.5">Premium retail add-ons</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl border border-primary/20 animate-pulse">🛍️</div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {business.products.map(p => {
-                const count = selected.filter(x => x.id.startsWith(p.id + '_prod_')).length;
+          {business.services && business.services.length > 0 ? (
+            <div className="space-y-3">
+              {business.services.map((s) => {
+                const isSelected = !!selected.find((x) => x.id === s.id);
                 return (
                   <div
-                    key={p.id}
-                    className={`rounded-3xl border overflow-hidden transition-all shadow-sm flex flex-col hover:border-primary/50 ${count > 0 ? 'bg-primary/5 border-primary ring-1 ring-primary/20 shadow-[0_4px_15px_rgba(var(--primary-color),0.15)]' : 'bg-card border-border'} ${(isClosed || isStopped || isBlockedDate) ? 'opacity-50 grayscale' : ''}`}
+                    key={s.id}
+                    onClick={() => toggleService(s)}
+                    className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/30'
+                        : 'bg-gray-50/70 border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    <div className="h-28 bg-gradient-to-br from-card-2 to-card border-b border-border/50 flex items-center justify-center relative inner-shadow group">
-                      <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-10 transition-opacity" />
-                      <span className="text-5xl filter drop-shadow-md group-hover:scale-110 transition-transform">📦</span>
-                      {count > 0 && <span className="absolute top-2 right-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-md animate-scaleIn">Selected</span>}
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">{s.name}</h4>
+                      <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                        ⏱ {s.avgTime} min
+                      </p>
+                      <p className="text-base font-black text-emerald-700 mt-1">₹{s.price}</p>
                     </div>
-                    
-                    <div className="p-4 flex-1 flex flex-col justify-between">
-                      <div>
-                        <p className="font-black text-sm text-text leading-tight mb-1 line-clamp-2">{p.name}</p>
-                        <p className="font-black text-primary text-sm mb-4">₹{p.price}</p>
-                      </div>
 
-                      {(canGetToken || (isOnBreak && !isBlockedDate)) && (
-                        count === 0 ? (
-                           <button onClick={() => addProduct(p)} className="w-full py-2.5 rounded-xl bg-card-2 border border-border text-text font-bold text-xs uppercase tracking-wider hover:bg-primary hover:border-primary hover:text-white transition-all active:scale-[0.98]">
-                            Add to Cart
-                           </button>
-                        ) : (
-                          <div className="flex items-center justify-between bg-background rounded-xl p-1 border border-border shadow-inner">
-                            <button onClick={() => removeProduct(p.id)} className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 bg-danger/10 text-danger hover:bg-danger/20 transition-colors font-bold text-lg">-</button>
-                            <span className="text-sm font-black text-text px-1">{count}</span>
-                            <button onClick={() => addProduct(p)} className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 bg-success/10 text-success hover:bg-success/20 transition-colors font-bold text-lg">+</button>
-                          </div>
-                        )
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleService(s);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {isSelected ? '✓ Added' : '+ Add'}
+                    </button>
                   </div>
                 );
               })}
             </div>
-            
-             {(canGetToken || (isOnBreak && !isBlockedDate)) && selected.length > 0 && activeTab === 'store' && (
-              <div className="sticky bottom-4 z-30 animate-slideUp pb-4">
-                <button onClick={() => setShowConfirm(true)} className="w-full py-4 rounded-full bg-primary text-white font-black text-lg shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-between px-6">
-                  <span>View Cart ({selected.length})</span>
-                  <span className="flex items-center gap-2">₹{totalPrice} ➔</span>
+          ) : (
+            <p className="text-sm text-gray-400 py-3 text-center">No individual services listed.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Sticky Dual Bottom Action Bar (Screen 6: View Live Queue + Join Queue) */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-100 p-4 pb-6 shadow-lg flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            triggerHaptic('selection');
+            setShowLiveQueueModal(true);
+          }}
+          className="flex-1 py-4 px-3 rounded-2xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-800 text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Clock className="w-5 h-5 text-gray-600" />
+          <span>View Live Queue</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            triggerHaptic('medium');
+            if (selected.length === 0 && business.services && business.services.length > 0) {
+              setSelected([business.services[0]]);
+            }
+            setShowConfirm(true);
+          }}
+          disabled={isClosed}
+          className="flex-1 py-4 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-black shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Join Queue</span>
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* ─── Live Queue Status Waiting Room Modal (Screen 7) ─── */}
+      <AnimatePresence>
+        {showLiveQueueModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs">
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              className="w-full max-h-[85vh] sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="text-base font-black text-gray-900">Live Queue Status</h2>
+                <button
+                  onClick={() => setShowLiveQueueModal(false)}
+                  className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:text-gray-800 transition"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Portfolio Tab (Photography) */}
-        {activeTab === 'portfolio' && business.portfolioImages && (
-          <div className="animate-fadeIn grid grid-cols-2 gap-3 pb-8">
-            {business.portfolioImages.map((img, i) => (
-               <div key={i} className="rounded-2xl overflow-hidden elite-glass border-white/10 aspect-[4/5] shadow-sm spatial-card">
-                 <img src={img} className="w-full h-full object-cover" alt="Portfolio" />
-               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Reviews Tab */}
-        {activeTab === 'reviews' && (
-          <div className="animate-fadeIn">
-            {reviews.length > 0 && (
-              <div className="mb-6 p-5 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/5 border border-primary/20 shadow-sm animate-slideUp">
-                <h3 className="text-sm font-black uppercase tracking-widest text-primary mb-3">✨ Review Highlights</h3>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 rounded-full elite-glass border-white/10 text-xs font-bold shadow-sm spatial-card">🌟 Good Value</span>
-                  <span className="px-3 py-1 rounded-full elite-glass border-white/10 text-xs font-bold shadow-sm spatial-card">⏱️ On Time Service</span>
-                  <span className="px-3 py-1 rounded-full elite-glass border-white/10 text-xs font-bold shadow-sm spatial-card">✨ Clean & Hygienic</span>
-                </div>
-              </div>
-            )}
-            <button onClick={() => setShowReview(true)} className="w-full p-4 rounded-2xl border-2 border-dashed border-primary/50 text-primary text-sm font-bold mb-6 hover:bg-primary/5 transition-colors">
-              + Write a Review
-            </button>
-            {reviews.length === 0 ? (
-              <div className="text-center py-16 elite-glass rounded-3xl border-white/5 spatial-card">
-                <span className="text-6xl block mb-4 opacity-50">⭐</span>
-                <p className="text-lg font-bold">No reviews yet</p>
-                <p className="text-text-dim text-sm mt-1">Be the first to review {business.businessName}!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map(review => (
-                  <div key={review.id} className="p-5 rounded-3xl elite-glass spatial-card">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-card-2 border border-border overflow-hidden flex-shrink-0">
-                          {review.customerPhoto ? <img src={review.customerPhoto} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-lg">👤</div>}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm">{review.customerName}</p>
-                          <div className="flex gap-0.5 mt-0.5">{[1,2,3,4,5].map(s => <span key={s} className={`text-xs ${s <= review.rating ? 'text-gold' : 'text-border'}`}>★</span>)}</div>
-                        </div>
-                      </div>
-                      <span className="text-[10px] text-text-dim font-medium bg-card-2 px-2 py-1 rounded-full">{new Date(review.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    {review.comment && <p className="text-text-dim text-sm leading-relaxed">{review.comment}</p>}
-                    {review.images && review.images.length > 0 && (
-                      <div className="flex gap-2 mt-3 overflow-x-auto pb-2 no-scrollbar">
-                        {review.images.map((img, i) => (
-                          <div key={i} className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-border bg-card-2 shadow-sm">
-                            <img src={img} alt="review photo" className="w-full h-full object-cover grayscale-[0.2]" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-5 no-scrollbar">
+                
+                {/* Current Status Card (Screen 7) */}
+                <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-600">Current Status:</span>
+                    <span className="font-black text-emerald-700 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      {business.isOpen ? 'Open' : 'Closed'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* About Tab */}
-        {activeTab === 'about' && business.about && (
-          <div className="animate-fadeIn">
-            <div className="p-6 rounded-3xl elite-glass border-white/5 spatial-card">
-              <h3 className="text-xl font-black mb-4 flex items-center gap-2">
-                <span className="text-2xl">📖</span>
-                About {business.businessName}
-              </h3>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-text-dim leading-relaxed whitespace-pre-wrap">{business.about}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Gallery Tab */}
-        {activeTab === 'gallery' && business.galleryImages && business.galleryImages.length > 0 && (
-          <div className="animate-fadeIn">
-            <div className="grid grid-cols-2 gap-3 pb-8">
-              {business.galleryImages.map((img, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden elite-glass border-white/10 aspect-square shadow-sm spatial-card">
-                  <img src={img} className="w-full h-full object-cover" alt={`Gallery ${i + 1}`} />
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-600">Total in Queue:</span>
+                    <span className="font-black text-gray-900">{activeTokenCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-600">Est. Wait:</span>
+                    <span className="font-black text-emerald-700">~ {currentWaitTime} min</span>
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Join Queue Button in Modal */}
+                <button
+                  onClick={() => {
+                    setShowLiveQueueModal(false);
+                    if (selected.length === 0 && business.services && business.services.length > 0) {
+                      setSelected([business.services[0]]);
+                    }
+                    setShowConfirm(true);
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition"
+                >
+                  Join Queue
+                </button>
+
+                {/* Live Queue list */}
+                <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider">Live Queue</h3>
+                    <button
+                      onClick={() => triggerHaptic('light')}
+                      className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 hover:underline"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Refresh
+                    </button>
+                  </div>
+
+                  {liveQueueTokens.length === 0 ? (
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-center text-xs font-medium text-gray-500">
+                      No one in queue right now. You'll be first!
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {liveQueueTokens.map((t, idx) => (
+                        <div
+                          key={t.id}
+                          className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-[10px]">
+                              #{idx + 1}
+                            </span>
+                            <span className="font-bold text-gray-800">
+                              {t.customerName?.split(' ')[0] || 'Customer'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-gray-500 font-semibold">
+                            Token #{t.tokenNumber}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* How It Works Guide (Screen 7) */}
+                <div className="pt-2 border-t border-gray-100 space-y-3">
+                  <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider">How it works?</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs flex items-center justify-center shrink-0">
+                        1
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-900">Join from anywhere</h4>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Get a live token without standing in line or waiting at the store.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs flex items-center justify-center shrink-0">
+                        2
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-900">Track real-time</h4>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Watch your position update live as customers ahead of you are served.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 font-black text-xs flex items-center justify-center shrink-0">
+                        3
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-900">Arrive just in time</h4>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Walk in right when it's your turn and get served immediately.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
+      </AnimatePresence>
 
-      {showConfirm && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-end justify-center z-50 animate-fadeIn">
-          <div className="elite-glass w-full max-w-2xl rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-slideUp overflow-hidden spatial-card">
-            <div className="p-6">
-              <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6" />
-              <h2 className="text-2xl font-black mb-1">Confirm {term.noun}</h2>
-              <div className="flex items-center gap-2 mb-6">
-                <span className="text-2xl">{catInfo.icon}</span>
-                <p className="text-text-dim text-sm font-bold">{business.businessName}</p>
+      {/* ─── Confirmation & Checkout Modal ─── */}
+      <AnimatePresence>
+        {showConfirm && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs">
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              className="w-full max-h-[85vh] sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="text-base font-black text-gray-900">Confirm Booking</h2>
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:text-gray-800 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <div className="p-5 rounded-2xl bg-card-2 border border-border mb-6">
-                <div className="space-y-3 mb-4">
-                  {selected.map(s => (
-                    <div key={s.id} className="flex justify-between items-start text-sm font-medium group">
-                      <div className="flex items-start gap-2 max-w-[75%]">
-                        {s.id.includes('_prod_') && (
-                          <button onClick={() => removeProduct(s.id.split('_prod_')[0])} className="w-5 h-5 rounded bg-danger/10 text-danger flex items-center justify-center hover:bg-danger/20 transition-colors mt-0.5" title="Remove Item">✕</button>
-                        )}
-                        <span className="text-text leading-tight">{s.name} {!s.id.includes('_prod_') && groupSize > 1 ? <span className="text-text-dim">x{groupSize}</span> : ''}</span>
-                      </div>
-                      <span className="shrink-0">₹{s.price * (s.id.includes('_prod_') ? 1 : groupSize)}</span>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
+                {/* Selected Services */}
+                <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected Services</h4>
+                  {selected.map((s) => (
+                    <div key={s.id} className="flex justify-between items-center text-xs font-semibold">
+                      <span className="text-gray-800">{s.name}</span>
+                      <span className="text-gray-900 font-bold">₹{s.price}</span>
                     </div>
                   ))}
-                  {isTatkal && (
-                    <div className="flex justify-between text-sm text-gold font-bold pt-2 border-t border-border/30">
-                      <span>Priority Access</span>
-                      <span>₹{TATKAL_FEE}</span>
+
+                  {/* Tatkal option */}
+                  <label className="flex items-center justify-between pt-3 mt-2 border-t border-gray-200 cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <div>
+                        <p className="text-xs font-bold text-gray-900">Tatkal Priority Access</p>
+                        <p className="text-[10px] text-gray-500">Jump ahead in queue</p>
+                      </div>
                     </div>
-                  )}
-                  {maxDiscount > 0 && (
-                     <div className="flex justify-between text-sm text-success font-bold pb-2 border-b border-border/50">
-                      <span>Promo: {appliedPromo?.code}</span>
-                      <span>-₹{maxDiscount}</span>
-                    </div>
-                  )}
-                </div>
+                    <input
+                      type="checkbox"
+                      checked={isTatkal}
+                      onChange={(e) => setIsTatkal(e.target.checked)}
+                      className="w-4 h-4 text-emerald-600 rounded-sm"
+                    />
+                  </label>
 
-                {!appliedPromo && business.promoCodes && business.promoCodes.some(p => p.active) && (
-                  <div className="flex gap-2 mb-4">
-                    <input value={promoCodeInput} onChange={e => setPromoCodeInput(e.target.value.toUpperCase())} placeholder="Have a Promo Code?" className="input-field flex-1 text-xs uppercase" />
-                    <button onClick={handleApplyPromo} className="px-4 rounded-xl bg-primary/20 text-primary font-bold text-xs active:scale-95 transition-transform">Apply</button>
-                  </div>
-                )}
-                {appliedPromo && (
-                  <div className="flex items-center justify-between bg-success/10 border border-success/20 p-2.5 rounded-xl mb-4">
-                    <span className="text-success text-xs font-bold flex items-center gap-1.5"><span className="text-lg leading-none">✅</span> Code Applied</span>
-                    <button onClick={() => setAppliedPromo(null)} className="text-[10px] text-danger font-bold underline">Remove</button>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-text-dim uppercase tracking-wider mb-2">💝 Add a Tip (Optional)</p>
-                  <div className="flex gap-2">
-                    {[0, 20, 50, 100].map(amt => (
-                      <button key={amt} onClick={() => setTipAmount(amt)} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-colors ${tipAmount === amt ? 'bg-primary text-white border-primary' : 'bg-card border-border text-text'}`}>
-                        {amt === 0 ? 'None' : `₹${amt}`}
-                      </button>
-                    ))}
+                  {/* Summary Totals */}
+                  <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-sm font-black">
+                    <span className="text-gray-800">Total Price</span>
+                    <span className="text-emerald-700">₹{totalPrice}</span>
                   </div>
                 </div>
 
-                <div className="w-full border-t border-dashed border-border mb-4" />
-                <div className="flex justify-between font-bold text-text-dim mb-1">
-                  <span>Est. Duration</span>
-                  <span>{totalTime} {term.unit}</span>
-                </div>
-                <div className="flex justify-between font-black text-xl mb-4">
-                  <span>{t('total') || 'Total Due'}</span>
-                  <span className="gradient-text">₹{totalPrice + tipAmount}</span>
-                </div>
-
-                <label className="flex items-center gap-3 p-4 rounded-xl bg-card-2 border border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm">
-                  <input type="checkbox" onChange={() => { if(typeof window !== 'undefined') window.navigator?.vibrate?.(50); }} className="w-5 h-5 text-primary rounded-md ring-0 focus:ring-0 accent-primary border-border" />
-                  <span className="text-sm font-bold text-text-dim">🔄 Repeat this booking weekly</span>
-                </label>
-              </div>
-
-              {advanceDate && advanceDate !== today && (
-                <div className="bg-accent/10 border border-accent/20 p-3 rounded-xl mb-6 flex items-center gap-3">
-                  <span className="text-2xl">📅</span>
-                  <div>
-                    <p className="text-xs text-text-dim font-bold">Advance Booking</p>
-                    <p className="text-accent text-sm font-bold">{new Date(advanceDate + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                {getError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{getError}</span>
                   </div>
-                </div>
-              )}
-
-              {getError && (
-                <div className="p-4 rounded-xl bg-danger/10 border border-danger/30 mb-5 flex items-center gap-3">
-                  <span className="text-xl">🚨</span>
-                  <p className="text-danger text-sm font-bold">{getError}</p>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-2 text-center mb-4 p-4 bg-gradient-to-r from-card to-card-2 border border-border shadow-sm rounded-3xl">
-                {currentWaitTime > 0 ? (
-                  <>
-                    <p className="text-xs font-bold text-text-dim uppercase tracking-widest">Live Queue Details</p>
-                    <p className="text-lg font-black"><span className="text-primary">{activeTokenCount}</span> people ahead</p>
-                    <p className="text-sm font-bold text-text-dim">Your estimated wait: <span className="text-primary">~{currentWaitTime} mins</span></p>
-                  </>
-                ) : (
-                  <p className="text-sm font-black text-success">Queue is clear! You're next.</p>
                 )}
               </div>
 
-              <div className="flex gap-3">
-                <button onClick={() => { setShowConfirm(false); setGetError(''); }} className="w-20 rounded-2xl bg-card-2 border border-border text-center font-bold text-sm h-14 active:scale-95 transition-transform hover:bg-border">
-                  {t('back') || 'Back'}
-                </button>
-                <button onClick={handleGetToken} disabled={getting} className="flex-1 rounded-2xl bg-primary text-white font-black text-base h-14 active:scale-[0.98] transition-transform shadow-xl shadow-primary/30 flex items-center justify-center gap-2">
-                  {getting ? (
-                    <><div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
-                  ) : isTatkal ? `Pay ₹${TATKAL_FEE} Deposit` : `${t('confirm') || 'Confirm'} ${term.noun}`}
-                </button>
-              </div>
-            </div>
-            <div className="h-4 bg-background" />
-          </div>
-        </div>
-      )}
-
-      {/* ✍️ Elite Insight Modal */}
-      {showReview && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-[20px] flex items-center justify-center z-[100] p-6 animate-fadeIn">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-[#0a0a0b] border border-white/10 rounded-[4rem] p-10 w-full max-w-lg shadow-[0_50px_100px_rgba(0,0,0,0.5)] relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-[80px] -translate-y-20 translate-x-20" />
-            
-            <h2 className="type-elite-display text-3xl mb-2">Share Experience</h2>
-            <p className="type-elite-label opacity-40 mb-8 border-b border-white/5 pb-6">Your frequency contributes to the venue's pulse.</p>
-            
-            <div className="flex gap-4 justify-center mb-8 py-8 rounded-[2.5rem] bg-white/5 border border-white/5 shadow-inner">
-              {[1,2,3,4,5].map(s => (
-                <button 
-                  key={s} 
-                  onClick={() => { triggerHaptic('light'); setReviewRating(s); }} 
-                  className={`text-5xl transition-all duration-500 ${s <= reviewRating ? 'text-primary drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] scale-110' : 'text-white/10 scale-90'}`}
+              {/* Confirm CTA */}
+              <div className="p-4 border-t border-gray-100 bg-white pb-[max(16px,env(safe-area-inset-bottom,16px))]">
+                <button
+                  onClick={handleGetToken}
+                  disabled={getting}
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  ★
+                  {getting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Securing Token...</span>
+                    </>
+                  ) : (
+                    <span>Confirm &amp; Join Queue (₹{totalPrice})</span>
+                  )}
                 </button>
-              ))}
-            </div>
-            
-            <textarea 
-              value={reviewComment} 
-              onChange={e => setReviewComment(e.target.value)} 
-              placeholder="What defines this universe?" 
-              className="w-full bg-white/5 border border-white/5 rounded-3xl p-6 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/40 shadow-inner mb-8 h-40 resize-none transition-all" 
-            />
-            
-            <div className="flex flex-col gap-4">
-              <button onClick={handleSubmitReview} disabled={submittingReview} className="w-full py-5 rounded-3xl bg-primary text-black font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-4">
-                {submittingReview ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"/> : 'Publish Pulse'}
-              </button>
-              <button onClick={() => setShowReview(false)} className="w-full py-5 rounded-3xl bg-transparent border border-white/10 text-white/40 font-black uppercase tracking-[0.3em] text-[10px] hover:text-white transition-all">Abort</button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* 🔥 Elite Social Proof Deck */}
-      {showSocialProof && (
-        <div className="fixed bottom-32 inset-x-6 flex justify-center z-40 pointer-events-none">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 50 }}
-            className="elite-glass px-8 py-5 rounded-[2.5rem] border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex items-center gap-5 pointer-events-auto"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex flex-shrink-0 items-center justify-center text-primary animate-pulse text-2xl shadow-inner">
-              ⚡
-            </div>
-            <div>
-              <p className="type-elite-label text-[10px] text-primary mb-1 tracking-[0.2em] font-black uppercase">Active Pulse</p>
-              <p className="text-sm font-bold text-white/80">
-                <span className="text-white font-black">{socialProofCount} Souls</span> harmonizing here now
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Story Overlay */}
-      {viewingStory && business.stories && business.stories.length > 0 && (
-        <div className="fixed inset-0 bg-black z-[100] flex flex-col animate-fadeIn">
-          {/* Progress Bar */}
-          <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
-            <div className="h-1 bg-white/30 rounded-full flex-1 overflow-hidden">
-              <div className="h-full bg-white transition-all duration-100 ease-linear" style={{ width: `${storyProgress}%` }} />
-            </div>
-          </div>
-          {/* Header */}
-          <div className="absolute top-8 left-4 right-4 flex justify-between items-center z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full elite-glass overflow-hidden ring-2 ring-white/50 spatial-card">
-                <img src={business.bannerImageURL || business.stories[business.stories.length-1].url} className="w-full h-full object-cover" alt="" />
               </div>
-              <span className="text-white font-bold text-sm drop-shadow-md">{business.businessName}</span>
-            </div>
-            <button onClick={() => setViewingStory(false)} className="w-10 h-10 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white text-xl drop-shadow-md pb-1 active:scale-90 border border-white/20">✕</button>
+            </motion.div>
           </div>
-          <div className="flex-1 w-full relative" onClick={() => setViewingStory(false)}>
-            <img src={business.stories[business.stories.length-1].url} className="w-full h-full object-cover" alt="Story" />
-            <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/90 to-transparent pointer-events-none" />
-            <div className="absolute bottom-10 w-full text-center pointer-events-none px-6">
-               <p className="text-white font-black text-2xl drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] animate-float mb-2">Check out our offers! {catInfo.icon}</p>
-               <div className="bg-white/20 backdrop-blur-md rounded-full px-4 py-2 text-white text-xs font-bold inline-block border border-white/30">Swipe up to {term.action.toLowerCase()}</div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Service Provider Portfolio Modal */}
-      {selectedStaffProfile && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-end justify-center z-50 animate-fadeIn" onClick={() => setSelectedStaffProfile(null)}>
-          <div className="elite-glass w-full max-w-2xl rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-slideUp overflow-hidden spatial-card" onClick={e => e.stopPropagation()}>
-            <div className="p-6">
-              <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6" />
-              <div className="flex items-center gap-4 mb-6">
-                 <div className="w-16 h-16 rounded-full bg-card-2 border-2 border-primary/30 overflow-hidden flex-shrink-0 shadow-inner">
-                    {selectedStaffProfile.photoUrl ? <img src={selectedStaffProfile.photoUrl} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-2xl">👤</div>}
-                 </div>
-                 <div>
-                   <h2 className="text-2xl font-black">{selectedStaffProfile.name}</h2>
-                   <p className="text-primary font-bold text-sm tracking-widest uppercase mt-0.5">{selectedStaffProfile.role || term.provider}</p>
-                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                 <div className="bg-gradient-to-br from-card-2 to-card p-4 rounded-2xl border border-border text-center shadow-inner">
-                    <p className="text-3xl font-black text-gold mb-1 drop-shadow-sm">4.9</p>
-                    <div className="flex gap-0.5 justify-center mb-1 text-gold text-[10px]">★★★★★</div>
-                    <p className="text-[9px] text-text-dim font-bold uppercase tracking-widest">120+ Reviews</p>
-                 </div>
-                 <div className="bg-gradient-to-br from-card-2 to-card p-4 rounded-2xl border border-border text-center shadow-inner">
-                    <p className="text-3xl font-black text-text mb-1 drop-shadow-sm">1k<span className="text-lg text-primary">+</span></p>
-                    <div className="flex gap-0.5 justify-center mb-1 text-primary text-[10px]">✨✨✨</div>
-                    <p className="text-[9px] text-text-dim font-bold uppercase tracking-widest">Services Done</p>
-                 </div>
-              </div>
-
-              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20 mb-6 font-medium text-sm text-text-dim relative overflow-hidden">
-                <div className="absolute -right-4 -bottom-4 text-7xl opacity-[0.03] scale-x-[-1] rotate-12">{catInfo.icon}</div>
-                <p className="relative z-10 italic leading-relaxed">"I specialize in precision techniques and ensuring every client leaves feeling their absolute best. Looking forward to serving you!"</p>
-              </div>
-
-              <button onClick={() => { setAssignedStaffId(selectedStaffProfile.id); setSelectedStaffProfile(null); triggerHaptic('success'); }} className="w-full py-4 rounded-xl bg-primary text-white font-black text-lg hover:opacity-90 transition-opacity active:scale-[0.98] shadow-xl shadow-primary/30 flex justify-center items-center gap-2">
-                Book {selectedStaffProfile.name} <span className="text-xl">➔</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -153,13 +153,13 @@ export default function SalonsMap() {
           >
              <div className="flex-shrink-0 px-4 py-2.5 rounded-2xl bg-primary/20 border border-primary/30 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[9px] font-black text-primary uppercase tracking-[2px]">Line Free India</span>
+                <span className="text-xs font-black text-primary uppercase tracking-[2px]">Line Free India</span>
              </div>
              {categories.map(c => (
                <button 
                  key={c.id} 
                  onClick={() => { triggerHaptic('light'); setActiveCategory(c.id); }}
-                 className={`whitespace-nowrap px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-lg flex items-center gap-3 ${activeCategory === c.id ? 'bg-primary border-transparent text-white scale-105' : 'bg-card/90 backdrop-blur-xl border-white/10 text-text-dim hover:border-white/20'}`}
+                 className={`whitespace-nowrap px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border shadow-lg flex items-center gap-3 ${activeCategory === c.id ? 'bg-primary border-transparent text-white scale-105' : 'bg-card/90 backdrop-blur-xl border-white/10 text-text-dim hover:border-white/20'}`}
                >
                  <span>{c.icon}</span> {c.label}
                </button>
@@ -214,11 +214,11 @@ export default function SalonsMap() {
                          <div class="absolute inset-0 bg-[${statusColor}] opacity-5"></div>
                          ${BUSINESS_CATEGORIES.find(c => c.id === salon.businessType)?.icon || '🏪'}
                       </div>
-                      <div class="absolute -bottom-2 -right-2 bg-[${statusColor}] text-white text-[8px] font-black w-5 h-5 rounded-full border-2 border-background flex items-center justify-center shadow-lg">
+                      <div class="absolute -bottom-2 -right-2 bg-[${statusColor}] text-white text-xs font-black w-5 h-5 rounded-full border-2 border-background flex items-center justify-center shadow-lg">
                         ${statusIcon}
                       </div>
                       <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        <p class="text-[8px] font-black text-white uppercase tracking-widest">${waitTime}m Wait</p>
+                        <p class="text-xs font-black text-white uppercase tracking-widest">${waitTime}m Wait</p>
                       </div>
                     </div>
                   </div>
@@ -239,11 +239,11 @@ export default function SalonsMap() {
                   alt="" 
                 />
                 <h3 className="font-black text-inherit text-base tracking-tight mb-1">{salon.businessName}</h3>
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-inherit opacity-60">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-inherit opacity-60">
                    <span>{salon.isOpen ? '🟢 Open' : '🔴 Closed'}</span>
                    <span>⭐ {salon.rating || 4.9}</span>
                 </div>
-                <button className="w-full mt-3 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-[2px] rounded-lg shadow-lg">
+                <button className="w-full mt-3 py-2 bg-primary text-white text-xs font-black uppercase tracking-[2px] rounded-lg shadow-lg">
                   View Detail →
                 </button>
               </div>
@@ -277,7 +277,7 @@ export default function SalonsMap() {
                   <FaDotCircle />
                </div>
                <div>
-                  <p className="text-[10px] font-black text-text-dim uppercase tracking-[2px]">Nearby Ops</p>
+                  <p className="text-xs font-black text-text-dim uppercase tracking-[2px]">Nearby Ops</p>
                   <p className="text-sm font-black text-white">{filteredSalons.length} Businesses Found</p>
                </div>
             </div>

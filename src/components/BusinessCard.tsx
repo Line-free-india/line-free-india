@@ -80,24 +80,24 @@ export default function BusinessCard({
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="px-3 py-1.5 rounded-full bg-success/90 backdrop-blur-md border border-success/50 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg"
+                className="px-3 py-1.5 rounded-full bg-success/90 backdrop-blur-md border border-success/50 text-white text-xs font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg"
               >
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span>LIVE NOW</span>
               </motion.div>
             )}
             {isClosed && (
-              <div className="px-3 py-1.5 rounded-full bg-danger/90 backdrop-blur-md border border-danger/50 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
+              <div className="px-3 py-1.5 rounded-full bg-danger/90 backdrop-blur-md border border-danger/50 text-white text-xs font-black uppercase tracking-widest shadow-lg">
                 🔴 Closed
               </div>
             )}
             {isOnBreak && !isClosed && (
-              <div className="px-3 py-1.5 rounded-full bg-warning/90 backdrop-blur-md border border-warning/50 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
+              <div className="px-3 py-1.5 rounded-full bg-warning/90 backdrop-blur-md border border-warning/50 text-white text-xs font-black uppercase tracking-widest shadow-lg">
                 ☕ On Break
               </div>
             )}
             {isTokensPaused && !isClosed && !isOnBreak && (
-              <div className="px-3 py-1.5 rounded-full bg-orange-500/90 backdrop-blur-md border border-orange-500/50 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
+              <div className="px-3 py-1.5 rounded-full bg-orange-500/90 backdrop-blur-md border border-orange-500/50 text-white text-xs font-black uppercase tracking-widest shadow-lg">
                 ⏸ Tokens Paused
               </div>
             )}
@@ -138,7 +138,7 @@ export default function BusinessCard({
           </h3>
 
           {/* Category Label */}
-          <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest mb-3">
+          <p className="text-xs font-black text-primary/70 uppercase tracking-widest mb-3">
             {categoryInfo.label}
           </p>
 
@@ -156,7 +156,7 @@ export default function BusinessCard({
           <div className="flex items-center gap-3 flex-wrap">
             {/* Rating */}
             {business.rating && (
-              <div className="flex items-center gap-1 text-[10px] font-black text-gold">
+              <div className="flex items-center gap-1 text-xs font-black text-gold">
                 <span>⭐</span>
                 <span>{business.rating}</span>
                 {business.totalReviews && (
@@ -167,7 +167,7 @@ export default function BusinessCard({
 
             {/* Distance */}
             {distance !== undefined && (
-              <div className="flex items-center gap-1 text-[10px] font-black text-text-dim">
+              <div className="flex items-center gap-1 text-xs font-black text-text-dim">
                 <span>📍</span>
                 <span>{distance.toFixed(1)} km</span>
               </div>
@@ -175,7 +175,7 @@ export default function BusinessCard({
 
             {/* Pricing */}
             {minPrice && (
-              <div className="flex items-center gap-1 text-[10px] font-black text-primary">
+              <div className="flex items-center gap-1 text-xs font-black text-primary">
                 <span>FROM</span>
                 <span className="text-sm">₹{minPrice}</span>
               </div>

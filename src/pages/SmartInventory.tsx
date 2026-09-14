@@ -9,6 +9,7 @@ export default function SmartInventory() {
   const { user, businessProfile } = useApp();
   const nav = useNavigate();
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [message, setMessage] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -37,14 +38,14 @@ export default function SmartInventory() {
       setItems(newRecords);
       triggerHaptic('success');
     } catch (e: any) {
-      alert('Error saving inventory: ' + e.message);
+      setMessage('Error saving inventory: ' + e.message);
     }
     setSaving(false);
   };
 
   const handleSaveItem = async () => {
     if (!itemName || !quantity || !unit) {
-      return alert('Item Name, Quantity, and Unit are required.');
+      return setMessage('Item Name, Quantity, and Unit are required.');
     }
 
     const newRec: InventoryItem = {
@@ -95,7 +96,7 @@ export default function SmartInventory() {
 
   const deleteItem = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if(confirm('Delete this Item from inventory?')) {
+    if(window.confirm('Delete this Item from inventory?')) {
       await saveToDb(items.filter(r => r.id !== id));
       if (editingId === id) resetForm();
     }
@@ -146,7 +147,7 @@ export default function SmartInventory() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-blue-400">Smart Inventory 📦</h1>
-            <p className="text-[10px] text-blue-200/50 font-bold uppercase tracking-widest">{items.length} Items Total</p>
+            <p className="text-xs text-blue-200/50 font-bold uppercase tracking-widest">{items.length} Items Total</p>
           </div>
         </div>
       </div>
@@ -158,7 +159,7 @@ export default function SmartInventory() {
             <span className="text-3xl text-danger animate-pulse">⚠️</span>
             <div>
               <h3 className="font-black text-danger text-sm">Low Stock Alert!</h3>
-              <p className="text-[10px] font-bold text-danger/70 mt-0.5">{lowStockCount} items are running low and need restocking.</p>
+              <p className="text-xs font-bold text-danger/70 mt-0.5">{lowStockCount} items are running low and need restocking.</p>
             </div>
           </div>
         )}
@@ -168,7 +169,7 @@ export default function SmartInventory() {
           <div className="absolute top-0 right-0 p-4 opacity-[0.03] text-8xl pointer-events-none -translate-y-4">📦</div>
           <div className="flex justify-between items-center mb-4 relative z-10">
             <h2 className="font-black text-text text-sm flex items-center gap-2">{editingId ? 'Edit Inventory Item' : 'Add New Item'}</h2>
-            {editingId && <button onClick={resetForm} className="text-[10px] text-text-dim uppercase tracking-widest font-black neu-btn px-2 py-1 rounded-md">Cancel Edit</button>}
+            {editingId && <button onClick={resetForm} className="text-xs text-text-dim uppercase tracking-widest font-black neu-btn px-2 py-1 rounded-md">Cancel Edit</button>}
           </div>
 
           <div className="grid grid-cols-2 gap-3 relative z-10">
@@ -197,18 +198,18 @@ export default function SmartInventory() {
              </div>
 
              <div>
-               <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Alert Below Qty</label>
+               <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Alert Below Qty</label>
                <input type="number" value={alertThreshold} onChange={e => setAlertThreshold(e.target.value)} placeholder="Threshold" className="w-full p-3 rounded-xl bg-background border border-border outline-none text-xs text-blue-100" />
              </div>
 
              <div>
-               <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Retail Price (₹)</label>
+               <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Retail Price (₹)</label>
                <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Price" className="w-full p-3 rounded-xl bg-background border border-border outline-none text-xs text-blue-100 font-bold" />
              </div>
 
              <div>
-               <label className="text-[9px] font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Last Restocked</label>
-               <input type="date" value={lastRestocked} onChange={e => setLastRestocked(e.target.value)} className="w-full p-3 rounded-xl bg-background border border-border outline-none text-[10px] font-bold text-blue-100" />
+               <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1 block mb-1">Last Restocked</label>
+               <input type="date" value={lastRestocked} onChange={e => setLastRestocked(e.target.value)} className="w-full p-3 rounded-xl bg-background border border-border outline-none text-xs font-bold text-blue-100" />
              </div>
 
              <div className="col-span-2 pt-2 border-t border-border mt-1">
@@ -226,7 +227,7 @@ export default function SmartInventory() {
               <button 
                 key={c}
                 onClick={() => setFilterCategory(c)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${filterCategory === c ? 'bg-blue-500 text-white' : 'bg-card border border-border text-text hover:bg-border'}`}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-sm ${filterCategory === c ? 'bg-blue-500 text-white' : 'bg-card border border-border text-text hover:bg-border'}`}
               >
                 {c}
               </button>
@@ -263,23 +264,23 @@ export default function SmartInventory() {
                        <div className="pr-12">
                          <h4 className="font-black text-text text-sm leading-tight flex items-center gap-2 text-blue-200">
                            {item.itemName}
-                           {isLow && <span className="text-[8px] bg-danger text-white px-2 py-0.5 rounded-sm uppercase tracking-widest">Low</span>}
+                           {isLow && <span className="text-xs bg-danger text-white px-2 py-0.5 rounded-sm uppercase tracking-widest">Low</span>}
                          </h4>
-                         <p className="text-[10px] font-black uppercase tracking-widest mt-1 text-blue-100/50">{item.category}</p>
+                         <p className="text-xs font-black uppercase tracking-widest mt-1 text-blue-100/50">{item.category}</p>
                        </div>
 
                        <div className="text-right absolute top-4 right-4 group-hover:opacity-0 transition-opacity">
                          <span className={`text-xl font-black ${isLow ? 'text-danger' : 'text-blue-400'}`}>{item.quantity}</span>
-                         <span className="text-[9px] font-bold text-text-dim ml-1">{item.unit}</span>
+                         <span className="text-xs font-bold text-text-dim ml-1">{item.unit}</span>
                        </div>
 
-                       <button onClick={(e) => deleteItem(item.id, e)} className="absolute top-4 right-4 opacity-0 transition-all text-danger text-[10px] flex justify-center items-center hover:bg-danger/20 group-hover:opacity-100 w-8 h-8 rounded-full bg-danger/10 z-10">
+                       <button onClick={(e) => deleteItem(item.id, e)} className="absolute top-4 right-4 opacity-0 transition-all text-danger text-xs flex justify-center items-center hover:bg-danger/20 group-hover:opacity-100 w-8 h-8 rounded-full bg-danger/10 z-10">
                          ✕
                        </button>
                      </div>
                      
                      <div className="flex justify-between items-center mt-1">
-                       <p className="text-[9px] font-bold text-text-dim flex items-center gap-1">
+                       <p className="text-xs font-bold text-text-dim flex items-center gap-1">
                          <span>🔄</span> 
                          {item.lastRestocked ? `Restocked: ${new Date(item.lastRestocked).toLocaleDateString('en-GB')}` : 'Never restocked'}
                        </p>
@@ -287,7 +288,7 @@ export default function SmartInventory() {
                        {/* Quick Adjust */}
                        <div className="flex items-center gap-1 bg-background rounded-full border border-border p-1" onClick={e => e.stopPropagation()}>
                          <button onClick={(e) => updateStock(item.id, -1, e)} className="w-6 h-6 rounded-full flex items-center justify-center bg-card-2 hover:bg-danger/20 hover:text-danger transition-colors text-xs font-black">-</button>
-                         <span className="w-8 text-center text-[10px] font-black">{item.quantity}</span>
+                         <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
                          <button onClick={(e) => updateStock(item.id, 1, e)} className="w-6 h-6 rounded-full flex items-center justify-center bg-card-2 hover:bg-green-500/20 hover:text-green-500 transition-colors text-xs font-black">+</button>
                        </div>
                      </div>
@@ -299,6 +300,7 @@ export default function SmartInventory() {
            )}
         </div>
       </div>
-    </div>
+    {message && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-lg z-50 text-sm">{message} <button onClick={() => setMessage('')} className="ml-2 text-white/50 hover:text-white">&times;</button></div>}
+</div>
   );
 }

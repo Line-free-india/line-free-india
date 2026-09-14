@@ -9,39 +9,10 @@ const CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 let updateCheckInterval: NodeJS.Timeout | null = null;
 
 /**
- * Register service worker for auto-updates
+ * Register service worker for auto-updates (Managed by VitePWA now)
  */
 export function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('[Update] Service Worker registered');
-          
-          // Check for updates periodically
-          setInterval(() => {
-            registration.update();
-          }, CHECK_INTERVAL);
-          
-          // Listen for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available
-                  showUpdateNotification();
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.error('[Update] Service Worker registration failed:', error);
-        });
-    });
-  }
+  // VitePWA handles this automatically, no manual registration needed.
 }
 
 /**

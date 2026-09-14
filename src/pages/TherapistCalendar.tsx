@@ -101,7 +101,7 @@ export default function TherapistCalendar() {
              </span>
              <div>
                <h3 className="font-bold text-sm">{token.customerName}</h3>
-               <p className="text-[10px] text-text-dim/80">{token.selectedServices.map(s => s.name).join(', ')} ({token.totalTime} mins)</p>
+               <p className="text-xs text-text-dim/80">{token.selectedServices.map(s => s.name).join(', ')} ({token.totalTime} mins)</p>
              </div>
            </div>
            {token.isTatkal && <span className="text-xl animate-pulse">⚡</span>}
@@ -110,7 +110,7 @@ export default function TherapistCalendar() {
         <div className="grid grid-cols-2 gap-2 mt-4">
           {/* Therapist Selector */}
           <div className="relative">
-            <label className="text-[9px] uppercase font-bold text-text-dim tracking-wider mb-1 block">Therapist</label>
+            <label className="text-xs uppercase font-bold text-text-dim tracking-wider mb-1 block">Therapist</label>
             <select 
               value={token.assignedStaffId || ''} 
               onChange={e => updateStaffAndRoom(token.id!, e.target.value, undefined)}
@@ -126,7 +126,7 @@ export default function TherapistCalendar() {
 
           {/* Room Selector */}
           <div className="relative">
-             <label className="text-[9px] uppercase font-bold text-text-dim tracking-wider mb-1 block">Room</label>
+             <label className="text-xs uppercase font-bold text-text-dim tracking-wider mb-1 block">Room</label>
              <select 
               value={token.assignedRoomId || ''} 
               onChange={e => updateStaffAndRoom(token.id!, undefined, e.target.value)}
@@ -167,7 +167,7 @@ export default function TherapistCalendar() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div className="flex-1">
             <h1 className="font-black text-lg">Spa Hub 💆‍♀️</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{displayedTokens.length} Sessions</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{displayedTokens.length} Sessions</p>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function TherapistCalendar() {
               onClick={() => setSelectedDate(dateStr)}
               className={`flex-shrink-0 flex flex-col items-center justify-center w-[60px] h-[60px] rounded-2xl border transition-all ${selectedDate === dateStr ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'bg-card border-border text-text-dim hover:bg-border'}`}
             >
-              <span className="text-[9px] uppercase font-bold tracking-widest">{getDayName(dateStr)}</span>
+              <span className="text-xs uppercase font-bold tracking-widest">{getDayName(dateStr)}</span>
               <span className="text-lg font-black">{dateStr.split('-')[2]}</span>
             </button>
           ))}
@@ -208,7 +208,7 @@ export default function TherapistCalendar() {
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all flex items-center gap-2 ${selectedTherapistId === th.id ? 'elite-glass border-primary text-primary shadow-sm spatial-card' : 'elite-glass border-white/5 spatial-card'}`}
             >
               <span>{th.name}</span>
-              <span className="bg-background px-1.5 py-0.5 rounded-md text-[10px]">{tokens.filter(t => t.assignedStaffId === th.id).length}</span>
+              <span className="bg-background px-1.5 py-0.5 rounded-md text-xs">{tokens.filter(t => t.assignedStaffId === th.id).length}</span>
             </button>
           ))}
         </div>

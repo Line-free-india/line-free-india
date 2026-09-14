@@ -86,7 +86,7 @@ export default function HairstyleTryOn() {
         <div className="flex justify-between items-end mb-6">
           <div>
             <h2 className="text-2xl font-black">{activeStyle.name}</h2>
-            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-1">Virtual Try-On</p>
+            <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-1">Virtual Try-On</p>
           </div>
           <button className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center text-2xl shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-90 transition-transform" onClick={() => triggerHaptic('success')}>
             📸
@@ -101,7 +101,7 @@ export default function HairstyleTryOn() {
               className={`flex-shrink-0 w-20 h-20 rounded-2xl flex flex-col items-center justify-center border-2 transition-all p-2 bg-white/10 backdrop-blur-md ${activeStyle.id === style.id ? 'border-primary ring-4 ring-primary/30 scale-105' : 'border-white/20 scale-95 opacity-70'}`}
             >
               <img src={style.url} className="w-10 h-10 object-contain mb-1" alt="" />
-              <p className="text-[8px] font-black uppercase text-center leading-tight">{style.name}</p>
+              <p className="text-xs font-black uppercase text-center leading-tight">{style.name}</p>
             </button>
           ))}
         </div>

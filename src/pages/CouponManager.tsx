@@ -28,10 +28,10 @@ export default function CouponManager() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-background to-background">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border shadow-sm">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-fuchsia-400">Coupons 🎟️</h1><p className="text-[10px] text-fuchsia-200/50 font-bold uppercase tracking-widest">{coupons.filter(c=>c.active).length} Active</p></div>
+          <div><h1 className="font-black text-lg text-fuchsia-400">Coupons 🎟️</h1><p className="text-xs text-fuchsia-200/50 font-bold uppercase tracking-widest">{coupons.filter(c=>c.active).length} Active</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -49,8 +49,8 @@ export default function CouponManager() {
         </div>
         <div className="space-y-3">{coupons.map(c => (
           <div key={c.id} className={`p-4 rounded-3xl elite-glass spatial-card shadow-sm group ${!c.active?'border-white/5 opacity-40':'border-fuchsia-500/20'}`}>
-            <div className="flex justify-between items-start mb-2"><div><h4 className="font-black text-lg text-fuchsia-400">{c.code}</h4><p className="text-[10px] text-text-dim font-bold">{c.type==='percentage'?`${c.value}% off`:`₹${c.value} off`} • Min ₹{c.minOrder}</p></div><div className="text-right"><p className="text-xs font-bold text-fuchsia-200">{c.usedCount}/{c.maxUses} used</p><p className="text-[9px] text-text-dim">Until {new Date(c.validTo).toLocaleDateString()}</p></div></div>
-            <div className="flex gap-2 mt-2"><button onClick={() => toggle(c.id)} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase ${c.active?'bg-emerald-500/10 text-emerald-400':'bg-zinc-500/10 text-zinc-400'}`}>{c.active?'Active':'Paused'}</button><button onClick={() => del(c.id)} className="px-4 py-2 rounded-xl bg-danger/10 text-danger text-[10px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Delete</button></div>
+            <div className="flex justify-between items-start mb-2"><div><h4 className="font-black text-lg text-fuchsia-400">{c.code}</h4><p className="text-xs text-text-dim font-bold">{c.type==='percentage'?`${c.value}% off`:`₹${c.value} off`} • Min ₹{c.minOrder}</p></div><div className="text-right"><p className="text-xs font-bold text-fuchsia-200">{c.usedCount}/{c.maxUses} used</p><p className="text-xs text-text-dim">Until {new Date(c.validTo).toLocaleDateString()}</p></div></div>
+            <div className="flex gap-2 mt-2"><button onClick={() => toggle(c.id)} className={`flex-1 py-2 rounded-xl text-xs font-black uppercase ${c.active?'bg-emerald-500/10 text-emerald-400':'bg-zinc-500/10 text-zinc-400'}`}>{c.active?'Active':'Paused'}</button><button onClick={() => del(c.id)} className="px-4 py-2 rounded-xl bg-danger/10 text-danger text-xs font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Delete</button></div>
           </div>
         ))}</div>
       </div>

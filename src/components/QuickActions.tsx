@@ -73,7 +73,7 @@ export default function QuickActions({ onClose }: Props) {
                 }}
               >
                 <span style={{ fontSize: 24 }}>{a.icon}</span>
-                <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-dim)' }}>{a.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-dim)' }}>{a.label}</span>
               </button>
             ))}
           </div>

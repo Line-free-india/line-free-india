@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "848717293503",
+    "firebase_url": "https://line-free-india-default-rtdb.firebaseio.com",
+    "project_id": "line-free-india",
+    "storage_bucket": "line-free-india.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848717293503:android:dea2a632b3a11c5a83230a",
+        "android_client_info": {
+          "package_name": "com.linefreeindia.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "848717293503-bkkai1e9a2sb5mja920natmq738jo03b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.linefreeindia.app",
+            "certificate_hash": "b9ece5a4bf90518f7b4af8e736e765018e6c10cc"
+          }
+        },
+        {
+          "client_id": "848717293503-jl6isf2gqs9fmca1nte72c63idm4qqin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxJv-NbxU13RJ4oCO4VGD4iOatYj0fbrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "848717293503-jl6isf2gqs9fmca1nte72c63idm4qqin.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -31,10 +31,10 @@ export default function TaskManager() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-background to-background">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
-          <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-purple-400">Task Manager ✅</h1><p className="text-[10px] text-purple-200/50 font-bold uppercase tracking-widest">{tasks.filter(t=>t.status!=='done').length} Open</p></div>
+          <button onClick={() => nav('/barber/home')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
+          <div><h1 className="font-black text-lg text-purple-400">Task Manager ✅</h1><p className="text-xs text-purple-200/50 font-bold uppercase tracking-widest">{tasks.filter(t=>t.status!=='done').length} Open</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -47,12 +47,12 @@ export default function TaskManager() {
             <button disabled={saving} onClick={addTask} className="w-full py-3 bg-purple-600 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">{saving ? 'Adding...' : 'Add Task'}</button>
           </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">{['all','todo','in_progress','done'].map(s => (<button key={s} onClick={() => setFilter(s as any)} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${filter===s?'bg-purple-500 text-white':'bg-card border border-border text-text-dim'}`}>{s.replace('_',' ')}</button>))}</div>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">{['all','todo','in_progress','done'].map(s => (<button key={s} onClick={() => setFilter(s as any)} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${filter===s?'bg-purple-500 text-white':'bg-card border border-border text-text-dim'}`}>{s.replace('_',' ')}</button>))}</div>
         <div className="space-y-2">{filtered.map(t => (
           <div key={t.id} className={`flex items-center gap-3 p-3.5 rounded-2xl elite-glass spatial-card group ${t.status==='done'?'border-emerald-500/20 opacity-50':'border-white/5'}`}>
-            <button onClick={() => updateStatus(t.id, t.status==='done'?'todo':t.status==='todo'?'in_progress':'done')} className={`w-6 h-6 rounded-lg border flex items-center justify-center text-[10px] transition-colors ${t.status==='done'?'bg-emerald-500 border-emerald-500 text-white':'bg-background border-border text-transparent hover:border-purple-500'}`}>✓</button>
-            <div className="flex-1 min-w-0"><p className={`text-xs font-bold ${t.status==='done'?'line-through text-text-dim':'text-purple-100'}`}>{t.title}</p><p className="text-[9px] text-text-dim">{t.assignedTo && `→ ${t.assignedTo} • `}<span className={prioColors[t.priority]}>{t.priority}</span>{t.dueDate && ` • Due ${new Date(t.dueDate).toLocaleDateString()}`}</p></div>
-            <button onClick={() => del(t.id)} className="w-6 h-6 rounded-lg bg-danger/10 text-danger flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            <button onClick={() => updateStatus(t.id, t.status==='done'?'todo':t.status==='todo'?'in_progress':'done')} className={`w-6 h-6 rounded-lg border flex items-center justify-center text-xs transition-colors ${t.status==='done'?'bg-emerald-500 border-emerald-500 text-white':'bg-background border-border text-transparent hover:border-purple-500'}`}>✓</button>
+            <div className="flex-1 min-w-0"><p className={`text-xs font-bold ${t.status==='done'?'line-through text-text-dim':'text-purple-100'}`}>{t.title}</p><p className="text-xs text-text-dim">{t.assignedTo && `→ ${t.assignedTo} • `}<span className={prioColors[t.priority]}>{t.priority}</span>{t.dueDate && ` • Due ${new Date(t.dueDate).toLocaleDateString()}`}</p></div>
+            <button onClick={() => del(t.id)} className="w-6 h-6 rounded-lg bg-danger/10 text-danger flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
           </div>
         ))}</div>
       </div>

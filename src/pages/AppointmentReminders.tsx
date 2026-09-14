@@ -28,28 +28,28 @@ export default function AppointmentReminders() {
       <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-blue-400">Reminders 🔔</h1><p className="text-[10px] text-blue-200/50 font-bold uppercase tracking-widest">{today.length} Today • {tomorrow.length} Tomorrow</p></div>
+          <div><h1 className="font-black text-lg text-blue-400">Reminders 🔔</h1><p className="text-xs text-blue-200/50 font-bold uppercase tracking-widest">{today.length} Today • {tomorrow.length} Tomorrow</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
         {today.length > 0 && (
           <div className="bg-card border border-blue-500/20 rounded-3xl p-5">
-            <div className="flex justify-between items-center mb-3"><h3 className="font-black text-sm text-blue-400">Today's Appointments</h3><button onClick={() => sendBulk(today)} className="text-[9px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg hover:bg-green-500 hover:text-white transition-all">Remind All</button></div>
+            <div className="flex justify-between items-center mb-3"><h3 className="font-black text-sm text-blue-400">Today's Appointments</h3><button onClick={() => sendBulk(today)} className="text-xs font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg hover:bg-green-500 hover:text-white transition-all">Remind All</button></div>
             <div className="space-y-2">{today.map((a: any, i: number) => (
               <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border">
-                <div className="flex-1"><p className="text-xs font-bold text-blue-100">{a.customerName||a.name||'Customer'}</p><p className="text-[9px] text-text-dim">{a.time||a.slot||''} • {a.service||a.serviceName||''}</p></div>
-                <button onClick={() => sendReminder(a)} className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase hover:bg-blue-500 hover:text-white transition-all">📱</button>
+                <div className="flex-1"><p className="text-xs font-bold text-blue-100">{a.customerName||a.name||'Customer'}</p><p className="text-xs text-text-dim">{a.time||a.slot||''} • {a.service||a.serviceName||''}</p></div>
+                <button onClick={() => sendReminder(a)} className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase hover:bg-blue-500 hover:text-white transition-all">📱</button>
               </div>
             ))}</div>
           </div>
         )}
         {tomorrow.length > 0 && (
           <div className="elite-glass rounded-3xl p-5 spatial-card">
-            <div className="flex justify-between items-center mb-3"><h3 className="font-black text-sm text-amber-400">Tomorrow</h3><button onClick={() => sendBulk(tomorrow)} className="text-[9px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg hover:bg-green-500 hover:text-white transition-all">Remind All</button></div>
+            <div className="flex justify-between items-center mb-3"><h3 className="font-black text-sm text-amber-400">Tomorrow</h3><button onClick={() => sendBulk(tomorrow)} className="text-xs font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg hover:bg-green-500 hover:text-white transition-all">Remind All</button></div>
             <div className="space-y-2">{tomorrow.map((a: any, i: number) => (
               <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border">
-                <div className="flex-1"><p className="text-xs font-bold text-amber-100">{a.customerName||a.name||'Customer'}</p><p className="text-[9px] text-text-dim">{a.time||a.slot||''} • {a.service||a.serviceName||''}</p></div>
-                <button onClick={() => sendReminder(a)} className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-black uppercase hover:bg-amber-500 hover:text-white transition-all">📱</button>
+                <div className="flex-1"><p className="text-xs font-bold text-amber-100">{a.customerName||a.name||'Customer'}</p><p className="text-xs text-text-dim">{a.time||a.slot||''} • {a.service||a.serviceName||''}</p></div>
+                <button onClick={() => sendReminder(a)} className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase hover:bg-amber-500 hover:text-white transition-all">📱</button>
               </div>
             ))}</div>
           </div>

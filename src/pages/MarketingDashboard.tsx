@@ -27,7 +27,7 @@ export default function MarketingDashboard() {
           <button onClick={() => nav('/barber/dashboard')} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-95">←</button>
           <div>
             <h1 className="font-black text-xl bg-gradient-to-r from-fuchsia-400 to-primary bg-clip-text text-transparent">Growth Center</h1>
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em]">CRM & Loyalty Engine</p>
+            <p className="text-xs text-zinc-500 font-black uppercase tracking-[0.3em]">CRM & Loyalty Engine</p>
           </div>
         </div>
       </div>
@@ -38,9 +38,9 @@ export default function MarketingDashboard() {
            <div className="flex justify-between items-end px-1">
               <div>
                 <h3 className="font-black text-sm uppercase tracking-widest text-zinc-400">Smart Automations</h3>
-                <p className="text-[10px] text-zinc-500 font-bold mt-1">AI-driven customer re-engagement</p>
+                <p className="text-xs text-zinc-500 font-bold mt-1">AI-driven customer re-engagement</p>
               </div>
-              <button className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">+ Active Bolt</button>
+              <button className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">+ Active Bolt</button>
            </div>
 
            <div className="space-y-4">
@@ -53,7 +53,7 @@ export default function MarketingDashboard() {
                          </div>
                          <div>
                             <h4 className="font-black text-sm uppercase tracking-tight">{c.type.replace('_',' ')} Protocol</h4>
-                            <p className="text-[10px] text-emerald-400 font-bold">{c.discount}% Discount Lock</p>
+                            <p className="text-xs text-emerald-400 font-bold">{c.discount}% Discount Lock</p>
                          </div>
                       </div>
                       <button onClick={() => toggleCampaign(c.id)} className={`w-12 h-6 rounded-full relative transition-colors ${c.active ? 'bg-emerald-500' : 'bg-zinc-800'}`}>
@@ -64,8 +64,8 @@ export default function MarketingDashboard() {
                       <p className="text-xs text-zinc-400 font-medium leading-relaxed italic">"{c.message}"</p>
                    </div>
                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Sent via WhatsApp API • Beta</p>
-                      <button className="text-[10px] font-black text-zinc-400 hover:text-white transition-colors">Edit Logic</button>
+                      <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Sent via WhatsApp API • Beta</p>
+                      <button className="text-xs font-black text-zinc-400 hover:text-white transition-colors">Edit Logic</button>
                    </div>
                 </div>
               ))}
@@ -75,16 +75,16 @@ export default function MarketingDashboard() {
         {/* Marketing KPI Card */}
         <div className="p-8 rounded-[3rem] bg-gradient-to-br from-indigo-600 to-violet-700 shadow-2xl relative overflow-hidden group">
            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-           <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.3em] mb-2">Campaign Yield</p>
+           <p className="text-xs text-white/60 font-black uppercase tracking-[0.3em] mb-2">Campaign Yield</p>
            <h2 className="text-4xl font-black text-white mb-6">₹12,450<span className="text-lg opacity-50 ml-2">Extra Revenue</span></h2>
            
            <div className="grid grid-cols-2 gap-4">
               <div className="bg-black/20 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                 <p className="text-[8px] text-white/50 font-black uppercase tracking-widest mb-1">Conversions</p>
+                 <p className="text-xs text-white/50 font-black uppercase tracking-widest mb-1">Conversions</p>
                  <p className="text-xl font-black text-white">48</p>
               </div>
               <div className="bg-black/20 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                 <p className="text-[8px] text-white/50 font-black uppercase tracking-widest mb-1">ROI Index</p>
+                 <p className="text-xs text-white/50 font-black uppercase tracking-widest mb-1">ROI Index</p>
                  <p className="text-xl font-black text-emerald-400">12.4x</p>
               </div>
            </div>

@@ -9,6 +9,7 @@ export default function DynamicTaxSettings() {
   const { user, businessProfile } = useApp();
   const nav = useNavigate();
   const [taxes, setTaxes] = useState<TaxSettings[]>([]);
+  const [message, setMessage] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -32,13 +33,13 @@ export default function DynamicTaxSettings() {
       setTaxes(newTaxes);
       triggerHaptic('success');
     } catch (e: any) {
-      alert('Error updating tax settings: ' + e.message);
+      setMessage('Error updating tax settings: ' + e.message);
     }
     setSaving(false);
   };
 
   const handleSaveTax = async () => {
-    if (!taxName.trim() || !percentage) return alert('Tax Name and Percentage are required');
+    if (!taxName.trim() || !percentage) return setMessage('Tax Name and Percentage are required');
     
     const newTax: TaxSettings = {
       isEnabled: true,
@@ -66,7 +67,7 @@ export default function DynamicTaxSettings() {
   };
 
   const deleteTax = async (index: number) => {
-    if(confirm('Delete this tax configuration?')) {
+    if(window.confirm('Delete this tax configuration?')) {
       await saveToDb(taxes.filter((_, i) => i !== index));
     }
   };
@@ -95,7 +96,7 @@ export default function DynamicTaxSettings() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Tax Settings 💸</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{taxes.filter(t => t.isEnabled).length} Active Taxes</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{taxes.filter(t => t.isEnabled).length} Active Taxes</p>
           </div>
         </div>
       </div>
@@ -129,7 +130,7 @@ export default function DynamicTaxSettings() {
                      <span className="text-lg">🏷️</span>
                      <div>
                        <span className="text-sm font-bold text-text block">Tax Applied On</span>
-                       <span className="text-[10px] text-text-dim">Is the tax included in your MRP?</span>
+                       <span className="text-xs text-text-dim">Is the tax included in your MRP?</span>
                      </div>
                    </div>
                  </div>
@@ -170,7 +171,7 @@ export default function DynamicTaxSettings() {
                    <div className="flex-1">
                      <div className="flex flex-col mb-2">
                        <h4 className={`font-black text-lg ${!t.isEnabled ? 'text-text-dim' : 'text-text'}`}>{t.taxName} <span className="text-primary">{t.percentage}%</span></h4>
-                       {t.taxId && <p className="text-[10px] font-bold text-text-dim uppercase tracking-widest mt-0.5">ID: {t.taxId}</p>}
+                       {t.taxId && <p className="text-xs font-bold text-text-dim uppercase tracking-widest mt-0.5">ID: {t.taxId}</p>}
                      </div>
                      
                      <p className="text-xs font-bold text-text-dim px-2 py-1 bg-background rounded-lg inline-block border border-border">
@@ -196,6 +197,7 @@ export default function DynamicTaxSettings() {
            )}
         </div>
       </div>
-    </div>
+    {message && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-lg z-50 text-sm">{message} <button onClick={() => setMessage('')} className="ml-2 text-white/50 hover:text-white">&times;</button></div>}
+</div>
   );
 }

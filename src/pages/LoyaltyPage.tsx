@@ -164,7 +164,7 @@ export default function LoyaltyPage() {
         <div className="flex justify-between items-end mt-2 mb-6">
           <div>
             <h1 className="text-3xl font-black gradient-text">LineFree VIP 💠</h1>
-            <p className="text-text-dim text-[11px] font-bold uppercase tracking-widest mt-1">
+            <p className="text-text-dim text-sm font-bold uppercase tracking-widest mt-1">
               {customerProfile?.name || 'Super App Member'}
             </p>
           </div>
@@ -179,7 +179,7 @@ export default function LoyaltyPage() {
           
           <div className="flex items-start justify-between mb-8 relative z-10">
             <div>
-              <p className="text-[10px] uppercase font-black tracking-widest text-text-dim mb-1">VIP Tier</p>
+              <p className="text-xs uppercase font-black tracking-widest text-text-dim mb-1">VIP Tier</p>
               <div className="flex items-center gap-2">
                 <span className="text-4xl filter drop-shadow-md">{level.icon}</span>
                 <h2 className={`text-3xl font-black ${level.color} tracking-tight`}>{level.name}</h2>
@@ -187,14 +187,14 @@ export default function LoyaltyPage() {
             </div>
             <div className="text-right bg-black/10 px-3 py-2 rounded-2xl border border-white/5 backdrop-blur-sm">
               <p className={`text-3xl font-black ${level.color}`}>{loyalty.points.toLocaleString('en-IN')}</p>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-text-dim mt-0.5">LF Coins</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-text-dim mt-0.5">LF Coins</p>
             </div>
           </div>
 
           <div className="relative z-10">
             {nextLevel ? (
               <>
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-text-dim mb-2 px-1">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-text-dim mb-2 px-1">
                   <span>{level.name} ({level.min})</span>
                   <span>{nextLevel.icon} {nextLevel.name} ({nextLevel.min})</span>
                 </div>
@@ -204,7 +204,7 @@ export default function LoyaltyPage() {
                     style={{ width: `${progress}%` }} 
                   />
                 </div>
-                <p className={`text-[11px] font-black tracking-wide ${level.color}`}>{ptsToNext} Coins needed for {nextLevel.name} upgrade</p>
+                <p className={`text-sm font-black tracking-wide ${level.color}`}>{ptsToNext} Coins needed for {nextLevel.name} upgrade</p>
               </>
             ) : (
               <p className={`text-sm font-black uppercase tracking-widest ${level.color}`}>👑 Maximum Prestige Reached</p>
@@ -217,22 +217,22 @@ export default function LoyaltyPage() {
           <div className="p-3 rounded-2xl bg-card border border-border text-center shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:scale-125 transition-transform">🛍️</div>
             <p className="text-xl font-black gradient-text relative z-10">{loyalty.totalVisits}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Bookings</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Bookings</p>
           </div>
           <div className="p-3 rounded-2xl bg-card border border-border text-center shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:scale-125 transition-transform">💎</div>
             <p className="text-xl font-black text-gold relative z-10">{loyalty.totalEarned.toLocaleString('en-IN')}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Lifetime</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Lifetime</p>
           </div>
           <div className="p-3 rounded-2xl bg-card border border-border text-center shadow-sm relative overflow-hidden group">
             <div className="absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:scale-125 transition-transform">🔥</div>
             <p className="text-xl font-black text-danger relative z-10">{loyalty.currentStreak}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Streak</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Streak</p>
           </div>
           <div className="p-3 rounded-2xl bg-card border border-border text-center shadow-sm relative overflow-hidden group">
              <div className="absolute -right-2 -bottom-2 text-4xl opacity-[0.03] group-hover:scale-125 transition-transform">🏅</div>
             <p className="text-xl font-black text-success relative z-10">{unlockedCount}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Badges</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-text-dim mt-0.5 relative z-10">Badges</p>
           </div>
         </div>
 
@@ -240,7 +240,7 @@ export default function LoyaltyPage() {
         <div className="flex elite-glass border-white/5 p-1.5 rounded-2xl mb-6 shadow-sm overflow-x-auto no-scrollbar spatial-card">
           {(['overview', 'achievements', 'levels', 'history'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`flex-1 min-w-[80px] py-2 px-1 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-primary text-white shadow-md scale-100' : 'text-text-dim hover:text-text scale-95'}`}>
+              className={`flex-1 min-w-[80px] py-2 px-1 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-primary text-white shadow-md scale-100' : 'text-text-dim hover:text-text scale-95'}`}>
               {tab === 'overview' ? '🏠 Overview' : tab === 'achievements' ? '🎖️ Badges' : tab === 'levels' ? '📊 Tiers' : '📋 History'}
             </button>
           ))}
@@ -289,14 +289,14 @@ export default function LoyaltyPage() {
               <div className="p-5 rounded-3xl bg-card border border-border shadow-sm">
                 <div className="flex justify-between items-end mb-4">
                   <h3 className="font-black text-base">🎖️ Latest Badges</h3>
-                  <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{unlockedCount}/{ALL_ACHIEVEMENTS.length} unlocked</p>
+                  <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{unlockedCount}/{ALL_ACHIEVEMENTS.length} unlocked</p>
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                   {achievements.filter(a => a.unlocked).slice(0, 8).map(a => (
                     <div key={a.id} className="p-3 rounded-2xl bg-gradient-to-br from-success/10 to-success/5 border border-success/30 text-center shadow-inner relative overflow-hidden group">
                       <div className="absolute inset-0 bg-success/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <span className="text-3xl block mb-1.5 filter drop-shadow-md scale-100 group-hover:scale-110 transition-transform">{a.icon}</span>
-                      <p className="text-[8px] font-black uppercase tracking-widest text-text leading-tight truncate px-1">{a.title}</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-text leading-tight truncate px-1">{a.title}</p>
                     </div>
                   ))}
                 </div>
@@ -311,7 +311,7 @@ export default function LoyaltyPage() {
             <div className="flex justify-between items-center mb-5 px-1">
               <div>
                 <h3 className="font-black text-lg">Badge Collection</h3>
-                <p className="text-text-dim text-[10px] font-bold uppercase tracking-widest mt-0.5">{unlockedCount} of {ALL_ACHIEVEMENTS.length} Mastered</p>
+                <p className="text-text-dim text-xs font-bold uppercase tracking-widest mt-0.5">{unlockedCount} of {ALL_ACHIEVEMENTS.length} Mastered</p>
               </div>
               <div className="w-24 h-2.5 rounded-full bg-card border border-border shadow-inner overflow-hidden">
                 <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-1000" style={{ width: `${(unlockedCount / ALL_ACHIEVEMENTS.length) * 100}%` }} />
@@ -342,7 +342,7 @@ export default function LoyaltyPage() {
           <div className="space-y-4 animate-slideUp">
              <div className="mb-4 px-1">
                 <h3 className="font-black text-lg">VIP Tiers</h3>
-                <p className="text-text-dim text-[10px] font-bold uppercase tracking-widest mt-0.5">Climb the ranks for exclusive benefits</p>
+                <p className="text-text-dim text-xs font-bold uppercase tracking-widest mt-0.5">Climb the ranks for exclusive benefits</p>
               </div>
             {LEVELS.map((l, i) => {
               const isCurrent = i === levelIdx;
@@ -357,9 +357,9 @@ export default function LoyaltyPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <p className={`font-black text-xl tracking-tight ${l.color}`}>{l.name}</p>
-                        {isCurrent && <span className="text-[9px] uppercase tracking-widest bg-primary text-white border border-primary/50 shadow-sm px-2.5 py-0.5 rounded-full font-black">Current Status</span>}
-                        {isPast && <span className="text-[9px] uppercase tracking-widest bg-success text-white border border-success/50 px-2.5 py-0.5 rounded-full font-bold">✓ Unlocked</span>}
-                        {isNext && <span className="text-[9px] uppercase tracking-widest bg-warning/20 text-warning border border-warning/30 px-2.5 py-0.5 rounded-full font-black animate-pulse">Next Target</span>}
+                        {isCurrent && <span className="text-xs uppercase tracking-widest bg-primary text-white border border-primary/50 shadow-sm px-2.5 py-0.5 rounded-full font-black">Current Status</span>}
+                        {isPast && <span className="text-xs uppercase tracking-widest bg-success text-white border border-success/50 px-2.5 py-0.5 rounded-full font-bold">✓ Unlocked</span>}
+                        {isNext && <span className="text-xs uppercase tracking-widest bg-warning/20 text-warning border border-warning/30 px-2.5 py-0.5 rounded-full font-black animate-pulse">Next Target</span>}
                       </div>
                       <p className="text-text-dim text-xs font-semibold">{l.min.toLocaleString('en-IN')}+ LF Coins Required</p>
                     </div>
@@ -367,7 +367,7 @@ export default function LoyaltyPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {l.perks.map((p, j) => (
-                      <span key={j} className={`text-[10px] px-2.5 py-1 rounded-md border font-bold uppercase tracking-wide ${isCurrent || isPast ? 'bg-success/10 border-success/30 text-success' : 'bg-card-2 border-border/50 text-text-dim'}`}>
+                      <span key={j} className={`text-xs px-2.5 py-1 rounded-md border font-bold uppercase tracking-wide ${isCurrent || isPast ? 'bg-success/10 border-success/30 text-success' : 'bg-card-2 border-border/50 text-text-dim'}`}>
                         {isCurrent || isPast ? '✓' : '🔒'} {p}
                       </span>
                     ))}
@@ -383,7 +383,7 @@ export default function LoyaltyPage() {
           <div className="animate-slideUp">
             <div className="mb-4 px-1">
               <h3 className="font-black text-lg">Transaction Ledger</h3>
-              <p className="text-text-dim text-[10px] font-bold uppercase tracking-widest mt-0.5">Your lifetime LF Coin history</p>
+              <p className="text-text-dim text-xs font-bold uppercase tracking-widest mt-0.5">Your lifetime LF Coin history</p>
             </div>
             {(loyalty.history || []).length === 0 ? (
               <div className="text-center py-20 bg-card rounded-3xl border border-border shadow-inner">
@@ -400,13 +400,13 @@ export default function LoyaltyPage() {
                     </div>
                     <div className="flex-1 min-w-0 py-0.5">
                       <p className="font-black text-sm truncate text-text">{h.desc}</p>
-                      <p className="text-text-dim text-[10px] font-bold uppercase tracking-widest mt-1 truncate pr-2">{h.salonName} • {h.date}</p>
+                      <p className="text-text-dim text-xs font-bold uppercase tracking-widest mt-1 truncate pr-2">{h.salonName} • {h.date}</p>
                     </div>
                     <div className="text-right">
                        <p className={`font-black text-lg leading-none ${h.points > 0 ? 'text-success' : 'text-danger'}`}>
                         {h.points > 0 ? '+' : ''}{h.points}
                       </p>
-                      <p className="text-[8px] font-black uppercase tracking-widest text-text-dim mt-1">Coins</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-text-dim mt-1">Coins</p>
                     </div>
                   </div>
                 ))}

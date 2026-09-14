@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../store/AppContext';
+import BackButton from '../components/BackButton';
 import { motion } from 'framer-motion';
 import {
    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -51,8 +52,11 @@ const RevenueOps: React.FC = () => {
    );
 
    return (
-      <div className="min-h-screen bg-bg p-6 lg:p-10 pb-20">
-         <div className="max-w-7xl mx-auto space-y-10">
+      <div className="min-h-screen bg-bg px-5 app-header-safe pb-24">
+         <div className="max-w-7xl mx-auto space-y-8">
+            <div className="mb-2">
+               <BackButton to="/barber/home" />
+            </div>
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -153,7 +157,7 @@ const RevenueOps: React.FC = () => {
                      </ResponsiveContainer>
                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <span className="text-4xl font-black text-text">92%</span>
-                        <span className="text-[10px] font-black text-text-dim uppercase tracking-widest">Target Hit</span>
+                        <span className="text-xs font-black text-text-dim uppercase tracking-widest">Target Hit</span>
                      </div>
                   </div>
                   <div className="mt-8 space-y-4">
@@ -222,7 +226,7 @@ const StatCard = ({ title, value, trend, icon, color }: any) => {
             </div>
             <div className="flex items-center gap-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-lg">
                <ChevronUp size={12} />
-               <span className="text-[10px] font-black">{trend}</span>
+               <span className="text-xs font-black">{trend}</span>
             </div>
          </div>
          <p className="text-text-dim text-xs font-black uppercase tracking-widest mb-1">{title}</p>

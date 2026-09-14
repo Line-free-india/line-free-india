@@ -111,7 +111,7 @@ export default function CustomerSubscription() {
         <div className="mt-5 p-4 rounded-xl glass-card text-center">
           <p className="text-text-dim text-xs mb-1">Payment via UPI — Opens your payment app</p>
           <p className="font-mono text-sm text-primary">{UPI_ID}</p>
-          <p className="text-text-dim text-[10px] mt-2">GPay • PhonePe • Paytm • BHIM & more</p>
+          <p className="text-text-dim text-xs mt-2">GPay • PhonePe • Paytm • BHIM & more</p>
         </div>
       </div>
       <BottomNav />

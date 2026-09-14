@@ -118,7 +118,7 @@ export default function BridalPackageBuilder() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Quote Builder 🌿</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{packages.length} Quotes Created</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{packages.length} Quotes Created</p>
           </div>
         </div>
       </div>
@@ -134,12 +134,12 @@ export default function BridalPackageBuilder() {
           <div className="space-y-4 relative z-10">
              <div className="grid grid-cols-2 gap-3">
                <div className="col-span-2">
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Client Name / Event Name</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Client Name / Event Name</label>
                  <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Pooja's Wedding" className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none font-bold text-sm" />
                </div>
 
                <div className="col-span-2">
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Event Date</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Event Date</label>
                  <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm font-bold text-rose-500" style={{colorScheme: 'dark'}} />
                </div>
                
@@ -153,7 +153,7 @@ export default function BridalPackageBuilder() {
                </div>
 
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Mehendi Style</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Mehendi Style</label>
                  <select value={brideStyle} onChange={e => setBrideStyle(e.target.value)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm">
                    <option>Traditional Indian</option>
                    <option>Arabic</option>
@@ -164,7 +164,7 @@ export default function BridalPackageBuilder() {
                </div>
 
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Bridal Price (₹)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Bridal Price (₹)</label>
                  <input type="number" value={bridePrice} onChange={e => setBridePrice(parseInt(e.target.value)||0)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm font-black" />
                </div>
 
@@ -173,22 +173,22 @@ export default function BridalPackageBuilder() {
                </div>
 
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">No. of Guests</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">No. of Guests</label>
                  <input type="number" value={guestCount} onChange={e => setGuestCount(parseInt(e.target.value)||0)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
                </div>
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Price Per Guest (₹)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Price Per Guest (₹)</label>
                  <input type="number" value={guestPricePerPerson} onChange={e => setGuestPricePerPerson(parseInt(e.target.value)||0)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
                </div>
 
                <div className="col-span-2 pt-2 border-t border-border mt-1"></div>
 
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Travel / Venue Fee (₹)</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Travel / Venue Fee (₹)</label>
                  <input type="number" value={travelFee} onChange={e => setTravelFee(parseInt(e.target.value)||0)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm" />
                </div>
                <div>
-                 <label className="text-[10px] font-bold text-text-dim uppercase tracking-wider ml-1">Quote Status</label>
+                 <label className="text-xs font-bold text-text-dim uppercase tracking-wider ml-1">Quote Status</label>
                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full mt-1 p-3 rounded-xl bg-background border border-border outline-none text-sm font-bold text-rose-500">
                    <option>Draft</option>
                    <option>Sent</option>
@@ -200,10 +200,10 @@ export default function BridalPackageBuilder() {
              {/* Live Quote Summary */}
              <div className="mt-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex justify-between items-center">
                <div>
-                 <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Total Grand Quote</p>
+                 <p className="text-xs font-bold text-rose-500 uppercase tracking-widest">Total Grand Quote</p>
                  <p className="text-2xl font-black text-text mt-1">₹{totalQuote.toLocaleString('en-IN')}</p>
                </div>
-               <div className="text-right text-[10px] text-text-dim space-y-1">
+               <div className="text-right text-xs text-text-dim space-y-1">
                  <p>Bride: ₹{bridePrice}</p>
                  <p>Guests: ₹{guestCount * guestPricePerPerson}</p>
                  <p>Travel: ₹{travelFee}</p>
@@ -244,11 +244,11 @@ export default function BridalPackageBuilder() {
                      )}
                      <div className="flex justify-between items-start pl-1">
                        <div>
-                         <span className="text-[10px] font-black uppercase tracking-widest text-text-dim">{new Date(p.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                         <span className="text-xs font-black uppercase tracking-widest text-text-dim">{new Date(p.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                          <h4 className="font-black text-text text-lg leading-tight mt-1">{p.clientName}</h4>
                        </div>
                        <div className="flex gap-1 flex-col items-end">
-                         <div className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${statusColor}`}>
+                         <div className={`px-2 py-1 rounded-md text-xs font-black uppercase tracking-widest border ${statusColor}`}>
                            {p.status}
                          </div>
                        </div>
@@ -273,7 +273,7 @@ export default function BridalPackageBuilder() {
                          </div>
                        )}
                        <div className="border-t border-border pt-2 mt-1 flex justify-between items-center">
-                         <span className="text-[10px] font-black text-primary uppercase tracking-widest">Total Value</span>
+                         <span className="text-xs font-black text-primary uppercase tracking-widest">Total Value</span>
                          <span className="text-base font-black text-rose-500">₹{p.totalQuote.toLocaleString('en-IN')}</span>
                        </div>
                      </div>

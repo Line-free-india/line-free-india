@@ -66,9 +66,9 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
   const capacityPct = Math.min(100, Math.round(((serving ? 1 : 0) + waiting.length) / totalSlots * 100));
 
   return (
-    <div className="min-h-screen pb-40 relative overflow-hidden font-[var(--font-space)] text-white">
+    <div className="min-h-screen pb-40 relative w-full max-w-full overflow-x-hidden font-[var(--font-space)] text-white">
       {/* Forge — Aggressive Red & Black Aurora */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[#080408]" />
         <motion.div
           animate={{ x:['-20%','20%','-20%'], scale:[1,1.4,1] }}
@@ -89,8 +89,8 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
           <BackButton to="/barber/home" />
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => window.open('/barber/tv-dashboard', '_blank')}
-            className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-400"
+            onClick={() => navigate('/barber/tv-dashboard')}
+            className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-red-400"
           >
             <Tv size={14} /> Arena TV
           </motion.button>
@@ -102,8 +102,8 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
               {businessProfile?.businessName || 'THE FORGE'}
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-red-400/40 text-[10px] font-black tracking-widest uppercase">◈ Sector Status:</span>
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isPaused ? 'bg-zinc-800 text-zinc-400 border border-white/5' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+              <span className="text-red-400/40 text-xs font-black tracking-widest uppercase">◈ Sector Status:</span>
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${isPaused ? 'bg-zinc-800 text-zinc-400 border border-white/5' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? 'bg-zinc-500' : 'bg-red-500 animate-pulse'}`} />
                 {isPaused ? 'Entry Locked' : 'Forge Active'}
               </div>
@@ -124,7 +124,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
           style={{ background: 'rgba(220,38,38,0.05)', border: '1px solid rgba(220,38,38,0.2)' }}
         >
           <div className="flex justify-between items-center mb-5">
-            <div className="text-[10px] font-black text-red-400/60 uppercase tracking-widest">Live Capacity</div>
+            <div className="text-xs font-black text-red-400/60 uppercase tracking-widest">Live Capacity</div>
             <div className="flex items-center gap-2">
               <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-3 h-3 rounded-full bg-red-500"
@@ -152,7 +152,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
               <div key={z.zone} className="rounded-2xl p-3 bg-white/[0.03] border border-white/5">
                 <div className="text-red-500 mb-2">{z.icon}</div>
                 <div className="text-sm font-black">{z.val}</div>
-                <div className="text-[8px] uppercase font-bold text-red-400/40 tracking-widest">{z.zone}</div>
+                <div className="text-xs uppercase font-bold text-red-400/40 tracking-widest">{z.zone}</div>
               </div>
             ))}
           </div>
@@ -171,7 +171,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
            >
               {isPaused ? <Play size={24} /> : <Pause size={24} />}
               <div className="text-left mt-2">
-                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Entry Flow</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-40">Entry Flow</p>
                 <p className="text-lg font-black">{isPaused ? 'Resume' : 'Lock Entry'}</p>
               </div>
            </motion.button>
@@ -183,7 +183,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
            >
               <Users size={24} />
               <div className="text-left mt-2">
-                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Next Member</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-40">Next Member</p>
                 <p className="text-lg font-black">Call Queue</p>
               </div>
            </motion.button>
@@ -192,10 +192,10 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
         {/* Member Queue */}
         <div className="mb-12">
            <div className="flex justify-between items-center mb-6 px-1">
-             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-red-500/60 flex items-center gap-2">
+             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-red-500/60 flex items-center gap-2">
                 <Flame size={14} /> Entry Queue ({waiting.length})
              </h2>
-             <button onClick={() => navigate('/barber/revenue-ops')} className="text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-red-400">View All Logs</button>
+             <button onClick={() => navigate('/barber/revenue-ops')} className="text-xs font-black uppercase tracking-widest text-white/30 hover:text-red-400">View All Logs</button>
            </div>
 
            <div className="space-y-4">
@@ -211,7 +211,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
                    </div>
                    <div>
                      <p className="font-black text-white text-lg">SERVING: {serving.customerName}</p>
-                     <p className="text-[10px] text-red-400 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
+                     <p className="text-xs text-red-400 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
                    </div>
                  </div>
                  <ActivityIndicator />
@@ -231,13 +231,13 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
                    </div>
                    <div>
                      <p className="font-bold text-white text-lg">{token.customerName}</p>
-                     <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">{token.selectedServices[0]?.name}</p>
+                     <p className="text-xs text-white/20 font-black uppercase tracking-widest">{token.selectedServices[0]?.name}</p>
                    </div>
                  </div>
                  <div className="flex items-center gap-4">
                    <div className="text-right">
                      <p className="text-sm font-black text-red-400">{token.estimatedWaitMinutes}m</p>
-                     <p className="text-[8px] text-white/10 font-black uppercase tracking-widest">Wait</p>
+                     <p className="text-xs text-white/10 font-black uppercase tracking-widest">Wait</p>
                    </div>
                    <MessageSquare size={16} className={token.internalNotes ? "text-red-500" : "text-white/5"} />
                  </div>
@@ -247,13 +247,13 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
              {waiting.length === 0 && !serving && (
                 <div className="py-20 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-[40px]">
                    <Users size={32} className="mx-auto text-white/5 mb-4" />
-                   <p className="text-white/20 font-black text-[10px] uppercase tracking-[0.2em]">All Members Processed</p>
+                   <p className="text-white/20 font-black text-xs uppercase tracking-[0.2em]">All Members Processed</p>
                 </div>
              )}
            </div>
         </div>
 
-        <div className="text-[10px] font-black text-red-400/50 uppercase tracking-widest mb-4">Forge Operations</div>
+        <div className="text-xs font-black text-red-400/50 uppercase tracking-widest mb-4">Forge Operations</div>
         <BusinessToolGrid />
       </div>
 
@@ -280,12 +280,12 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-xs font-black text-red-500 uppercase tracking-widest">Member Log</span>
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-200`}>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-200`}>
                           {selectedToken.status}
                         </span>
                       </div>
                       <h2 className="text-3xl font-black uppercase tracking-tighter">Member #{selectedToken.tokenNumber}</h2>
-                      <p className="text-white/20 font-black mt-1 uppercase tracking-widest text-[9px]">ID: {selectedToken.id?.slice(-8).toUpperCase()}</p>
+                      <p className="text-white/20 font-black mt-1 uppercase tracking-widest text-xs">ID: {selectedToken.id?.slice(-8).toUpperCase()}</p>
                     </div>
                     <button onClick={() => setSelectedToken(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
                       <X size={20} />
@@ -304,7 +304,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-[9px] font-black text-white/40 uppercase tracking-widest ml-1">Training Selection</label>
+                      <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-1">Training Selection</label>
                       <div className="grid gap-2">
                         {selectedToken.selectedServices.map((s, i) => (
                           <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -318,7 +318,7 @@ export default function GymDashboard({ todayTokens, serving, waiting, done, canc
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-white/5">
-                       <label className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                       <label className="text-xs font-black text-red-500 uppercase tracking-[0.2em] flex items-center gap-2">
                          <MessageSquare size={14} /> Member File (Stats & PRs)
                        </label>
                        <textarea 

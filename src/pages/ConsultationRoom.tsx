@@ -87,7 +87,7 @@ export default function ConsultationRoom() {
         {attachedFiles.length > 0 && (
           <div className="px-3 py-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 flex items-center gap-1.5">
             <span className="text-xs">📎</span>
-            <span className="text-[10px] font-bold text-white uppercase tracking-widest">{attachedFiles.length} Docs</span>
+            <span className="text-xs font-bold text-white uppercase tracking-widest">{attachedFiles.length} Docs</span>
           </div>
         )}
       </div>

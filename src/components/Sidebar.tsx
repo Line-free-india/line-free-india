@@ -46,7 +46,7 @@ export default function Sidebar() {
           </div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>Line Free India</p>
-            <p style={{ fontSize: 11, color: 'var(--color-text-dim)' }}>Business</p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-dim)' }}>Business</p>
           </div>
         </div>
       </div>

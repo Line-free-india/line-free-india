@@ -81,9 +81,9 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
   const isPaused = businessProfile?.isPaused;
 
   return (
-    <div className="min-h-screen pb-40 relative overflow-hidden text-white font-[var(--font-space)]">
+    <div className="min-h-screen pb-40 relative w-full max-w-full overflow-x-hidden text-white font-[var(--font-space)]">
       {/* Cyberpunk Neon Aurora Background */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[#020209]" />
         <motion.div
           animate={{ x: ['-30%','30%','-30%'], y: ['-20%','20%','-20%'], scale: [1,1.3,1] }}
@@ -104,7 +104,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
           <BackButton to="/barber/home" />
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => window.open('/barber/tv-dashboard', '_blank')}
+            onClick={() => navigate('/barber/tv-dashboard')}
             className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-[#00F0FF]"
           >
             <Tv size={16} /> TV Mode
@@ -117,10 +117,10 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
               {businessProfile?.businessName || 'Command'}
             </h1>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <span className="text-[#888899] text-[10px] font-bold tracking-widest uppercase">◈ System Status:</span>
+              <span className="text-[#888899] text-xs font-bold tracking-widest uppercase">◈ System Status:</span>
               
               {/* Shop Status */}
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${
                 !businessProfile?.isOpen 
                   ? 'bg-red-500/20 text-red-500 border border-red-500/30' 
                   : businessProfile?.isBreak 
@@ -139,7 +139,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
 
               {/* Token Status */}
               {businessProfile?.isOpen && (
-                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${
                   businessProfile?.isStopped 
                     ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30'
                     : 'bg-blue-500/20 text-blue-500 border border-blue-500/30'
@@ -151,7 +151,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
 
               {/* Queue Pause Status */}
               {isPaused && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-purple-500/20 text-purple-500 border border-purple-500/30">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest bg-purple-500/20 text-purple-500 border border-purple-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
                   Queue Paused
                 </div>
@@ -160,7 +160,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
           </div>
           <div className="text-right">
             <div className="text-3xl font-black text-[#00F0FF]">{waiting.length}</div>
-            <div className="text-[#00F0FF] text-[10px] uppercase font-bold tracking-widest">Queue</div>
+            <div className="text-[#00F0FF] text-xs uppercase font-bold tracking-widest">Queue</div>
           </div>
         </header>
 
@@ -173,7 +173,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
              >
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <span className="text-[10px] font-black text-[#00F0FF] uppercase tracking-[0.2em]">Now Fulfilling</span>
+                    <span className="text-xs font-black text-[#00F0FF] uppercase tracking-[0.2em]">Now Fulfilling</span>
                     <h3 className="text-3xl font-black mt-1">Token #{serving.tokenNumber}</h3>
                   </div>
                   <motion.button 
@@ -189,7 +189,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                   <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-xl">👤</div>
                   <div>
                     <p className="font-bold text-white">{serving.customerName}</p>
-                    <p className="text-[10px] text-white/40 font-black uppercase tracking-widest">Selected: {serving.selectedServices[0]?.name}</p>
+                    <p className="text-xs text-white/40 font-black uppercase tracking-widest">Selected: {serving.selectedServices[0]?.name}</p>
                   </div>
                 </div>
              </motion.div>
@@ -220,7 +220,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
             }`}
           >
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">System Toggle</p>
+              <p className="text-xs font-black uppercase tracking-widest opacity-60">System Toggle</p>
               <p className="text-lg font-black">{isPaused ? 'Token Resume' : 'Token Pause'}</p>
 
             </div>
@@ -233,7 +233,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
             className="p-5 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-between group hover:border-[#00F0FF]/30 transition-all"
           >
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Revenue Flow</p>
+              <p className="text-xs font-black uppercase tracking-widest opacity-60">Revenue Flow</p>
               <p className="text-lg font-black">₹{done.reduce((s,t) => s + t.totalPrice, 0).toLocaleString()}</p>
             </div>
             <ChevronRight className="group-hover:translate-x-1 transition-transform" />
@@ -253,7 +253,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
               className="w-full p-5 rounded-[28px] bg-green-500/20 border border-green-500/40 text-green-500 flex items-center justify-between shadow-[0_0_30px_rgba(34,197,94,0.1)]"
             >
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Break Active</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-60">Break Active</p>
                 <p className="text-lg font-black">
                   {breakTimeRemaining > 0 ? `Ends in ${formatBreakTime(breakTimeRemaining)}` : 'End Break Now'}
                 </p>
@@ -294,7 +294,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF]" /> 
                Waiting Queue ({waiting.length})
             </h2>
-            <button className="text-[10px] font-black text-[#00F0FF] uppercase tracking-widest bg-[#00F0FF]/10 px-3 py-1 rounded-lg">View All</button>
+            <button className="text-xs font-black text-[#00F0FF] uppercase tracking-widest bg-[#00F0FF]/10 px-3 py-1 rounded-lg">View All</button>
           </div>
           
           <div className="space-y-4">
@@ -311,7 +311,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                   </div>
                   <div>
                     <p className="font-bold text-white text-lg">{token.customerName}</p>
-                    <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest mt-0.5">
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-widest mt-0.5">
                        {token.selectedServices[0]?.name} • {token.totalTime}m
                     </p>
                   </div>
@@ -319,7 +319,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                 <div className="flex items-center gap-4">
                   <div className="text-right mr-2">
                     <p className="text-sm font-black text-[#00F0FF]">~{token.estimatedWaitMinutes}m</p>
-                    <p className="text-[9px] text-white/20 font-bold uppercase tracking-widest">Wait</p>
+                    <p className="text-xs text-white/20 font-bold uppercase tracking-widest">Wait</p>
                   </div>
                   <MessageSquare size={18} className={token.internalNotes ? "text-primary" : "text-white/10"} />
                 </div>
@@ -365,12 +365,12 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-xs font-black text-primary uppercase tracking-widest">Token Detail</span>
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest bg-white/5 border border-white/10 ${selectedToken.status === 'serving' ? 'text-green-500' : 'text-primary'}`}>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-widest bg-white/5 border border-white/10 ${selectedToken.status === 'serving' ? 'text-green-500' : 'text-primary'}`}>
                           {selectedToken.status}
                         </span>
                       </div>
                       <h2 className="text-3xl font-black">Token #{selectedToken.tokenNumber}</h2>
-                      <p className="text-[#888899] font-bold mt-1 uppercase tracking-widest text-[10px]">Reference: {selectedToken.id?.slice(-8)}</p>
+                      <p className="text-[#888899] font-bold mt-1 uppercase tracking-widest text-xs">Reference: {selectedToken.id?.slice(-8)}</p>
                     </div>
                     <button onClick={() => setSelectedToken(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
                       <X size={24} />
@@ -401,7 +401,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
 
                     {/* Services */}
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black text-text-dim uppercase tracking-widest ml-1">Services Fulfilling</label>
+                      <label className="text-xs font-black text-text-dim uppercase tracking-widest ml-1">Services Fulfilling</label>
                       <div className="grid gap-2">
                         {selectedToken.selectedServices.map((s, i) => (
                           <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -418,10 +418,10 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                     {/* CASE NOTES (Section 3 Requirement) */}
                     <div className="space-y-4 pt-4 border-t border-white/5">
                        <div className="flex items-center justify-between px-1">
-                          <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                          <label className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
                             <MessageSquare size={14} /> Internal Case Notes
                           </label>
-                          <span className="text-[9px] font-bold text-text-dim/50 italic">Visible only to business</span>
+                          <span className="text-xs font-bold text-text-dim/50 italic">Visible only to business</span>
                        </div>
                        <div className="relative">
                           <textarea 
@@ -430,7 +430,7 @@ export default function SalonDashboard({ todayTokens, serving, waiting, done, ca
                             placeholder="Add specific instructions, customer preferences, or medical history for this visit..."
                             className="w-full h-32 bg-black border border-white/10 rounded-2xl p-5 text-sm font-medium focus:border-primary/50 outline-none transition-all resize-none placeholder:text-white/10"
                           />
-                          <div className="absolute bottom-4 right-4 text-[9px] font-black text-white/20 uppercase tracking-widest">
+                          <div className="absolute bottom-4 right-4 text-xs font-black text-white/20 uppercase tracking-widest">
                             Autosaving...
                           </div>
                        </div>

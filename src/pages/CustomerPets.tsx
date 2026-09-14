@@ -80,7 +80,7 @@ export default function CustomerPets() {
           <button onClick={() => nav(-1)} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg">My Pets 🐾</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">{pets.length} companion(s)</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">{pets.length} companion(s)</p>
           </div>
         </div>
         {!showAdd && (
@@ -156,7 +156,7 @@ export default function CustomerPets() {
                 <div>
                   <h3 className="font-black text-2xl text-text leading-none">{pet.name}</h3>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-sm border border-primary/20">{pet.species}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-sm border border-primary/20">{pet.species}</span>
                     {pet.breed && <span className="text-xs text-text-dim font-bold">{pet.breed}</span>}
                   </div>
                 </div>
@@ -164,20 +164,20 @@ export default function CustomerPets() {
 
               <div className="grid grid-cols-2 gap-3 mb-2">
                 <div className="p-3 bg-background rounded-xl border border-border/50">
-                  <p className="text-[9px] text-text-dim font-bold uppercase tracking-widest mb-0.5">Vaccination</p>
+                  <p className="text-xs text-text-dim font-bold uppercase tracking-widest mb-0.5">Vaccination</p>
                   <p className={`text-sm font-black ${pet.lastVaccine ? 'text-text' : 'text-warning'}`}>
                     {pet.lastVaccine ? new Date(pet.lastVaccine).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Unknown'}
                   </p>
                 </div>
                 <div className="p-3 bg-background rounded-xl border border-border/50">
-                  <p className="text-[9px] text-text-dim font-bold uppercase tracking-widest mb-0.5">ID / Tracker</p>
+                  <p className="text-xs text-text-dim font-bold uppercase tracking-widest mb-0.5">ID / Tracker</p>
                   <p className="text-sm font-black text-text font-mono opacity-80">#{pet.id.slice(-6)}</p>
                 </div>
               </div>
               
               {pet.info && (
                 <div className="mt-3 p-3 bg-primary/5 border border-primary/10 rounded-xl">
-                  <p className="text-[9px] text-primary font-black uppercase tracking-widest mb-1">Medical / Diet Notes</p>
+                  <p className="text-xs text-primary font-black uppercase tracking-widest mb-1">Medical / Diet Notes</p>
                   <p className="text-xs text-text-dim font-medium leading-relaxed">{pet.info}</p>
                 </div>
               )}

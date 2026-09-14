@@ -86,8 +86,8 @@ export default function CustomerChat() {
           <p className="font-black text-base truncate pr-2">{salon?.businessName || salon?.salonName || 'Business'}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-xs font-bold text-primary uppercase tracking-widest">{catInfo.label}</span>
-            <span className="text-text-dim text-[10px]">•</span>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm ${salon?.isOpen ? 'text-success bg-success/10' : 'text-danger bg-danger/10'}`}>
+            <span className="text-text-dim text-xs">•</span>
+            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-sm ${salon?.isOpen ? 'text-success bg-success/10' : 'text-danger bg-danger/10'}`}>
               {salon?.isOpen ? 'Open Now' : 'Closed'}
             </span>
           </div>
@@ -110,7 +110,7 @@ export default function CustomerChat() {
             {grouped.map((group, gi) => (
               <div key={gi} className="space-y-4">
                 <div className="text-center my-6">
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-text-dim bg-background border border-border shadow-sm px-4 py-1.5 rounded-full">{group.date}</span>
+                  <span className="text-xs font-bold tracking-widest uppercase text-text-dim bg-background border border-border shadow-sm px-4 py-1.5 rounded-full">{group.date}</span>
                 </div>
                 {group.msgs.map((msg, i) => {
                   const isMine = msg.senderRole === 'customer';
@@ -131,16 +131,16 @@ export default function CustomerChat() {
                           : 'bg-card border-border rounded-2xl rounded-tl-sm'
                       }`}>
                         {!isMine && (
-                          <p className="text-[10px] font-black tracking-widest uppercase text-primary mb-1.5 opacity-90">
+                          <p className="text-xs font-black tracking-widest uppercase text-primary mb-1.5 opacity-90">
                             {isBusinessMsg ? (salon?.businessName || salon?.salonName || 'Business') : (msg.senderName || msg.customerName)}
                           </p>
                         )}
                         <p className={`text-[15px] leading-snug whitespace-pre-wrap ${isMine && 'font-medium'}`}>{msg.message}</p>
                         <div className={`flex items-center gap-1 mt-1.5 justify-end ${isMine ? 'opacity-80' : 'opacity-50'}`}>
-                          <p className={`text-[9px] font-bold tracking-wider ${isMine ? 'text-white' : 'text-text-dim'}`}>
+                          <p className={`text-xs font-bold tracking-wider ${isMine ? 'text-white' : 'text-text-dim'}`}>
                             {formatTime(msg.createdAt)}
                           </p>
-                          {isMine && <span className="text-[10px]">✓✓</span>}
+                          {isMine && <span className="text-xs">✓✓</span>}
                         </div>
                       </div>
                     </div>

@@ -63,9 +63,9 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
   const isPaused = businessProfile?.isPaused;
 
   return (
-    <div className="min-h-screen pb-40 relative overflow-hidden font-[var(--font-serif)] text-purple-50">
+    <div className="min-h-screen pb-40 relative w-full max-w-full overflow-x-hidden font-[var(--font-serif)] text-purple-50">
       {/* Zen Lavender Aurora */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d0015] via-[#110020] to-[#060010]" />
         <motion.div
           animate={{ x:['-20%','20%','-20%'], y:['-20%','20%','-20%'], scale:[1,1.3,1] }}
@@ -86,8 +86,8 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
           <BackButton to="/barber/home" />
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => window.open('/barber/tv-dashboard', '_blank')}
-            className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-purple-300"
+            onClick={() => navigate('/barber/tv-dashboard')}
+            className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-purple-300"
           >
             <Tv size={14} /> Sanctuary TV
           </motion.button>
@@ -99,8 +99,8 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
               {businessProfile?.businessName || 'Serenity Spa'}
             </h1>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-purple-300/40 text-[10px] font-bold tracking-widest uppercase">◈ Sanctuary Flow:</span>
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isPaused ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}`}>
+              <span className="text-purple-300/40 text-xs font-bold tracking-widest uppercase">◈ Sanctuary Flow:</span>
+              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${isPaused ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? 'bg-red-500' : 'bg-purple-400 animate-pulse'}`} />
                 {isPaused ? 'Entry Blocked' : 'Peacefully Active'}
               </div>
@@ -128,14 +128,14 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                 </div>
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <div>
-                    <span className="text-[10px] font-black text-purple-300 uppercase tracking-[0.2em]">Therapy in Session</span>
+                    <span className="text-xs font-black text-purple-300 uppercase tracking-[0.2em]">Therapy in Session</span>
                     <h3 className="text-3xl font-black mt-1 italic">Guest Token #{serving.tokenNumber}</h3>
                   </div>
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleNext}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-purple-500/20 border border-purple-400/30"
+                    className="bg-purple-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-500/20 border border-purple-400/30"
                   >
                     Next Guest
                   </motion.button>
@@ -144,7 +144,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                   <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-xl">🎋</div>
                   <div>
                     <p className="font-bold text-purple-100 italic">{serving.customerName}</p>
-                    <p className="text-[10px] text-purple-300/40 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
+                    <p className="text-xs text-purple-300/40 font-black uppercase tracking-widest">{serving.selectedServices[0]?.name}</p>
                   </div>
                 </div>
              </motion.div>
@@ -155,7 +155,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={handleNext}
-                  className="mt-6 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-purple-500/30 transition-all"
+                  className="mt-6 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest border border-purple-500/30 transition-all"
                 >
                   Invite Guest #{waiting[0]?.tokenNumber || '--'}
                 </motion.button>
@@ -175,7 +175,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
             }`}
           >
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Entry Gate</p>
+              <p className="text-xs font-black uppercase tracking-widest opacity-40">Entry Gate</p>
               <p className="text-lg font-black italic">{isPaused ? 'Resume' : 'Pause'}</p>
             </div>
             {isPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} fill="currentColor" />}
@@ -187,7 +187,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
             className="p-5 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-between group hover:border-purple-500/30 transition-all"
           >
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Healing Flow</p>
+              <p className="text-xs font-black uppercase tracking-widest opacity-40">Healing Flow</p>
               <p className="text-lg font-black italic">₹{done.reduce((s,t) => s + t.totalPrice, 0).toLocaleString()}</p>
             </div>
             <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -197,11 +197,11 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
         {/* Guest Queue */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[11px] font-bold text-purple-300/60 uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-sm font-bold text-purple-300/60 uppercase tracking-widest flex items-center gap-2">
                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> 
                Upcoming Guests ({waiting.length})
             </h2>
-            <button className="text-[9px] font-black text-purple-300 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-lg italic">Past Files</button>
+            <button className="text-xs font-black text-purple-300 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-lg italic">Past Files</button>
           </div>
           
           <div className="space-y-4">
@@ -218,7 +218,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                   </div>
                   <div>
                     <p className="font-bold text-purple-50 text-lg italic">{token.customerName}</p>
-                    <p className="text-[10px] text-purple-300/40 font-medium uppercase tracking-widest mt-0.5">
+                    <p className="text-xs text-purple-300/40 font-medium uppercase tracking-widest mt-0.5">
                        {token.selectedServices[0]?.name}
                     </p>
                   </div>
@@ -226,7 +226,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                 <div className="flex items-center gap-4">
                   <div className="text-right mr-2">
                     <p className="text-sm font-black text-purple-300">~{token.estimatedWaitMinutes}m</p>
-                    <p className="text-[9px] text-purple-300/20 font-bold uppercase tracking-widest">Calm</p>
+                    <p className="text-xs text-purple-300/20 font-bold uppercase tracking-widest">Calm</p>
                   </div>
                   <MessageSquare size={16} className={token.internalNotes ? "text-purple-400" : "text-white/5"} />
                 </div>
@@ -236,13 +236,13 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
             {waiting.length === 0 && (
               <div className="py-12 text-center bg-white/[0.02] border border-dashed border-white/5 rounded-[32px]">
                  <Compass size={32} className="mx-auto text-white/5 mb-3 animate-spin-slow" />
-                 <p className="text-white/20 font-black text-[10px] uppercase tracking-widest italic">All Guests at Peace</p>
+                 <p className="text-white/20 font-black text-xs uppercase tracking-widest italic">All Guests at Peace</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="text-[10px] font-bold text-purple-300/50 uppercase tracking-widest mb-4">Sanctuary Management</div>
+        <div className="text-xs font-bold text-purple-300/50 uppercase tracking-widest mb-4">Sanctuary Management</div>
         <BusinessToolGrid />
       </div>
 
@@ -269,12 +269,12 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-xs font-black text-purple-400 uppercase tracking-widest">Guest File</span>
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest bg-purple-500/10 border border-purple-500/20 text-purple-200`}>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-widest bg-purple-500/10 border border-purple-500/20 text-purple-200`}>
                           {selectedToken.status}
                         </span>
                       </div>
                       <h2 className="text-3xl font-black italic">Token #{selectedToken.tokenNumber}</h2>
-                      <p className="text-purple-300/40 font-bold mt-1 uppercase tracking-widest text-[9px]">FILE: {selectedToken.id?.slice(-8).toUpperCase()}</p>
+                      <p className="text-purple-300/40 font-bold mt-1 uppercase tracking-widest text-xs">FILE: {selectedToken.id?.slice(-8).toUpperCase()}</p>
                     </div>
                     <button onClick={() => setSelectedToken(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
                       <X size={20} />
@@ -293,7 +293,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-[9px] font-black text-purple-300/40 uppercase tracking-widest ml-1">Therapeutic Selection</label>
+                      <label className="text-xs font-black text-purple-300/40 uppercase tracking-widest ml-1">Therapeutic Selection</label>
                       <div className="grid gap-2">
                         {selectedToken.selectedServices.map((s, i) => (
                           <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -307,7 +307,7 @@ export default function SpaDashboard({ todayTokens, serving, waiting, done, canc
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-white/5">
-                       <label className="text-[9px] font-black text-purple-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                       <label className="text-xs font-black text-purple-400 uppercase tracking-[0.2em] flex items-center gap-2">
                          <MessageSquare size={14} /> Therapy History & Preferences
                        </label>
                        <textarea 

@@ -7,7 +7,7 @@ export default function GreetingHeader() {
   const name = customerProfile?.name || '';
 
   return (
-    <div style={{ padding: '52px 16px 12px', background: 'var(--color-card)', borderBottom: '1px solid var(--color-separator)' }}>
+    <div className="bg-white border-b border-gray-100 px-4 app-header-safe pb-3.5 shadow-xs">
       <p style={{ fontSize: 13, color: 'var(--color-text-dim)', marginBottom: 2 }}>{greeting}{name ? ',' : ''}</p>
       {name && <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.5, color: 'var(--color-text)' }}>{name}</h1>}
     </div>

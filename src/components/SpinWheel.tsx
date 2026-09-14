@@ -103,7 +103,7 @@ export default function SpinWheel({
                   style={{ transform: `rotate(${-angle}deg)` }}
                 >
                   <span className="text-lg block">{prize.emoji}</span>
-                  <span className="text-[8px] font-bold text-white/90 leading-tight block">{prize.label}</span>
+                  <span className="text-xs font-bold text-white/90 leading-tight block">{prize.label}</span>
                 </div>
               </div>
             );

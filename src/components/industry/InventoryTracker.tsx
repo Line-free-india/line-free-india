@@ -41,7 +41,7 @@ const InventoryTracker: React.FC = () => {
         <div className="bg-white/5 border border-white/5 p-4 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center gap-2 text-primary mb-1">
             <Layers size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Total Items</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Total Items</span>
           </div>
           <p className="text-2xl font-black">{inventory.length}</p>
         </div>
@@ -52,7 +52,7 @@ const InventoryTracker: React.FC = () => {
         }`}>
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Low Stock</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Low Stock</span>
           </div>
           <p className="text-2xl font-black">{lowStockCount}</p>
         </div>
@@ -90,7 +90,7 @@ const InventoryTracker: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-sm tracking-tight">{item.name}</h3>
-                      <p className="text-[10px] font-mono text-text-dim uppercase tracking-wider">{item.sku} • {item.category}</p>
+                      <p className="text-xs font-mono text-text-dim uppercase tracking-wider">{item.sku} • {item.category}</p>
                     </div>
                   </div>
                   <button className="p-1 text-text-dim hover:text-white">
@@ -100,7 +100,7 @@ const InventoryTracker: React.FC = () => {
 
                <div className="flex justify-between items-end">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-text-dim uppercase">Availability</p>
+                    <p className="text-xs font-bold text-text-dim uppercase">Availability</p>
                     <div className="flex items-center gap-2">
                        <span className={`text-xl font-black ${isLow ? 'text-danger' : 'text-success'}`}>
                          {item.quantity}
@@ -109,7 +109,7 @@ const InventoryTracker: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                     <p className="text-[10px] font-bold text-text-dim uppercase font-mono">MRP: ₹{item.price}</p>
+                     <p className="text-xs font-bold text-text-dim uppercase font-mono">MRP: ₹{item.price}</p>
                      <div className="flex gap-1">
                         <button className="bg-white/5 hover:bg-white/10 p-1.5 rounded-lg border border-white/5">
                            <ArrowUpRight size={14} className="text-success" />
@@ -140,7 +140,7 @@ const InventoryTracker: React.FC = () => {
                </div>
                <div className="text-left">
                   <p className="text-xs font-bold uppercase tracking-tight">Stock Insights</p>
-                  <p className="text-[10px] opacity-80">You have {lowStockCount} items running low</p>
+                  <p className="text-xs opacity-80">You have {lowStockCount} items running low</p>
                </div>
             </div>
             <ChevronRight size={20} />

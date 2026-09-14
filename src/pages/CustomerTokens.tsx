@@ -7,7 +7,24 @@ import type { TokenEntry } from '../store/AppContext';
 import BottomNav from '../components/BottomNav';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import TokenCard from '../components/TokenCard';
+import { triggerHaptic } from '../utils/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Ticket, 
+  ClipboardList, 
+  Lightbulb, 
+  Heart, 
+  Sparkles, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  Pause, 
+  Play, 
+  Send, 
+  Eye,
+  AlertCircle,
+  ChevronRight
+} from 'lucide-react';
 
 type LiveToken = TokenEntry & {
   livePos: number;
@@ -16,33 +33,27 @@ type LiveToken = TokenEntry & {
   peopleAhead: number;
   appAhead: number;
   walkinAhead: number;
-  alertSent?: boolean;
 };
-
-function buildReminderMsg(token: TokenEntry, pos: number, wait: number, termInfo: any) {
-  const t = termInfo.terminology;
-  return [
-    `🔔 *Line Free India — Status Alert*`,
-    ``,
-    `📍 *${token.salonName}*`,
-    `🎫 Your ${t.noun}: *#${token.tokenNumber}*`,
-    pos === 1 ? `✅ *YOU'RE NEXT! Head there NOW!*` : `⚡ *Only ${pos - 1} ${pos - 1 === 1 ? 'person' : 'people'} ahead of you!*`,
-    wait > 0 ? `⏰ Est. ~${wait} ${t.unit}` : ``,
-    `📋 ${token.selectedServices.map(s => s.name).join(', ')}`,
-    `💰 ₹${token.totalPrice}`,
-    ``,
-    `_Powered by Line Free India 💄_`,
-  ].filter(Boolean).join('\n');
-}
 
 export default function CustomerTokens() {
   const { user, getCustomerTokens, cancelToken, pauseToken, resumeToken, transferToken, allSalons } = useApp();
   const nav = useNavigate();
+  
+  const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'past'>('active');
   const [baseTokens, setBaseTokens] = useState<TokenEntry[]>([]);
   const [liveData, setLiveData] = useState<Map<string, LiveToken>>(new Map());
   const [loading, setLoading] = useState(true);
-  const alertedRef = useRef<Set<string>>(new Set());
   const salonUnsubs = useRef<Map<string, () => void>>(new Map());
+
+  // Modals
+  const [showConfirmModal, setShowConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void } | null>(null);
+  const [showTransferModal, setShowTransferModal] = useState<{ isOpen: boolean; token: TokenEntry | null }>({ isOpen: false, token: null });
+  const [transferPhone, setTransferPhone] = useState('');
+  const [transferName, setTransferName] = useState('');
+  const [showCardId, setShowCardId] = useState<string | null>(null);
+
+  // Hold timers
+  const [holdTimers, setHoldTimers] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -68,7 +79,7 @@ export default function CustomerTokens() {
 
         setBaseTokens(prev => prev.map(t => {
           const updated = all.find(a => a.id === t.id);
-          return updated ? { ...t, status: updated.status } : t;
+          return updated ? { ...t, status: updated.status, isPaused: updated.isPaused, transferredTo: updated.transferredTo } : t;
         }));
 
         const serving = all.find(t => t.status === 'serving');
@@ -82,29 +93,14 @@ export default function CustomerTokens() {
         const pos = waitingBefore.length + 1;
         const wait = waitingBefore.reduce((s, t) => s + (t.totalTime * (t.groupSize || 1)), 0);
         const peopleAhead = waitingBefore.reduce((sum, t) => sum + (t.groupSize || 1), 0);
-        const appAhead = waitingBefore.filter(t => t.customerId !== 'walk-in').reduce((sum, t) => sum + (t.groupSize || 1), 0);
-        const walkinAhead = waitingBefore.filter(t => t.customerId === 'walk-in').reduce((sum, t) => sum + (t.groupSize || 1), 0);
+        const appAhead = waitingBefore.filter(t => t.customerId !== 'offline_walk_in').reduce((sum, t) => sum + (t.groupSize || 1), 0);
+        const walkinAhead = waitingBefore.filter(t => t.customerId === 'offline_walk_in').reduce((sum, t) => sum + (t.groupSize || 1), 0);
 
         setLiveData(prev => {
           const next = new Map(prev);
           next.set(myToken.id!, { ...myToken, livePos: pos, liveWait: wait, liveServing: serving?.tokenNumber ?? null, peopleAhead, appAhead, walkinAhead });
           return next;
         });
-
-        if (pos <= 2 && myToken.status === 'waiting' && !alertedRef.current.has(myToken.id!)) {
-          alertedRef.current.add(myToken.id!);
-          const business = allSalons.find(s => s.uid === myToken.salonId);
-          const termInfo = getCategoryInfo(business?.businessType || 'men_salon');
-          const msg = buildReminderMsg(myToken, pos, wait, termInfo);
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`🔔 ${pos === 1 ? "You're NEXT!" : "Almost your turn!"}`, { body: `${myToken.salonName} — ${termInfo.terminology.noun} #${myToken.tokenNumber}`, icon: '/favicon.ico' });
-          }
-          setTimeout(() => {
-            if (confirm(`⚡ ${pos === 1 ? "You're NEXT!" : "Only " + (pos-1) + " person ahead!"} at ${myToken.salonName}!\n\nSend yourself a WhatsApp reminder?`)) {
-              window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-            }
-          }, 500);
-        }
       });
       salonUnsubs.current.set(myToken.salonId, unsub);
     });
@@ -114,66 +110,88 @@ export default function CustomerTokens() {
 
   useEffect(() => () => { salonUnsubs.current.forEach(u => u()); }, []);
 
+  // Timer effect for hold
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
+    const interval = setInterval(() => {
+      setBaseTokens(prev => {
+        let changed = false;
+        const newTokens = prev.map(t => {
+          if (t.isPaused && t.status === 'waiting') {
+            const pausedAt = (t as any).pausedAt || Date.now();
+            const holdExpiry = pausedAt + 10 * 60 * 1000;
+            const remaining = Math.max(0, Math.floor((holdExpiry - Date.now()) / 1000));
+            setHoldTimers(ht => ({ ...ht, [t.id!]: remaining }));
+            if (remaining === 0) {
+              resumeToken(t.id!);
+              changed = true;
+              return { ...t, isPaused: false };
+            }
+          }
+          return t;
+        });
+        return changed ? newTokens : prev;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleCancel = async (token: TokenEntry) => {
+  const handleCancel = (token: TokenEntry) => {
     const tatkalWarning = token.isTatkal ? '\n\n⚠️ Note: The Tatkal Priority fee is non-refundable.' : '';
-    if (!confirm(`Are you sure you want to cancel your booking at ${token.salonName}?${tatkalWarning}`)) return;
-    await cancelToken(token.id!);
-    setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, status: 'cancelled' } : t));
+    setShowConfirmModal({
+      isOpen: true,
+      title: 'Cancel Booking',
+      message: `Are you sure you want to cancel your booking at ${token.salonName}?${tatkalWarning}`,
+      onConfirm: async () => {
+        await cancelToken(token.id!);
+        setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, status: 'cancelled' } : t));
+        setShowConfirmModal(null);
+      }
+    });
   };
 
-  const handleSendReminder = (token: TokenEntry) => {
-    const live = liveData.get(token.id!);
-    const business = allSalons.find(s => s.uid === token.salonId);
-    const termInfo = getCategoryInfo(business?.businessType || 'men_salon');
-    const msg = buildReminderMsg(token, live?.livePos ?? 1, live?.liveWait ?? token.estimatedWaitMinutes, termInfo);
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  };
-
-  const handleShareToken = (token: TokenEntry) => {
-    const live = liveData.get(token.id!);
-    const business = allSalons.find(s => s.uid === token.salonId);
-    const termInfo = getCategoryInfo(business?.businessType || 'men_salon');
-    const msg = [
-      `🎫 *My Line Free India ${termInfo.terminology.noun}*`,
-      `${termInfo.icon} ${token.salonName}`,
-      `🔢 ID #${token.tokenNumber}`,
-      `📅 ${token.date}`,
-      live ? `👥 ${live.peopleAhead} ahead · ~${live.liveWait}${termInfo.terminology.unit} wait` : `⏰ ~${token.estimatedWaitMinutes}${termInfo.terminology.unit}`,
-      `💰 ₹${token.totalPrice}`,
-      `📋 ${token.selectedServices.map(s => s.name).join(', ')}`,
-    ].join('\n');
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  };
-
-  const handlePauseToggle = async (token: TokenEntry) => {
+  const handlePauseToggle = (token: TokenEntry) => {
     if (token.isPaused) {
-      if (!confirm(`Resume your place in the queue?`)) return;
-      await resumeToken(token.id!);
-      setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, isPaused: false } : t));
+      setShowConfirmModal({
+        isOpen: true,
+        title: 'Resume Queue',
+        message: 'Resume your place in the queue?',
+        onConfirm: async () => {
+          await resumeToken(token.id!);
+          setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, isPaused: false } : t));
+          setShowConfirmModal(null);
+        }
+      });
     } else {
-      if (!confirm(`Hold your place in the queue until you're ready to resume?`)) return;
-      await pauseToken(token.id!);
-      setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, isPaused: true } : t));
+      setShowConfirmModal({
+        isOpen: true,
+        title: 'Hold Spot',
+        message: 'Hold your spot for up to 10 minutes? You will not lose your place but others may pass you temporarily.',
+        onConfirm: async () => {
+          await pauseToken(token.id!);
+          setBaseTokens(prev => prev.map(t => t.id === token.id ? { ...t, isPaused: true, pausedAt: Date.now() } : t));
+          setShowConfirmModal(null);
+        }
+      });
     }
   };
 
-  const handleTransfer = async (token: TokenEntry) => {
-    const friendPhone = prompt('Enter the phone number of the person you want to transfer this token to:');
-    if (!friendPhone) return;
-    const friendName = prompt('Enter their name:');
-    if (!friendName) return;
-    if (confirm(`Transfer token to ${friendName} (${friendPhone})?`)) {
-      await transferToken(token.id!, friendPhone, friendName);
-      alert('Token transferred successfully!');
-    }
+  const submitTransfer = async () => {
+    const token = showTransferModal.token;
+    if (!token || !transferPhone || !transferName) return;
+    
+    setShowTransferModal({ isOpen: false, token: null });
+    setShowConfirmModal({
+      isOpen: true,
+      title: 'Confirm Transfer',
+      message: `Are you sure you want to transfer Token #${token.tokenNumber} to ${transferName} (${transferPhone})?`,
+      onConfirm: async () => {
+        await transferToken(token.id!, transferPhone, transferName);
+        setShowConfirmModal(null);
+        setTransferName('');
+        setTransferPhone('');
+      }
+    });
   };
-
 
   const active = baseTokens.filter(t => t.status === 'waiting' || t.status === 'serving');
   const past = baseTokens.filter(t => t.status === 'done' || t.status === 'cancelled');
@@ -184,290 +202,438 @@ export default function CustomerTokens() {
     return `${min} min`;
   };
 
-  const [showCardId, setShowCardId] = useState<string | null>(null);
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   return (
     <ResponsiveContainer variant="customer">
-      <div className="h-full overflow-y-auto pb-40 animate-fadeIn custom-scrollbar">
-        <div className="p-6">
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-2xl font-bold">Activity</h1>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-[10px] text-success font-medium px-2 py-0.5 rounded-full bg-success/10 border border-success/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />Live Data
-            </span>
-          </div>
-        </div>
-        <p className="text-text-dim text-sm mb-5">Real-time status · Auto alert when near</p>
+      <div className="min-h-screen bg-[#F8FAFC] text-gray-900 pb-36 flex flex-col select-none overflow-x-hidden relative">
+        
+        {/* Top Safe-area Header (Screen 3 & Screen 4) */}
+        <header className="bg-white border-b border-gray-100 px-4 app-header-safe pb-3.5 shadow-xs sticky top-0 z-30">
+          <div className="flex items-center justify-between mb-3.5">
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+                {activeTab === 'upcoming' ? 'My Activity' : 'My Tokens'}
+              </h1>
+              <p className="text-sm text-gray-500 font-medium mt-0.5">
+                Real-time queue tracking &amp; history
+              </p>
+            </div>
 
-        {loading ? (
-          <div className="space-y-4">{[1,2].map(i => <div key={i} className="h-48 rounded-3xl bg-card animate-pulse shadow-sm" />)}</div>
-        ) : baseTokens.length === 0 ? (
-          <div className="text-center py-24 bg-card-2 rounded-3xl border border-border mt-4">
-            <span className="text-6xl block mb-4 animate-float opacity-70">📋</span>
-            <p className="font-bold text-lg">No activity today</p>
-            <p className="text-text-dim text-sm mt-1 mb-6 px-4">Book a service, cafe, or clinic to see your live queue here.</p>
-            <button onClick={() => nav('/customer/search')} className="btn-primary px-8 shadow-lg shadow-primary/30">Explore Businesses</button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Active */}
+            {/* Live Indicator */}
             {active.length > 0 && (
-              <div>
-                <h2 className="font-black text-xs mb-4 flex items-center gap-2 uppercase tracking-[3px] text-text-dim px-1">
-                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />Live Activity ({active.length})
-                </h2>
-                <div className="space-y-4">
-                  {active.map(token => {
-                    const live = liveData.get(token.id!);
-                    const isServing = token.status === 'serving';
-                    const business = allSalons.find(s => s.uid === token.salonId);
-                    const termInfo = getCategoryInfo(business?.businessType || 'men_salon');
-                    const tLabels = termInfo.terminology;
+              <span className="flex items-center gap-2 text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Live Active</span>
+              </span>
+            )}
+          </div>
 
-                    return (
-                      <div key={token.id} className={`rounded-3xl overflow-hidden border shadow-sm ${isServing ? 'border-success' : 'border-primary/30'}`}>
-                        {/* Top gradient bar */}
-                        <div className={`h-1.5 w-full ${isServing ? 'bg-success' : 'bg-gradient-to-r from-primary via-accent to-primary animate-gradient'}`} />
+          {/* Segmented Control Tabs */}
+          <div className="flex bg-gray-100 p-1.5 rounded-2xl">
+            <button
+              onClick={() => { triggerHaptic('selection'); setActiveTab('active'); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'active'
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Active ({active.length})
+            </button>
+            <button
+              onClick={() => { triggerHaptic('selection'); setActiveTab('upcoming'); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'upcoming'
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Upcoming (0)
+            </button>
+            <button
+              onClick={() => { triggerHaptic('selection'); setActiveTab('past'); }}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'past'
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Past ({past.length})
+            </button>
+          </div>
+        </header>
 
-                        <div className="p-5 bg-card">
-                          {/* Header */}
-                          <div className="flex justify-between items-start mb-5">
-                            <div>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-xl">{termInfo.icon}</span>
-                                <p className="font-bold text-lg">{token.salonName}</p>
-                              </div>
-                              <p className="text-text-dim text-xs font-medium ml-7">📅 {token.date}</p>
-                              {token.isTatkal && (
-                                <div className="mt-2 ml-7 w-max px-2.5 py-1 rounded-full bg-gold/15 border border-gold/30 text-[10px] text-gold font-black uppercase tracking-wider flex items-center gap-1.5 animate-pulse shadow-sm">
-                                  <span>🚀</span> Priority Access
+        {/* ─── Main Content Body ─── */}
+        <div className="flex-1 p-4 space-y-4">
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-44 rounded-2xl bg-white border border-gray-100 animate-pulse p-4 shadow-xs" />
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* TAB 1: ACTIVE */}
+              {activeTab === 'active' && (
+                <>
+                  {active.length === 0 ? (
+                    // Screen 4 Empty State
+                    <div className="space-y-4 pt-2">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-3xl border border-gray-100 p-8 text-center shadow-xs flex flex-col items-center"
+                      >
+                        {/* Ticket Illustration */}
+                        <div className="w-20 h-20 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4 text-emerald-600">
+                          <Ticket className="w-10 h-10 stroke-[1.5]" />
+                        </div>
+                        <h2 className="text-base font-black text-gray-900 mb-1">No active tokens</h2>
+                        <p className="text-xs text-gray-500 max-w-xs mb-6 font-medium leading-relaxed">
+                          You don't have any active queue tokens right now. Find a business to get started.
+                        </p>
+                        <button
+                          onClick={() => {
+                            triggerHaptic('medium');
+                            nav('/customer/search');
+                          }}
+                          className="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                        >
+                          Explore &amp; Join Queue
+                        </button>
+                      </motion.div>
+
+                      {/* Screen 4 Bottom Tip: "Your time matters" */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="p-4 rounded-2xl bg-[#FFF1F2] border border-rose-100 flex items-start gap-3 shadow-xs"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-xs">
+                          <Heart className="w-4 h-4 fill-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-black text-rose-900">Your time matters</h3>
+                          <p className="text-xs text-rose-700/90 font-medium mt-0.5 leading-snug">
+                            Track your position in real-time and get notified when it's your turn so you never wait standing.
+                          </p>
+                        </div>
+                      </motion.div>
+                    </div>
+                  ) : (
+                    // Live Active Token Cards
+                    <div className="space-y-4">
+                      {active.map(token => {
+                        const live = liveData.get(token.id!);
+                        const isServing = token.status === 'serving';
+                        const business = allSalons.find(s => s.uid === token.salonId);
+                        const termInfo = getCategoryInfo(business?.businessType || 'salon');
+
+                        return (
+                          <motion.div
+                            key={token.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`rounded-3xl bg-white border ${
+                              isServing ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-100'
+                            } shadow-xs overflow-hidden`}
+                          >
+                            {/* Top Status Strip */}
+                            <div className={`py-2.5 px-4 flex items-center justify-between ${
+                              isServing ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800'
+                            }`}>
+                              <span className="text-sm font-bold flex items-center gap-2">
+                                <span className={`w-2.5 h-2.5 rounded-full ${isServing ? 'bg-white animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
+                                {isServing ? "It's YOUR Turn! Check-in Now" : 'Waiting in Queue'}
+                              </span>
+                              <span className="text-sm font-black tracking-wider uppercase">
+                                Token #{token.tokenNumber}
+                              </span>
+                            </div>
+
+                            <div className="p-4 space-y-4">
+                              {/* Venue details */}
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <h3 className="text-lg font-black text-gray-900 leading-tight">
+                                    {token.salonName}
+                                  </h3>
+                                  <p className="text-sm text-gray-500 font-medium mt-0.5">
+                                    {termInfo.label} &bull; {token.date}
+                                  </p>
                                 </div>
-                              )}
-                            </div>
-                            <div className={`text-center p-3 rounded-2xl border ${isServing ? 'bg-success/10 border-success/30' : 'bg-primary/5 border-primary/20 shadow-inner'}`}>
-                              <p className="text-[9px] text-text-dim font-black uppercase tracking-widest">{tLabels.noun}</p>
-                              <p className={`text-3xl font-black ${isServing ? 'text-success' : 'gradient-text'}`}>#{token.tokenNumber}</p>
-                            </div>
-                          </div>
-
-                          {/* SERVING */}
-                          {isServing && (
-                            <div className="mb-5 p-4 rounded-2xl bg-success/15 border border-success/40 flex items-center gap-4 shadow-sm animate-pulse-glow">
-                              <div className="relative">
-                                <span className="text-4xl">{termInfo.icon}</span>
-                                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success ring-4 ring-success/20 animate-ping" />
-                              </div>
-                              <div>
-                                <p className="font-black text-success text-lg drop-shadow-sm">It's YOUR TURN!</p>
-                                <p className="text-success/80 text-xs font-bold mt-0.5">Please check-in now 🏃</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* WAITING — Live Queue */}
-                          {!isServing && (
-                            <div className="mb-5">
-                              {live ? (
-                                <>
-                                  <div className="p-5 rounded-3xl bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.12),transparent_60%)] border border-primary/20 mb-4 text-center shadow-[0_0_40px_rgba(0,240,255,0.05)_inset] relative overflow-hidden backdrop-blur-md">
-                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none -translate-y-10 translate-x-10" />
-                                     <div className="absolute top-2 left-2 flex items-center justify-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 shadow-sm">
-                                        <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-[#00F0FF] opacity-90">Live Wait Predictor</span>
-                                     </div>
-                                    <p className="text-primary mt-4 text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Estimated Wait</p>
-                                    <p className="text-5xl font-black gradient-text drop-shadow-sm">{formatWait(token.isPaused ? 0 : live.liveWait)}</p>
-                                    {token.isPaused ? (
-                                      <p className="text-warning text-sm font-black mt-2 animate-pulse bg-warning/10 w-max mx-auto px-3 py-1 rounded-full border border-warning/30">⏸️ Queue Paused</p>
-                                    ) : live.peopleAhead === 0 ? (
-                                      <p className="text-success text-sm font-black mt-2 animate-pulse bg-success/10 w-max mx-auto px-3 py-1 rounded-full border border-success/30">🔔 You're next!</p>
-                                    ) : (
-                                      <p className="text-text-dim text-xs font-medium mt-2 bg-card/50 backdrop-blur-sm w-max mx-auto px-3 py-1 rounded-full border border-border shadow-sm">
-                                          {live.peopleAhead} {live.peopleAhead === 1 ? 'party' : 'parties'} ahead
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  <div className="p-4 rounded-3xl bg-card-2/50 border border-border shadow-sm">
-                                    <div className="flex justify-between text-[11px] mb-1 font-bold tracking-wide">
-                                      <span className="text-text-dim uppercase">Now serving</span>
-                                      <span className="text-primary uppercase">Your {tLabels.noun}</span>
-                                    </div>
-                                    <div className="flex justify-between font-black text-base mb-3">
-                                      <span className="text-text-dim">#{live.liveServing ?? '—'}</span>
-                                      <span className="gradient-text drop-shadow-sm">#{token.tokenNumber}</span>
-                                    </div>
-                                    <div className="w-full h-3 rounded-full bg-card overflow-hidden relative shadow-inner border border-border/50">
-                                      <div
-                                        className={`h-full rounded-full transition-all duration-1000 ${token.isTatkal ? 'bg-gradient-to-r from-gold to-warning' : 'bg-gradient-to-r from-primary to-accent'}`}
-                                        style={{ width: `${Math.max(5, 100 - (live.peopleAhead / Math.max(1, live.livePos - 1 || 1)) * 100)}%` }}
-                                      />
-                                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSI+PC9yZWN0Pgo8L3N2Zz4=')] opacity-20 animate-slideX"></div>
-                                    </div>
-                                    <div className="flex justify-between text-[10px] text-text-dim mt-2 font-medium">
-                                      <span>Position #{live.livePos} in queue</span>
-                                    </div>
-                                    {token.status === 'waiting' && (
-                                      <div className="flex justify-center mt-3 gap-2 border-t border-border pt-3">
-                                        <button onClick={() => handlePauseToggle(token)} className={`flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${token.isPaused ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-card border border-border text-text-dim hover:text-warning'}`}>
-                                          {token.isPaused ? '▶ Resume' : '⏸ Hold Place'}
-                                        </button>
-                                        <button onClick={() => handleTransfer(token)} className="flex-1 py-2 rounded-xl bg-card border border-border text-xs font-bold uppercase tracking-wider text-text-dim hover:text-white transition-all">
-                                          🤝 Transfer
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="mt-4 bg-card border border-border rounded-3xl p-3 shadow-sm relative overflow-hidden flex items-center h-16">
-                                    <div className="absolute left-3 text-2xl bg-card-2 p-1.5 rounded-full shadow-inner z-30 ring-1 ring-border">{termInfo.icon}</div>
-                                    <div className="absolute left-10 right-0 flex items-center justify-start overflow-hidden pl-7 pt-2 pb-2 mask-image:linear-gradient(to_right,transparent,black_20px)">
-                                      <div className="flex flex-row items-center transition-all duration-1000 gap-1">
-                                        {live.peopleAhead > 4 && (
-                                          <div className="w-9 h-9 rounded-full border border-border bg-card-2 flex items-center justify-center text-[11px] font-bold z-0 -mr-4 text-text-dim shadow-inner">
-                                            +{live.peopleAhead - 4}
-                                          </div>
-                                        )}
-                                        {Array.from({ length: Math.min(4, live.peopleAhead) }).map((_, i) => (
-                                          <div key={`ahead-${i}`} className="w-9 h-9 rounded-full border border-border bg-card-2 flex items-center justify-center text-sm shadow-sm -mr-3 z-10 opacity-70 grayscale transition-all duration-700">
-                                            👤
-                                          </div>
-                                        ))}
-                                        {/* You */}
-                                        <div className="w-11 h-11 rounded-full border-2 border-primary bg-card flex items-center justify-center text-xl shadow-[0_0_20px_rgba(255,107,107,0.3)] z-20 relative ml-2 transition-all duration-500 scale-110">
-                                          🧑‍🦱
-                                          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-primary text-[7px] font-black px-1.5 py-0.5 rounded-full border border-card text-background tracking-widest shadow-sm">YOU</div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="p-5 rounded-3xl bg-card-2 border border-border flex items-center gap-3 justify-center">
-                                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                  <p className="text-text-dim text-sm font-medium">Fetching live queue...</p>
+                                <div className="text-right">
+                                  <span className="text-xs font-bold text-gray-400 block">Total</span>
+                                  <span className="text-lg font-black text-gray-900">₹{token.totalPrice}</span>
                                 </div>
-                              )}
-                            </div>
-                          )}
+                              </div>
 
-                          <div className="flex flex-wrap gap-2 mb-5">
-                            {token.selectedServices.map((s, i) => (
-                              <span key={i} className="text-xs px-3 py-1.5 rounded-xl bg-card-2 border border-border font-medium shadow-sm">{s.name}</span>
+                              {/* Live Metrics Box */}
+                              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-around text-center">
+                                <div>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Position</p>
+                                  <p className="text-2xl font-black text-emerald-600">
+                                    #{live?.livePos ?? 1}
+                                  </p>
+                                </div>
+                                <div className="w-px h-9 bg-gray-200" />
+                                <div>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ahead</p>
+                                  <p className="text-2xl font-black text-gray-800">
+                                    {live?.peopleAhead ?? 0}
+                                  </p>
+                                </div>
+                                <div className="w-px h-9 bg-gray-200" />
+                                <div>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Est. Wait</p>
+                                  <p className="text-2xl font-black text-gray-900">
+                                    {formatWait(token.isPaused ? 0 : (live?.liveWait ?? 0))}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Pause / Transfer / Cancel Controls */}
+                              <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
+                                <button
+                                  onClick={() => handlePauseToggle(token)}
+                                  className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 border transition cursor-pointer ${
+                                    token.isPaused
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  {token.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                                  <span>{token.isPaused ? 'Resume' : 'Hold Spot'}</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setShowTransferModal({ isOpen: true, token })}
+                                  className="flex-1 py-2.5 px-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 text-sm font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  <span>Transfer</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setShowCardId(token.id!)}
+                                  className="py-2.5 px-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition cursor-pointer"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  <span>Ticket</span>
+                                </button>
+
+                                <button
+                                  onClick={() => handleCancel(token)}
+                                  className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition cursor-pointer"
+                                  title="Cancel token"
+                                >
+                                  <XCircle className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* TAB 2: UPCOMING / TODAY ACTIVITY (Screen 3) */}
+              {activeTab === 'upcoming' && (
+                <div className="space-y-4 pt-2">
+                  {/* Empty state (Screen 3) */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-3xl border border-gray-100 p-8 text-center shadow-xs flex flex-col items-center"
+                  >
+                    <div className="w-20 h-20 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4 text-emerald-600">
+                      <ClipboardList className="w-10 h-10 stroke-[1.5]" />
+                    </div>
+                    <h2 className="text-base font-black text-gray-900 mb-1">No activity today</h2>
+                    <p className="text-xs text-gray-500 max-w-xs mb-6 font-medium leading-relaxed">
+                      You have not joined any queue or made a booking yet.
+                    </p>
+                    <button
+                      onClick={() => {
+                        triggerHaptic('medium');
+                        nav('/customer/search');
+                      }}
+                      className="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                    >
+                      Explore Businesses
+                    </button>
+                  </motion.div>
+
+                  {/* Screen 3 Pro Tip card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="p-4 rounded-2xl bg-[#FEF9C3] border border-amber-200/80 flex items-start gap-3 shadow-xs"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center text-amber-950 shrink-0 mt-0.5 shadow-xs">
+                      <Lightbulb className="w-4 h-4 fill-amber-950" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black text-amber-950">Pro Tip</h3>
+                      <p className="text-xs text-amber-900/90 font-medium mt-0.5 leading-snug">
+                        Join a queue before leaving home to cut down on waiting time at the store!
+                      </p>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+
+              {/* TAB 3: PAST */}
+              {activeTab === 'past' && (
+                <div className="space-y-3">
+                  {past.length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-gray-100 p-8 text-center shadow-xs">
+                      <p className="text-gray-400 text-3xl mb-2">📜</p>
+                      <h3 className="font-bold text-gray-900 text-sm">No past history</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Completed and cancelled bookings will be logged here.
+                      </p>
+                    </div>
+                  ) : (
+                    past.map((token) => (
+                      <div
+                        key={token.id}
+                        className="bg-white rounded-2xl border border-gray-100 p-4 shadow-xs flex items-center justify-between"
+                      >
+                        <div>
+                          <h4 className="text-sm font-black text-gray-900">{token.salonName}</h4>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {token.date} &bull; Token #{token.tokenNumber}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {token.selectedServices?.map((s, i) => (
+                              <span key={i} className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                                {s.name}
+                              </span>
                             ))}
                           </div>
+                        </div>
 
-                          <div className="flex justify-between items-center pt-4 border-t border-border border-dashed">
-                            <div>
-                              <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest mb-0.5">Total</p>
-                              <p className="font-black text-xl gradient-text leading-none">₹{token.totalPrice}</p>
-                            </div>
-                            <div className="flex gap-2.5">
-                              <button
-                                onClick={() => setShowCardId(token.id!)}
-                                className="px-5 h-10 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-[2px] shadow-lg shadow-primary/20 active:scale-95 transition-all"
-                              >
-                                View Ticket 🎫
-                              </button>
-                               <button 
-                                onClick={() => handleCancel(token)}
-                                className="w-10 h-10 rounded-xl bg-card-2 border border-border flex items-center justify-center text-danger active:scale-95 shadow-sm"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
+                        <div className="text-right">
+                          <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded-md mb-1 ${
+                            token.status === 'done'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-rose-50 text-rose-600'
+                          }`}>
+                            {token.status === 'done' ? 'Completed' : 'Cancelled'}
+                          </span>
+                          <p className="text-xs font-bold text-gray-900">₹{token.totalPrice}</p>
                         </div>
                       </div>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
-              </div>
-            )}
+              )}
+            </>
+          )}
+        </div>
 
-            {/* Past */}
-            {past.length > 0 && (
-              <div className="pt-2">
-                <div className="mb-5 p-4 rounded-3xl bg-gradient-to-r from-primary to-accent text-white shadow-lg relative overflow-hidden flex items-center justify-between animate-slideUp">
-                  <div className="absolute right-0 top-0 opacity-10 text-8xl -mt-4 -mr-4">🎁</div>
-                  <div className="relative z-10 w-full">
-                    <p className="font-black text-sm mb-1 uppercase tracking-widest text-white/90">VIP Reward Progress</p>
-                    <div className="w-full h-2 bg-black/20 rounded-full mb-2 overflow-hidden">
-                      <div className="h-full bg-white rounded-full transition-all duration-1000" style={{ width: `${(past.length % 5) * 20}%` }} />
-                    </div>
-                    <p className="text-xs font-bold">{5 - (past.length % 5)} more visits to unlock <span className="text-gold">10% OFF</span></p>
-                  </div>
-                </div>
-                <h2 className="font-bold text-sm mb-4 text-text-dim uppercase tracking-wider px-1">Past Bookings</h2>
-                <div className="space-y-3">
-                  {past.map(token => {
-                    const business = allSalons.find(s => s.uid === token.salonId);
-                    const termInfo = getCategoryInfo(business?.businessType || 'men_salon');
+        <BottomNav />
+      </div>
 
-                    return (
-                      <div key={token.id} className="p-4 rounded-3xl bg-card border border-border shadow-sm">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{termInfo.icon}</span>
-                              <p className="font-bold text-sm">{token.salonName}</p>
-                            </div>
-                            <p className="text-text-dim text-xs mt-1 ml-7 font-medium">📅 {token.date} · #{token.tokenNumber}</p>
-                            <div className="flex flex-wrap gap-1 mt-2 ml-7">
-                              {token.selectedServices.map((s, i) => <span key={i} className="text-[10px] bg-card-2 px-2 py-0.5 rounded-full font-medium">{s.name}</span>)}
-                            </div>
-                          </div>
-                          <div className="text-right flex flex-col items-end">
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm mb-2 ${token.status === 'done' ? 'bg-success/15 border border-success/30 text-success' : 'bg-danger/10 border border-danger/20 text-danger'}`}>
-                              {token.status === 'done' ? '✅ Complete' : '❌ Cancelled'}
-                            </span>
-                            <p className={`font-black text-sm ${token.status === 'done' ? 'text-success' : 'text-text-dim'}`}>₹{token.totalPrice}</p>
-                          </div>
-                        </div>
-                        {token.status === 'done' && (
-                          <div className="mt-4 pt-3 border-t border-border flex justify-end gap-2">
-                            <button onClick={() => nav(`/customer/salon/${token.salonId}`)} className="text-xs text-text-dim font-bold bg-card-2 border border-border px-4 py-1.5 rounded-full hover:bg-border transition-colors">
-                              🔄 Book Again
-                            </button>
-                            <button onClick={() => nav(`/customer/salon/${token.salonId}`)} className="text-xs text-primary font-bold bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full hover:bg-primary/20 transition-colors">
-                              ⭐ Review
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {showConfirmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl p-5 w-full max-w-sm border border-gray-100 shadow-xl"
+            >
+              <h3 className="text-base font-black text-gray-900 mb-1">{showConfirmModal.title}</h3>
+              <p className="text-xs text-gray-600 mb-5 leading-relaxed">{showConfirmModal.message}</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowConfirmModal(null)}
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-xs font-bold text-gray-700 hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={showConfirmModal.onConfirm}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs"
+                >
+                  Confirm
+                </button>
               </div>
-            )}
+            </motion.div>
           </div>
         )}
-      </div>
-      </div>
-      <BottomNav />
+      </AnimatePresence>
 
-      {/* Premium Token Card Modal */}
+      {/* Transfer Modal */}
+      <AnimatePresence>
+        {showTransferModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl p-5 w-full max-w-sm border border-gray-100 shadow-xl"
+            >
+              <h3 className="text-base font-black text-gray-900 mb-1">Transfer Token</h3>
+              <p className="text-xs text-gray-500 mb-4">Enter recipient's name and mobile number.</p>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={transferName}
+                onChange={(e) => setTransferName(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 mb-2.5 focus:outline-none focus:border-emerald-500"
+              />
+              <input
+                type="tel"
+                placeholder="10-digit Phone Number"
+                value={transferPhone}
+                onChange={(e) => setTransferPhone(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 mb-5 focus:outline-none focus:border-emerald-500"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowTransferModal({ isOpen: false, token: null })}
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-xs font-bold text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitTransfer}
+                  disabled={!transferPhone || !transferName}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-40"
+                >
+                  Transfer Token
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Ticket Modal */}
       <AnimatePresence>
         {showCardId && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[2000] flex items-center justify-center p-6"
-          >
-            <div 
-              className="absolute inset-0 bg-black/90 backdrop-blur-md"
-              onClick={() => setShowCardId(null)}
-            />
-            <div className="relative z-10 w-full max-w-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+            <div className="relative w-full max-w-xs">
               {(() => {
-                const token = active.find(t => t.id === showCardId);
+                const token = active.find((t) => t.id === showCardId);
                 if (!token) return null;
                 const live = liveData.get(token.id!);
-                const biz = allSalons.find(s => s.uid === token.salonId);
+                const biz = allSalons.find((s) => s.uid === token.salonId);
                 return (
-                  <TokenCard 
+                  <TokenCard
                     token={token}
                     livePos={live?.livePos}
                     liveWait={live?.liveWait}
@@ -475,14 +641,14 @@ export default function CustomerTokens() {
                   />
                 );
               })()}
-              <button 
+              <button
                 onClick={() => setShowCardId(null)}
-                className="absolute -top-12 right-0 text-white/40 hover:text-white font-black text-sm uppercase tracking-widest flex items-center gap-2"
+                className="w-full mt-3 py-2 rounded-xl bg-white text-gray-800 text-xs font-bold shadow-md text-center"
               >
-                Close ✕
+                Close Ticket ✕
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </ResponsiveContainer>

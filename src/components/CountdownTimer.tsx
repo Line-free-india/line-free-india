@@ -44,7 +44,7 @@ export default function CountdownTimer({ targetDate, label, onComplete, accentCo
 
   return (
     <div className="text-center">
-      {label && <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: accentColor }}>{label}</p>}
+      {label && <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: accentColor }}>{label}</p>}
       <div className="flex justify-center gap-2">
         {blocks.map((b, i) => (
           <div key={i} className="text-center">
@@ -65,7 +65,7 @@ export default function CountdownTimer({ targetDate, label, onComplete, accentCo
                 </motion.span>
               </AnimatePresence>
             </div>
-            <p className="text-[8px] text-text-dim font-bold mt-1 uppercase">{b.label}</p>
+            <p className="text-xs text-text-dim font-bold mt-1 uppercase">{b.label}</p>
           </div>
         ))}
       </div>

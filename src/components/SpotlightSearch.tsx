@@ -55,7 +55,7 @@ export default function SpotlightSearch({ items, onSelect, placeholder = 'Search
                 <span className="text-lg">{item.icon}</span>
                 <div className="flex-1">
                   <div className="text-sm font-semibold">{item.title}</div>
-                  {item.subtitle && <div className="text-[10px] text-text-dim">{item.subtitle}</div>}
+                  {item.subtitle && <div className="text-xs text-text-dim">{item.subtitle}</div>}
                 </div>
                 <span className="text-text-dim text-xs">→</span>
               </motion.button>

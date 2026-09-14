@@ -8,51 +8,85 @@ export interface ToolItem {
   description?: string;
 }
 
-// ── Shared tools available to ALL business types ──
+// ── Shared tools available to ALL business types (Clean & Focused) ──
 export const SHARED_TOOLS: ToolItem[] = [
-  { label: 'Revenue Ops', icon: '📈', path: '/barber/revenue-ops', color: 'emerald', description: 'Real-time ROI' },
-  { label: 'TV Mode', icon: '📺', path: '/barber/tv-dashboard', color: 'blue', description: 'Live Display' },
+  { label: 'Live Queue Sheet', icon: '📋', path: '/barber/customers', color: 'blue', description: 'Real-time Queue' },
+  { label: 'WhatsApp CRM', icon: '💬', path: '/barber/whatsapp', color: 'emerald', description: 'Auto Alerts' },
+  { label: 'Staff Roster', icon: '👥', path: '/barber/staff', color: 'purple', description: 'Team Manager' },
+  { label: 'Booking Calendar', icon: '📅', path: '/barber/calendar', color: 'blue', description: 'Appointments' },
+  { label: 'Coupons & Promos', icon: '🎟️', path: '/barber/coupons', color: 'orange', description: 'Discounts' },
+  { label: 'Loyalty Program', icon: '🏆', path: '/barber/loyalty-program', color: 'yellow', description: 'Reward Points' },
+  { label: 'Analytics Pro', icon: '📈', path: '/barber/analytics-pro', color: 'emerald', description: 'Growth Trends' },
+  { label: 'TV Kiosk Mode', icon: '📺', path: '/barber/tv-dashboard', color: 'blue', description: 'Counter TV' },
+  { label: 'Daily Reports', icon: '📑', path: '/barber/daily-report', color: 'rose', description: 'Day Summary' },
   { label: 'Menu Editor', icon: '📝', path: '/barber/menu-editor', color: 'orange', description: 'Edit Services' },
-  { label: 'Analytics', icon: '📊', path: '/barber/analytics', color: 'violet', description: 'History & Logs' },
-  { label: 'Reports', icon: '📑', path: '/barber/daily-report', color: 'rose', description: 'Daily Summary' },
-  { label: 'CRM', icon: '👥', path: '/barber/crm', color: 'purple', description: 'Client records' },
-  { label: 'Attendance', icon: '✅', path: '/barber/attendance', color: 'emerald', description: 'QR Biometric' },
-  { label: 'Insights', icon: '🔍', path: '/barber/customer-insights', color: 'cyan', description: 'Customer Analytics' },
+  { label: 'Shift Planner', icon: '⏰', path: '/barber/shifts', color: 'sky', description: 'Staff Timetable' },
+  { label: 'Task Manager', icon: '📌', path: '/barber/tasks', color: 'indigo', description: 'Daily To-Dos' },
+  { label: 'Revenue Ops', icon: '📊', path: '/barber/revenue-ops', color: 'cyan', description: 'Real-time ROI' },
 ];
 
 // ── Category-specific tool mappings ──
-export const BUSINESS_TOOLS: Record<BusinessCategory, ToolItem[]> = {
+export const BUSINESS_TOOLS: Record<string, ToolItem[]> = {
+  mens_salon: [
+    { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'blue', description: 'Live queue' },
+    { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
+    { label: 'CRM', icon: '💼', path: '/barber/crm', color: 'purple', description: 'Client records' },
+
+  ],
   men_salon: [
     { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'blue', description: 'Live queue' },
     { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
     { label: 'CRM', icon: '💼', path: '/barber/crm', color: 'purple', description: 'Client records' },
-    { label: 'Products', icon: '🛍️', path: '/barber/product-catalog', color: 'pink', description: 'Sell products' },
+
+  ],
+  ladies_parlour: [
+    { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'pink', description: 'Live queue' },
+    { label: 'Bridal', icon: '👰', path: '/barber/bridal-package', color: 'fuchsia', description: 'Wedding packages' },
+    { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
+
   ],
   beauty_parlour: [
     { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'pink', description: 'Live queue' },
     { label: 'Bridal', icon: '👰', path: '/barber/bridal-package', color: 'fuchsia', description: 'Wedding packages' },
     { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
-    { label: 'Products', icon: '🛍️', path: '/barber/product-catalog', color: 'purple', description: 'Sell products' },
+
   ],
   unisex_salon: [
     { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'violet', description: 'Live queue' },
     { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
     { label: 'CRM', icon: '💼', path: '/barber/crm', color: 'purple', description: 'Client records' },
-    { label: 'Products', icon: '🛍️', path: '/barber/product-catalog', color: 'pink', description: 'Sell products' },
+
+  ],
+  spa_center: [
+    { label: 'Bookings', icon: '📅', path: '/barber/customers', color: 'purple', description: 'Appointments' },
+    { label: 'Therapists', icon: '🧖', path: '/barber/staff', color: 'pink', description: 'Therapist roster' },
+    { label: 'Packages', icon: '🎁', path: '/barber/service-packages', color: 'rose', description: 'Spa packages' },
+    { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
+  ],
+  general_clinic: [
+    { label: 'Appointments', icon: '📅', path: '/barber/clinic-appointment', color: 'blue', description: 'Patient slots' },
+    { label: 'Prescriptions', icon: '💊', path: '/barber/digital-prescription', color: 'emerald', description: 'ePrescribe' },
+    { label: 'Patients', icon: '🏥', path: '/barber/patient-records', color: 'sky', description: 'Health records' },
+    { label: 'Vaccines', icon: '💉', path: '/barber/vaccination-tracker', color: 'teal', description: 'Immunization' },
+    { label: 'Queue', icon: '📋', path: '/barber/customers', color: 'violet', description: 'OPD queue' },
+    { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Patient reviews' },
+  ],
+  hospital_opd: [
+    { label: 'OPD', icon: '🏥', path: '/barber/clinic-appointment', color: 'blue', description: 'Outpatient' },
+    { label: 'Prescriptions', icon: '💊', path: '/barber/digital-prescription', color: 'emerald', description: 'ePrescribe' },
+    { label: 'Lab Reports', icon: '🔬', path: '/barber/patient-records', color: 'cyan', description: 'Diagnostics' },
+    { label: 'Vaccines', icon: '💉', path: '/barber/vaccination-tracker', color: 'teal', description: 'Immunizations' },
   ],
   restaurant: [
-    { label: 'Menu Builder', icon: '🍽️', path: '/barber/menu', color: 'red', description: 'Digital menu' },
-    { label: 'Floor Plan', icon: '🗺️', path: '/barber/floorplan', color: 'emerald', description: 'Table layout' },
+    { label: 'Menu Builder', icon: '🍽️', path: '/barber/menu-editor', color: 'red', description: 'Digital menu' },
     { label: 'Reservations', icon: '📅', path: '/barber/customers', color: 'blue', description: 'Table bookings' },
     { label: 'Catering', icon: '🍛', path: '/barber/catering', color: 'orange', description: 'Catering orders' },
     { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Guest reviews' },
   ],
   cafe: [
-    { label: 'Menu', icon: '☕', path: '/barber/menu', color: 'amber', description: 'Cafe menu' },
-    { label: 'Tables', icon: '🪑', path: '/barber/floorplan', color: 'emerald', description: 'Table positions' },
+    { label: 'Services', icon: '📝', path: '/barber/menu-editor', color: 'amber', description: 'Services menu' },
     { label: 'Bookings', icon: '📅', path: '/barber/customers', color: 'blue', description: 'Reservations' },
     { label: 'Feedback', icon: '⭐', path: '/barber/customer-feedback', color: 'yellow', description: 'Reviews' },
-    { label: 'Products', icon: '🛍️', path: '/barber/product-catalog', color: 'pink', description: 'Sell merch' },
   ],
   clinic: [
     { label: 'Appointments', icon: '📅', path: '/barber/clinic-appointment', color: 'blue', description: 'Patient slots' },

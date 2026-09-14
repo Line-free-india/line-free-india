@@ -31,7 +31,7 @@ export default function ContractManager() {
       <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-zinc-300">Contract Manager 📝</h1><p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">₹{totalActive} Active Contracts</p></div>
+          <div><h1 className="font-black text-lg text-zinc-300">Contract Manager 📝</h1><p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">₹{totalActive} Active Contracts</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -48,10 +48,10 @@ export default function ContractManager() {
         </div>
         <div className="space-y-3">{contracts.map(c => (
           <div key={c.id} className={`p-4 rounded-3xl elite-glass spatial-card shadow-sm ${c.status==='completed'||c.status==='expired'?'border-white/5 opacity-50':'border-zinc-600/30'}`}>
-            <div className="flex justify-between items-start mb-2"><div><h4 className="font-black text-sm text-zinc-100">{c.title}</h4><p className="text-[9px] text-text-dim">{c.clientName} • {new Date(c.startDate).toLocaleDateString()} — {new Date(c.endDate).toLocaleDateString()}</p></div><div className="text-right"><p className="font-black text-zinc-300">₹{c.value}</p><span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${c.status==='active'?'bg-emerald-500/20 text-emerald-400':c.status==='draft'?'bg-blue-500/20 text-blue-400':'bg-zinc-500/20 text-zinc-400'}`}>{c.status}</span></div></div>
+            <div className="flex justify-between items-start mb-2"><div><h4 className="font-black text-sm text-zinc-100">{c.title}</h4><p className="text-xs text-text-dim">{c.clientName} • {new Date(c.startDate).toLocaleDateString()} — {new Date(c.endDate).toLocaleDateString()}</p></div><div className="text-right"><p className="font-black text-zinc-300">₹{c.value}</p><span className={`text-xs font-black uppercase px-1.5 py-0.5 rounded ${c.status==='active'?'bg-emerald-500/20 text-emerald-400':c.status==='draft'?'bg-blue-500/20 text-blue-400':'bg-zinc-500/20 text-zinc-400'}`}>{c.status}</span></div></div>
             <div className="flex gap-2 mt-2">
-              {c.status === 'draft' && <button onClick={() => updateStatus(c.id, 'active')} className="flex-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase hover:bg-emerald-500 hover:text-white transition-all">Activate</button>}
-              {c.status === 'active' && <button onClick={() => updateStatus(c.id, 'completed')} className="flex-1 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase hover:bg-blue-500 hover:text-white transition-all">Complete</button>}
+              {c.status === 'draft' && <button onClick={() => updateStatus(c.id, 'active')} className="flex-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase hover:bg-emerald-500 hover:text-white transition-all">Activate</button>}
+              {c.status === 'active' && <button onClick={() => updateStatus(c.id, 'completed')} className="flex-1 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase hover:bg-blue-500 hover:text-white transition-all">Complete</button>}
             </div>
           </div>
         ))}</div>

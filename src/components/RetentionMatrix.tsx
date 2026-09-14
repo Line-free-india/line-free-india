@@ -32,28 +32,28 @@ export default function RetentionMatrix({ stats, color = '#6366F1' }: RetentionM
       <div className="flex justify-between items-start mb-8 relative z-10">
         <div>
           <h3 className="font-black text-lg tracking-tight">Retention Matrix</h3>
-          <p className="text-[10px] text-text-dim uppercase font-bold tracking-widest">Cohort Analysis • Loyalty Vector</p>
+          <p className="text-xs text-text-dim uppercase font-bold tracking-widest">Cohort Analysis • Loyalty Vector</p>
         </div>
         <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full">
-           <span className="text-[10px] font-black text-primary uppercase tracking-widest">{calculations.rate}% Retention</span>
+           <span className="text-xs font-black text-primary uppercase tracking-widest">{calculations.rate}% Retention</span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
-           <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-1">Lifetime Value</p>
+           <p className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-1">Lifetime Value</p>
            <p className="text-2xl font-black text-white">₹{calculations.ltv}</p>
         </div>
         <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">
-           <p className="text-[9px] text-rose-400 font-black uppercase tracking-widest mb-1">Churn Risk</p>
+           <p className="text-xs text-rose-400 font-black uppercase tracking-widest mb-1">Churn Risk</p>
            <p className="text-2xl font-black text-rose-500">{calculations.churn}</p>
-           <p className="text-[8px] text-rose-400/50 font-bold uppercase mt-1">Slipped 45d+</p>
+           <p className="text-xs text-rose-400/50 font-bold uppercase mt-1">Slipped 45d+</p>
         </div>
       </div>
 
       <div className="space-y-4 relative z-10">
         <div>
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+          <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-2">
             <span className="text-emerald-400">Loyalists</span>
             <span className="text-text-dim">{calculations.returning} Customers</span>
           </div>
@@ -63,7 +63,7 @@ export default function RetentionMatrix({ stats, color = '#6366F1' }: RetentionM
         </div>
 
         <div>
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+          <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-2">
             <span className="text-primary">Conversion</span>
             <span className="text-text-dim">{calculations.new} New Nodes</span>
           </div>
@@ -74,7 +74,7 @@ export default function RetentionMatrix({ stats, color = '#6366F1' }: RetentionM
       </div>
 
       <div className="mt-8 p-4 rounded-2xl bg-black/40 border border-white/5 relative z-10">
-         <p className="text-[10px] text-zinc-400 italic">
+         <p className="text-xs text-zinc-400 italic">
            <span className="text-primary font-black uppercase not-italic mr-2">Neural Prediction:</span>
            High volatility in Week 3 cohort. Recommend deploying a 20% "We Miss You" coupon to {calculations.churn} at-risk entities.
          </p>

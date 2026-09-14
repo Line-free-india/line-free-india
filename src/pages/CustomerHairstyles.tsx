@@ -115,10 +115,10 @@ export default function CustomerHairstyles() {
               </button>
               <span className="text-3xl block mb-2">{style.emoji}</span>
               <p className="font-semibold text-sm">{style.name}</p>
-              <p className="text-text-dim text-[10px] mt-0.5 leading-tight">{style.desc}</p>
+              <p className="text-text-dim text-xs mt-0.5 leading-tight">{style.desc}</p>
               <div className="flex items-center gap-1.5 mt-2">
-                <span className={`badge text-[9px] py-0.5 px-1.5 ${difficultyColor[style.difficulty]}`}>{style.difficulty}</span>
-                <span className="text-text-dim text-[9px]">⏱ {style.time}</span>
+                <span className={`badge text-xs py-0.5 px-1.5 ${difficultyColor[style.difficulty]}`}>{style.difficulty}</span>
+                <span className="text-text-dim text-xs">⏱ {style.time}</span>
               </div>
             </div>
           ))}

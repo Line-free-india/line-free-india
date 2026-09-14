@@ -67,15 +67,15 @@ export default function UPIPayment() {
 
         {/* UPI ID Display */}
         <div className="p-4 rounded-2xl mb-6 border" style={{ background: `${aurora}08`, borderColor: `${aurora}25` }}>
-          <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: aurora }}>Your UPI ID</div>
+          <div className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: aurora }}>Your UPI ID</div>
           <div className="font-mono text-lg font-bold text-white/90">{upiId || 'Not configured'}</div>
-          {!upiId && <p className="text-red-400 text-[10px] mt-1">Set your UPI ID in Profile Settings to accept payments</p>}
+          {!upiId && <p className="text-red-400 text-xs mt-1">Set your UPI ID in Profile Settings to accept payments</p>}
         </div>
 
         {/* Amount Entry */}
         <div className="space-y-4 mb-6">
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1 block">Amount (₹)</label>
+            <label className="text-xs font-black uppercase tracking-widest text-white/40 mb-1 block">Amount (₹)</label>
             <input
               value={amount}
               onChange={e => setAmount(e.target.value)}
@@ -86,7 +86,7 @@ export default function UPIPayment() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1 block">Customer Name (optional)</label>
+            <label className="text-xs font-black uppercase tracking-widest text-white/40 mb-1 block">Customer Name (optional)</label>
             <input
               value={customerName}
               onChange={e => setCustomerName(e.target.value)}
@@ -95,7 +95,7 @@ export default function UPIPayment() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1 block">Note</label>
+            <label className="text-xs font-black uppercase tracking-widest text-white/40 mb-1 block">Note</label>
             <input
               value={note}
               onChange={e => setNote(e.target.value)}
@@ -108,12 +108,12 @@ export default function UPIPayment() {
         {/* QR Code */}
         {upiLink && (
           <div className="p-6 rounded-3xl text-center mb-6" style={{ background: `${aurora}08`, border: `1px solid ${aurora}20` }}>
-            <div className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: aurora }}>Scan to Pay</div>
+            <div className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: aurora }}>Scan to Pay</div>
             <div className="inline-block p-4 bg-white rounded-2xl mb-4 shadow-2xl">
               <img src={qrApiUrl} alt="UPI QR" className="w-48 h-48" />
             </div>
             <div className="text-white/60 text-sm font-bold">₹{parseFloat(amount).toLocaleString('en-IN')}</div>
-            <div className="text-white/30 text-[10px] mt-1">to {businessName}</div>
+            <div className="text-white/30 text-xs mt-1">to {businessName}</div>
           </div>
         )}
 
@@ -143,7 +143,7 @@ export default function UPIPayment() {
 
         {/* Quick amounts */}
         <div className="mt-6">
-          <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3">Quick Amounts</div>
+          <div className="text-xs font-black uppercase tracking-widest text-white/40 mb-3">Quick Amounts</div>
           <div className="flex flex-wrap gap-2">
             {[100, 200, 300, 500, 1000, 2000].map(amt => (
               <button key={amt}

@@ -53,7 +53,7 @@ export default function CustomerTryOn() {
         </div>
         <div className="flex bg-cyan-950/40 border border-cyan-500/50 px-3 py-1.5 rounded-full items-center gap-2 backdrop-blur-xl">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(34,211,238,1)]" />
-          <span className="text-[9px] font-black tracking-widest uppercase text-cyan-200">Neural Vision AR</span>
+          <span className="text-xs font-black tracking-widest uppercase text-cyan-200">Neural Vision AR</span>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function CustomerTryOn() {
             {/* Status Text Bar */}
             <div className="absolute top-28 left-1/2 -translate-x-1/2 text-center z-30 w-full px-4">
               <motion.div animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 2, repeat: Infinity }}
-                 className={`font-black text-[9px] inline-block px-4 py-2 rounded-full border tracking-[0.3em] uppercase backdrop-blur-xl shadow-2xl ${scanning ? 'bg-cyan-950/60 border-cyan-500/50 text-cyan-300' : 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'}`}>
+                 className={`font-black text-xs inline-block px-4 py-2 rounded-full border tracking-[0.3em] uppercase backdrop-blur-xl shadow-2xl ${scanning ? 'bg-cyan-950/60 border-cyan-500/50 text-cyan-300' : 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'}`}>
                 {scanning ? 'Acquiring Facial Coordinates...' : 'Biometric Lock Stable'}
               </motion.div>
             </div>
@@ -116,7 +116,7 @@ export default function CustomerTryOn() {
                <motion.h2 key={activeStyle.id} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }}
                   className="text-4xl font-black tracking-tighter text-white drop-shadow-lg">{activeStyle.name}</motion.h2>
             </AnimatePresence>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.3em] mt-1">Render Model {activeStyle.id}.0</p>
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-[0.3em] mt-1">Render Model {activeStyle.id}.0</p>
           </div>
           <button className="w-16 h-16 rounded-[2rem] bg-white text-black flex items-center justify-center text-2xl shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-90 transition-all hover:rounded-2xl" onClick={() => triggerHaptic('heavy')}>
             📸
@@ -130,7 +130,7 @@ export default function CustomerTryOn() {
               className={`snap-center flex-shrink-0 w-24 h-28 rounded-3xl flex flex-col items-center justify-center border transition-all duration-300 p-2 backdrop-blur-2xl ${activeStyle.id === style.id ? 'border-white/50 bg-white/20 scale-100 shadow-[0_10px_30px_rgba(255,255,255,0.2)]' : 'border-white/10 scale-90 opacity-40 bg-black/50 hover:opacity-100 mix-blend-luminosity'}`}
             >
               <img src={style.url} className={`w-14 h-14 object-contain mb-3 transition-transform ${activeStyle.id === style.id ? 'scale-110' : 'scale-90'}`} alt="" />
-              <p className={`text-[9px] font-black uppercase tracking-wider text-center leading-tight ${activeStyle.id === style.id ? 'text-white' : 'text-zinc-500'}`}>{style.name}</p>
+              <p className={`text-xs font-black uppercase tracking-wider text-center leading-tight ${activeStyle.id === style.id ? 'text-white' : 'text-zinc-500'}`}>{style.name}</p>
             </button>
           ))}
         </div>

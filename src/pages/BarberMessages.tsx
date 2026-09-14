@@ -103,7 +103,7 @@ export default function BarberMessages() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-black text-base truncate">{selectedThread.customerName}</p>
-            <p className="text-text-dim text-[10px] uppercase font-bold tracking-widest mt-0.5">Customer</p>
+            <p className="text-text-dim text-xs uppercase font-bold tracking-widest mt-0.5">Customer</p>
           </div>
         </div>
 
@@ -132,10 +132,10 @@ export default function BarberMessages() {
                     }`}>
                       <p className={`text-[15px] leading-snug whitespace-pre-wrap ${isBusinessMsg && 'font-medium'}`}>{msg.message}</p>
                       <div className={`flex items-center gap-1 mt-1.5 justify-end ${isBusinessMsg ? 'opacity-80' : 'opacity-50'}`}>
-                        <p className={`text-[9px] font-bold tracking-wider ${isBusinessMsg ? 'text-white' : 'text-text-dim'}`}>
+                        <p className={`text-xs font-bold tracking-wider ${isBusinessMsg ? 'text-white' : 'text-text-dim'}`}>
                           {formatTime((msg.createdAt as number) || 0)}
                         </p>
-                        {isBusinessMsg && <span className="text-[10px]">✓✓</span>}
+                        {isBusinessMsg && <span className="text-xs">✓✓</span>}
                       </div>
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default function BarberMessages() {
           </div>
           <div className="w-12 h-12 rounded-2xl bg-card-2 border border-border flex items-center justify-center shadow-inner relative">
             <span className="text-2xl">{catInfo.icon}</span>
-            <div className="absolute -top-1 -right-1 flex items-center gap-1 text-[8px] text-success font-black bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+            <div className="absolute -top-1 -right-1 flex items-center gap-1 text-xs text-success font-black bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> Live
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function BarberMessages() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-black text-sm flex items-center gap-2">📣 Broadcast Promo</h3>
-              <p className="text-[10px] text-text-dim uppercase tracking-widest mt-0.5 font-bold">Reach {sortedThreads.length > 0 ? `${sortedThreads.length * 5}+ customers` : 'all customers'} instantly</p>
+              <p className="text-xs text-text-dim uppercase tracking-widest mt-0.5 font-bold">Reach {sortedThreads.length > 0 ? `${sortedThreads.length * 5}+ customers` : 'all customers'} instantly</p>
             </div>
             <div className="text-3xl opacity-40">📡</div>
           </div>
@@ -240,14 +240,14 @@ export default function BarberMessages() {
                 <div className="w-14 h-14 rounded-2xl bg-card border border-border shadow-inner overflow-hidden flex-shrink-0 relative flex items-center justify-center">
                   {thread.customerPhoto ? <img src={thread.customerPhoto} className="w-full h-full object-cover" alt="" /> : <span className="text-2xl opacity-70">👤</span>}
                   {thread.unread > 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary ring-2 ring-card rounded-full flex items-center justify-center text-[9px] text-white font-black shadow-md">{thread.unread > 9 ? '9+' : thread.unread}</div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary ring-2 ring-card rounded-full flex items-center justify-center text-xs text-white font-black shadow-md">{thread.unread > 9 ? '9+' : thread.unread}</div>
                   )}
                 </div>
                 
                 <div className="flex-1 min-w-0 py-0.5">
                   <div className="flex items-center justify-between mb-1">
                     <p className={`font-black text-base truncate pr-2 ${thread.unread > 0 ? 'text-primary' : 'text-text'}`}>{thread.customerName}</p>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${thread.unread > 0 ? 'text-primary' : 'text-text-dim'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-widest whitespace-nowrap ${thread.unread > 0 ? 'text-primary' : 'text-text-dim'}`}>
                       {formatTime(thread.lastTime)}
                     </span>
                   </div>

@@ -33,7 +33,7 @@ export default function MembershipDashboard() {
       <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg text-blue-400">Memberships 🎫</h1><p className="text-[10px] text-blue-200/50 font-bold uppercase tracking-widest">{members.filter(m=>m.status==='active').length} Active</p></div>
+          <div><h1 className="font-black text-lg text-blue-400">Memberships 🎫</h1><p className="text-xs text-blue-200/50 font-bold uppercase tracking-widest">{members.filter(m=>m.status==='active').length} Active</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
@@ -49,8 +49,8 @@ export default function MembershipDashboard() {
         </div>
         <div className="space-y-3">{members.map(m => { const pct = m.washesTotal > 0 ? Math.round(m.washesUsed/m.washesTotal*100) : 0; return (
           <div key={m.id} className="p-4 rounded-3xl elite-glass spatial-card">
-            <div className="flex justify-between items-start mb-3"><div><h4 className="font-black text-sm text-blue-50">{m.name}</h4><p className="text-[10px] text-blue-200/50 font-bold">{m.plan} • Exp: {new Date(m.endDate).toLocaleDateString()}</p></div><span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${m.status==='active'?'bg-emerald-500/20 text-emerald-400':'bg-rose-500/20 text-rose-400'}`}>{m.status}</span></div>
-            <div className="flex items-center gap-3"><div className="flex-1"><div className="h-2 bg-background rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full transition-all" style={{width:`${pct}%`}}></div></div></div><span className="text-xs font-black text-blue-400">{m.washesUsed}/{m.washesTotal}</span>{m.status==='active' && m.washesUsed < m.washesTotal && <button onClick={() => useWash(m.id)} className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase hover:bg-blue-500 hover:text-white transition-all">Use</button>}</div>
+            <div className="flex justify-between items-start mb-3"><div><h4 className="font-black text-sm text-blue-50">{m.name}</h4><p className="text-xs text-blue-200/50 font-bold">{m.plan} • Exp: {new Date(m.endDate).toLocaleDateString()}</p></div><span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded ${m.status==='active'?'bg-emerald-500/20 text-emerald-400':'bg-rose-500/20 text-rose-400'}`}>{m.status}</span></div>
+            <div className="flex items-center gap-3"><div className="flex-1"><div className="h-2 bg-background rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full transition-all" style={{width:`${pct}%`}}></div></div></div><span className="text-xs font-black text-blue-400">{m.washesUsed}/{m.washesTotal}</span>{m.status==='active' && m.washesUsed < m.washesTotal && <button onClick={() => useWash(m.id)} className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase hover:bg-blue-500 hover:text-white transition-all">Use</button>}</div>
           </div>
         ); })}</div>
       </div>

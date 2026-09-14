@@ -29,6 +29,9 @@ export default function FranchiseDashboard() {
         <div className="flex justify-between items-start mb-6">
           <div className="relative z-10">
             <h1 className="text-2xl font-black text-gold">Master Dashboard</h1>
+            <div className="inline-block mt-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase tracking-widest">
+              Demo Data
+            </div>
             <p className="text-white/60 text-sm mt-1">{user?.displayName || 'Franchise Owner'}</p>
           </div>
           <button onClick={() => { signOutUser(); nav('/'); }} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm border border-white/20 z-10">🚪</button>
@@ -36,12 +39,12 @@ export default function FranchiseDashboard() {
 
         <div className="grid grid-cols-2 gap-3 mb-2 relative z-10">
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-            <p className="text-white/60 text-[10px] uppercase font-bold tracking-wider mb-1">Total Branches</p>
+            <p className="text-white/60 text-xs uppercase font-bold tracking-wider mb-1">Total Branches</p>
             <p className="text-3xl font-black">{franchiseSalons.length}</p>
             <p className="text-white/50 text-xs mt-1">👥 {totalCustomers} customers</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-            <p className="text-white/60 text-[10px] uppercase font-bold tracking-wider mb-1">Network Revenue</p>
+            <p className="text-white/60 text-xs uppercase font-bold tracking-wider mb-1">Network Revenue</p>
             <p className="text-2xl font-black text-gold">₹{totalRevenue.toLocaleString()}</p>
           </div>
         </div>
@@ -60,17 +63,17 @@ export default function FranchiseDashboard() {
                     <h3 className="font-bold text-lg">{salon.salonName}</h3>
                     <p className="text-text-dim text-xs mt-0.5">{salon.location || 'Unknown Location'}</p>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-[10px] font-bold ${salon.isOpen ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                  <div className={`px-2 py-1 rounded-full text-xs font-bold ${salon.isOpen ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
                     {salon.isOpen ? '🟢 Online' : '🔴 Offline'}
                   </div>
                 </div>
                 <div className="flex justify-between text-sm pt-3 border-t border-border/50">
                   <div>
-                    <p className="text-text-dim text-[10px] uppercase tracking-wider">Today's Tokens</p>
+                    <p className="text-text-dim text-xs uppercase tracking-wider">Today's Tokens</p>
                     <p className="font-bold text-lg">{salon.totalTokensToday || 0}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-text-dim text-[10px] uppercase tracking-wider">Total Revenue</p>
+                    <p className="text-text-dim text-xs uppercase tracking-wider">Total Revenue</p>
                     <p className="font-black text-success text-lg">₹{(salon.totalEarnings || 0).toLocaleString()}</p>
                   </div>
                 </div>

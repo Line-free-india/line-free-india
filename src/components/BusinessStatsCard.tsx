@@ -21,11 +21,11 @@ export default function BusinessStatsCard({ icon, label, value, change, color }:
         >
           {icon}
         </div>
-        <span className="text-[10px] text-text-dim font-bold uppercase tracking-wider">{label}</span>
+        <span className="text-xs text-text-dim font-bold uppercase tracking-wider">{label}</span>
       </div>
       <div className="text-xl font-black text-text" style={{ color }}>{value}</div>
       {change !== undefined && (
-        <div className={`text-[10px] font-bold mt-1 flex items-center gap-1 ${change >= 0 ? 'text-success' : 'text-danger'}`}>
+        <div className={`text-xs font-bold mt-1 flex items-center gap-1 ${change >= 0 ? 'text-success' : 'text-danger'}`}>
           {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(1)}%
           <span className="text-text-dim font-medium">vs last week</span>
         </div>

@@ -57,7 +57,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {ICONS[t.type]}
                 <div className="flex-1">
                    <p className="text-[13px] font-black text-white leading-tight">{t.message}</p>
-                   <p className="text-[10px] font-bold text-text-dim/60 uppercase tracking-widest mt-1">System Notification</p>
+                   <p className="text-xs font-bold text-text-dim/60 uppercase tracking-widest mt-1">System Notification</p>
                 </div>
               </div>
 

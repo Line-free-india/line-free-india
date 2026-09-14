@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, BUSINESS_CATEGORIES } from '../store/AppContext';
-import { collection, getDocs, query, where, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc, deleteDoc, limit, startAfter, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// 🔐 SECRET ADMIN ACCESS - Only these UIDs can access
-const ADMIN_UIDS = [
-  'kDePL0sINjWkduQ7qHO2bXT4Pg13', // Your admin UID
-  // Add more admin UIDs here if needed
-];
 
 export default function SecretAdminPanel() {
   const { allSalons, signOutUser, user } = useApp();
@@ -26,39 +21,59 @@ export default function SecretAdminPanel() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Pagination states
+  const [lastDocs, setLastDocs] = useState<Record<string, any>>({});
+  const [loadingMore, setLoadingMore] = useState<Record<string, boolean>>({});
+
 
   // 🔐 Check if user is admin
   useEffect(() => {
-    if (!user || !ADMIN_UIDS.includes(user.uid)) {
-      alert('⛔ Unauthorized Access! This page is restricted.');
-      nav('/', { replace: true });
-    }
+    const checkAdmin = async () => {
+      if (!user) {
+        nav('/', { replace: true });
+        return;
+      }
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists() || !userDoc.data().admin) {
+          alert('⛔ Unauthorized Access! This page is restricted.');
+          nav('/', { replace: true });
+        }
+      } catch (e) {
+        nav('/', { replace: true });
+      }
+    };
+    checkAdmin();
   }, [user, nav]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         // Customers
-        const custSnap = await getDocs(collection(db, 'customers'));
+        const custSnap = await getDocs(query(collection(db, 'customers'), limit(50)));
         setTotalCustomers(custSnap.size);
         const customers = custSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         setAllCustomers(customers);
+        let newLastDocs: any = { customers: custSnap.docs[custSnap.docs.length - 1] };
 
         // Users (for email data)
-        const usersSnap = await getDocs(collection(db, 'users'));
+        const usersSnap = await getDocs(query(collection(db, 'users'), limit(50)));
         const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         setAllUsers(users);
+        newLastDocs.users = usersSnap.docs[usersSnap.docs.length - 1];
 
         // Tokens
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const todayTokensSnap = await getDocs(query(collection(db, 'tokens'), where('date', '==', todayStr)));
+        const todayTokensSnap = await getDocs(query(collection(db, 'tokens'), where('date', '==', todayStr), limit(50)));
         setTodayTokens(todayTokensSnap.size);
 
-        const allTokensSnap = await getDocs(collection(db, 'tokens'));
+        const allTokensSnap = await getDocs(query(collection(db, 'tokens'), limit(50)));
         setTotalTokens(allTokensSnap.size);
-        const tokens = allTokensSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const tokens = allTokensSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAllTokens(tokens);
+        newLastDocs.tokens = allTokensSnap.docs[allTokensSnap.docs.length - 1];
 
         // Revenue
         let rev = 0;
@@ -68,13 +83,16 @@ export default function SecretAdminPanel() {
         setTotalRevenue(rev);
 
         // Products
-        const productsSnap = await getDocs(collection(db, 'products'));
-        setAllProducts(productsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const productsSnap = await getDocs(query(collection(db, 'products'), limit(50)));
+        setAllProducts(productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        newLastDocs.products = productsSnap.docs[productsSnap.docs.length - 1];
 
         // Reviews
-        const reviewsSnap = await getDocs(collection(db, 'reviews'));
-        setAllReviews(reviewsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const reviewsSnap = await getDocs(query(collection(db, 'reviews'), limit(50)));
+        setAllReviews(reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        newLastDocs.reviews = reviewsSnap.docs[reviewsSnap.docs.length - 1];
 
+        setLastDocs(newLastDocs);
       } catch (e) {
         console.warn("Failed to fetch admin stats", e);
       } finally {
@@ -83,6 +101,37 @@ export default function SecretAdminPanel() {
     };
     fetchStats();
   }, []);
+
+  const loadMore = async (collectionName: string) => {
+    if (!lastDocs[collectionName] || loadingMore[collectionName]) return;
+    setLoadingMore(prev => ({ ...prev, [collectionName]: true }));
+    try {
+      const q = query(collection(db, collectionName), startAfter(lastDocs[collectionName]), limit(50));
+      const snap = await getDocs(q);
+      const newDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const newLastDoc = snap.docs[snap.docs.length - 1];
+
+      if (collectionName === 'customers') {
+        setAllCustomers(prev => [...prev, ...newDocs]);
+        setTotalCustomers(prev => prev + newDocs.length);
+      } else if (collectionName === 'users') {
+        setAllUsers(prev => [...prev, ...newDocs]);
+      } else if (collectionName === 'tokens') {
+        setAllTokens(prev => [...prev, ...newDocs]);
+        setTotalTokens(prev => prev + newDocs.length);
+      } else if (collectionName === 'products') {
+        setAllProducts(prev => [...prev, ...newDocs]);
+      } else if (collectionName === 'reviews') {
+        setAllReviews(prev => [...prev, ...newDocs]);
+      }
+
+      setLastDocs(prev => ({ ...prev, [collectionName]: newLastDoc }));
+    } catch (e) {
+      console.warn("Failed to load more", e);
+    } finally {
+      setLoadingMore(prev => ({ ...prev, [collectionName]: false }));
+    }
+  };
 
   const suspendSalon = async (salonId: string, isSuspended: boolean) => {
     if (!confirm(`Are you sure you want to ${isSuspended ? 'UNSUSPEND' : 'SUSPEND'} this business?`)) return;
@@ -323,11 +372,11 @@ export default function SecretAdminPanel() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-dim">
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Type</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Info</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">State</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Services</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Actions</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Type</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Info</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">State</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Services</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -343,7 +392,7 @@ export default function SecretAdminPanel() {
                           <p className="text-text-dim text-xs">📍 {s.location || 'No location'}</p>
                         </td>
                         <td className="p-4">
-                          <span className={`px-2 py-1 rounded inline-flex text-[10px] font-bold ${
+                          <span className={`px-2 py-1 rounded inline-flex text-xs font-bold ${
                             isSuspended ? 'bg-danger/10 text-danger' :
                             s.isOpen ? 'bg-success/10 text-success' : 'bg-border text-text'
                           }`}>
@@ -354,7 +403,7 @@ export default function SecretAdminPanel() {
                         <td className="p-4">
                           <button 
                             onClick={() => suspendSalon(s.uid, isSuspended)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                               isSuspended ? 'bg-success text-white hover:bg-success/90' : 'bg-danger/10 text-danger hover:bg-danger/20'
                             }`}
                           >
@@ -381,13 +430,13 @@ export default function SecretAdminPanel() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-dim">
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Token #</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Customer</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Business</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Date</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Status</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Price</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Actions</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Token #</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Customer</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Business</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Date</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Status</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Price</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -401,7 +450,7 @@ export default function SecretAdminPanel() {
                       <td className="p-4 text-text-dim">{t.salonName}</td>
                       <td className="p-4 text-text-dim text-xs">{t.date}</td>
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
                           t.status === 'completed' ? 'bg-success/10 text-success' :
                           t.status === 'serving' ? 'bg-accent/10 text-accent' :
                           t.status === 'cancelled' ? 'bg-danger/10 text-danger' :
@@ -414,7 +463,7 @@ export default function SecretAdminPanel() {
                       <td className="p-4">
                         <button 
                           onClick={() => deleteToken(t.id)}
-                          className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-danger/10 text-danger hover:bg-danger/20 transition-all"
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-danger/10 text-danger hover:bg-danger/20 transition-all"
                         >
                           Delete
                         </button>
@@ -424,6 +473,13 @@ export default function SecretAdminPanel() {
                 </tbody>
               </table>
             </div>
+            {lastDocs.tokens && (
+              <div className="p-4 text-center border-t border-border bg-card-2/20">
+                <button onClick={() => loadMore('tokens')} disabled={loadingMore.tokens} className="px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold">
+                  {loadingMore.tokens ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -438,10 +494,10 @@ export default function SecretAdminPanel() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-dim">
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Name</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Phone</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Email</th>
-                    <th className="p-4 font-semibold uppercase text-[10px] tracking-wider">Joined</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Name</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Phone</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Email</th>
+                    <th className="p-4 font-semibold uppercase text-xs tracking-wider">Joined</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -458,6 +514,13 @@ export default function SecretAdminPanel() {
                 </tbody>
               </table>
             </div>
+            {lastDocs.customers && (
+              <div className="p-4 text-center border-t border-border bg-card-2/20">
+                <button onClick={() => { loadMore('customers'); loadMore('users'); }} disabled={loadingMore.customers} className="px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold">
+                  {loadingMore.customers ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -488,6 +551,13 @@ export default function SecretAdminPanel() {
                 </div>
               ))}
             </div>
+            {lastDocs.products && (
+              <div className="p-4 text-center border-t border-border bg-card-2/20">
+                <button onClick={() => loadMore('products')} disabled={loadingMore.products} className="px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold">
+                  {loadingMore.products ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -512,7 +582,7 @@ export default function SecretAdminPanel() {
                     </div>
                     <button 
                       onClick={() => deleteReview(r.id)}
-                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-danger/10 text-danger hover:bg-danger/20"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-danger/10 text-danger hover:bg-danger/20"
                     >
                       Delete
                     </button>

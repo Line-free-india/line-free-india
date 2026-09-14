@@ -9,93 +9,176 @@ service cloud.firestore {
     function isOwner(uid) {
       return isAuth() && request.auth.uid == uid;
     }
+    function isAdmin() {
+      return isAuth() && request.auth.token.admin == true;
+    }
+    // Token update helpers
+    function isCustomerTokenUpdate() {
+      let allowedFields = ['isPaused', 'status', 'transferredTo', 'customerPhone', 'customerName'];
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      let hasOnlyAllowedFields = diff.hasOnly(allowedFields);
+      let isValidStatus = !diff.hasAny(['status']) || request.resource.data.status == 'cancelled';
+      return hasOnlyAllowedFields && isValidStatus;
+    }
+    function isBusinessTokenUpdate() {
+      let allowedFields = ['status', 'assignedStaffId', 'internalNotes', 'rating'];
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      return diff.hasOnly(allowedFields);
+    }
+    function noImmutableFieldsChanged() {
+      let immutableFields = ['tokenNumber', 'salonId', 'totalPrice', 'createdAt', 'date'];
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      return !diff.hasAny(immutableFields);
+    }
 
-    // ── User Accounts ──
+    // ── User Accounts (CRM, Invoices, Expenses, Private OS Data) ──
     match /users/{userId} {
-      allow read: if isAuth();
-      allow create: if isOwner(userId);
-      allow update, delete: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
+      allow update: if isAdmin() || (isOwner(userId) && (resource == null || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['admin'])));
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ── Atomic Queue Counters ──
+    match /queueCounters/{counterId} {
+      allow read, write: if isAuth();
     }
 
     // ── Beauty Business Profiles (salons/spas/studios) ──
-    // Anyone can READ (customers discovering businesses)
-    // Only the owner can WRITE their own profile
     match /salons/{salonId} {
       allow read: if true;
-      allow create: if isOwner(salonId);
-      allow update, delete: if isOwner(salonId);
+      allow create: if isOwner(salonId) || isAdmin();
+      allow update: if isOwner(salonId) || isAdmin();
+      allow delete: if isOwner(salonId) || isAdmin();
     }
 
-    // ── Barbers Collection (for backward compatibility) ──
+    // ── Barbers Collection (for backward compatibility & canonical business docs) ──
     match /barbers/{barberId} {
       allow read: if true;
-      allow create: if isOwner(barberId);
-      allow update, delete: if isOwner(barberId);
+      allow create: if isOwner(barberId) || isAdmin();
+      allow update: if isOwner(barberId) || isAdmin();
+      allow delete: if isOwner(barberId) || isAdmin();
+    }
+
+    // ── Private Business Settings (upiId, fcmToken, blockedCustomerIds, staff, taxSettings) ──
+    match /barbers/{barberId}/private/{docId} {
+      allow read, write: if isOwner(barberId) || isAdmin();
+    }
+    match /salons/{salonId}/private/{docId} {
+      allow read, write: if isOwner(salonId) || isAdmin();
+    }
+
+    // ── Blocked Customers (Protected Per-Customer Lookup) ──
+    match /barbers/{barberId}/blocked/{customerId} {
+      allow read: if isOwner(barberId) || (isAuth() && request.auth.uid == customerId);
+      allow write: if isOwner(barberId) || isAdmin();
+    }
+    match /salons/{salonId}/blocked/{customerId} {
+      allow read: if isOwner(salonId) || (isAuth() && request.auth.uid == customerId);
+      allow write: if isOwner(salonId) || isAdmin();
     }
 
     // ── Bookings & Tokens (Queue / Appointment entries) ──
-    // Any logged-in user can create a booking
-    // Business owner or the customer who created it can modify
     match /tokens/{tokenId} {
       allow read: if isAuth();
       allow create: if isAuth();
-      allow update, delete: if isAuth() && (
+      allow update: if isAuth() && (
+        isAdmin() ||
+        resource.data.customerId == request.auth.uid ||
+        resource.data.salonId == request.auth.uid
+      );
+      allow delete: if isAdmin() || (isAuth() && (
         resource.data.salonId == request.auth.uid ||
         resource.data.customerId == request.auth.uid
-      );
+      ));
     }
 
-    // ── Reviews ──
-    // Public read, auth required to create
-    // Only the reviewer can edit/delete
+    // ── Verified Reviews (Database-Enforced Completed Visit Protection) ──
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update, delete: if isAuth() && resource.data.customerId == request.auth.uid;
+      allow create: if isAuth() && 
+        request.resource.data.customerId == request.auth.uid &&
+        request.resource.data.tokenId != null &&
+        exists(/databases/$(database)/documents/tokens/$(request.resource.data.tokenId)) &&
+        get(/databases/$(database)/documents/tokens/$(request.resource.data.tokenId)).data.customerId == request.auth.uid &&
+        get(/databases/$(database)/documents/tokens/$(request.resource.data.tokenId)).data.salonId == request.resource.data.salonId &&
+        get(/databases/$(database)/documents/tokens/$(request.resource.data.tokenId)).data.status == 'done';
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.customerId == request.auth.uid);
     }
 
     // ── Notifications ──
     match /notifications/{notifId} {
       allow read, update: if isAuth() && resource.data.userId == request.auth.uid;
-      allow create: if isAuth();
-      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId != null;
+      allow delete: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
     }
 
-    // ── Messages / Chat ──
+    // ── Messages / Chat (Isolated Privacy) ──
     match /messages/{messageId} {
-      allow read: if isAuth();
-      allow create: if isAuth();
-      allow update, delete: if isAuth() && resource.data.senderId == request.auth.uid;
+      allow read: if isAuth() && (
+        isAdmin() ||
+        resource.data.senderId == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
+        resource.data.salonId == request.auth.uid
+      );
+      allow create: if isAuth() && request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.senderId == request.auth.uid);
     }
 
     // ── Customer Profiles ──
     match /customers/{customerId} {
-      allow read: if true;
-      allow create: if isOwner(customerId);
-      allow update, delete: if isOwner(customerId);
+      allow read: if isOwner(customerId) || isAdmin();
+      allow create: if isOwner(customerId) || isAdmin();
+      allow update, delete: if isOwner(customerId) || isAdmin();
     }
 
     // ── Products (E-commerce) ──
-    // Anyone can read products
-    // Only business owner can create/update/delete their products
     match /products/{productId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update, delete: if isAuth() && resource.data.businessId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.businessId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.businessId == request.auth.uid);
+    }
+
+    // ── fcmTokens ──
+    match /fcmTokens/{tokenId} {
+      allow read, write: if isOwner(tokenId) || isAdmin();
+    }
+
+    // ── loyaltyTransactions (Append-Only Ledger with Point Validation) ──
+    match /loyaltyTransactions/{transactionId} {
+      allow read: if isAdmin() || (isAuth() && resource.data.customerId == request.auth.uid);
+      allow create: if isAuth() && (
+        isAdmin() ||
+        // Customer earns points for submitting a verified review (max 25)
+        (request.resource.data.type == 'review' && request.resource.data.customerId == request.auth.uid && request.resource.data.points <= 25 && request.resource.data.tokenId != null) ||
+        // Business awards points for completing a service visit
+        (request.resource.data.type == 'completed_visit' && request.resource.data.businessId == request.auth.uid) ||
+        // Customer redeems points (negative points)
+        (request.resource.data.type == 'redemption' && request.resource.data.customerId == request.auth.uid && request.resource.data.points < 0)
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Daily Pre-Aggregated Stats (High-Performance Analytics) ──
+    match /daily_stats/{statId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && (
+        isAdmin() || 
+        (resource != null && resource.data.salonId == request.auth.uid) || 
+        (request.resource != null && request.resource.data.salonId == request.auth.uid)
+      );
     }
 
     // ── Business sub-collections ──
-    // services, staff, inventory, bridal-packages, consent-forms,
-    // memberships, loyalty, invoices, expenses, coupons, etc.
     match /salons/{salonId}/{subcollection}/{docId} {
-      allow read: if isAuth();
-      allow write: if isOwner(salonId);
+      allow read: if isAuth() && subcollection != 'private' && subcollection != 'blocked';
+      allow write: if isOwner(salonId) || isAdmin();
     }
 
     // ── Barbers sub-collections (for backward compatibility) ──
     match /barbers/{barberId}/{subcollection}/{docId} {
-      allow read: if isAuth();
-      allow write: if isOwner(barberId);
+      allow read: if isAuth() && subcollection != 'private' && subcollection != 'blocked';
+      allow write: if isOwner(barberId) || isAdmin();
     }
 
     // ── Catch-all: deny everything else ──

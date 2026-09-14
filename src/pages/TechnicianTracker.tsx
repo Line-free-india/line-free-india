@@ -26,7 +26,7 @@ export default function TechnicianTracker() {
       <div className="px-6 pt-14 pb-8 bg-gradient-to-b from-[#101420] to-transparent">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em] mb-1">Field Intelligence</p>
+            <p className="text-xs text-emerald-400 font-black uppercase tracking-[0.3em] mb-1">Field Intelligence</p>
             <h1 className="text-2xl font-black tracking-tight">Travel Log</h1>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl">🛰️</div>
@@ -38,7 +38,7 @@ export default function TechnicianTracker() {
             <button
               key={tab}
               onClick={() => { triggerHaptic('light'); setActiveTab(tab as any); }}
-              className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'}`}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-zinc-500 hover:text-white'}`}
             >
               {tab}
             </button>
@@ -78,15 +78,15 @@ export default function TechnicianTracker() {
 
             <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
                <div className="bg-emerald-500/10 backdrop-blur-xl border border-emerald-500/20 px-3 py-1.5 rounded-xl">
-                  <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Signal Strong</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-emerald-400">Signal Strong</p>
                </div>
-               <p className="text-[9px] text-zinc-600 font-mono tracking-tighter">GPS: 28.4595° N, 77.0266° E</p>
+               <p className="text-xs text-zinc-600 font-mono tracking-tighter">GPS: 28.4595° N, 77.0266° E</p>
             </div>
         </div>
 
         {/* Live List */}
         <div className="space-y-4">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 px-2">Active Deployments</h3>
+           <h3 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500 px-2">Active Deployments</h3>
            {MOCK_TRAVEL.map(log => (
              <motion.div 
                key={log.id} 
@@ -99,12 +99,12 @@ export default function TechnicianTracker() {
                    </div>
                    <div>
                       <h4 className="font-bold text-sm">{log.technician}</h4>
-                      <p className="text-[10px] text-zinc-500 font-medium truncate max-w-[150px]">{log.location}</p>
+                      <p className="text-xs text-zinc-500 font-medium truncate max-w-[150px]">{log.location}</p>
                    </div>
                 </div>
                 <div className="text-right">
-                   <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{log.status}</p>
-                   <p className="text-[9px] text-zinc-600 font-mono">{log.distance} away</p>
+                   <p className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-1">{log.status}</p>
+                   <p className="text-xs text-zinc-600 font-mono">{log.distance} away</p>
                 </div>
              </motion.div>
            ))}

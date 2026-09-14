@@ -41,11 +41,11 @@ export default function ReferralPage() {
         {/* Points HUD */}
         <section className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-[2.5rem] p-8 border border-white/10 text-center relative overflow-hidden shadow-2xl">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[60px]" />
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Available Rewards</p>
+          <p className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-2">Available Rewards</p>
           <h2 className="text-6xl font-black text-white mb-2">{customerProfile?.referralPoints || 0}</h2>
           <p className="text-xs text-text-dim font-bold uppercase tracking-widest">LF Points</p>
           <div className="mt-6 flex justify-center">
-            <button className="px-6 py-2 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/10">Redeem for Tatkal Passes</button>
+            <button className="px-6 py-2 bg-white/10 backdrop-blur-md rounded-full text-xs font-black text-white uppercase tracking-widest border border-white/10">Redeem for Tatkal Passes</button>
           </div>
         </section>
 
@@ -53,12 +53,12 @@ export default function ReferralPage() {
         <div className="grid grid-cols-2 gap-4">
            <div className="elite-glass spatial-card border-white/5 rounded-3xl p-5">
               <span className="text-2xl mb-3 block">👥</span>
-              <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Invited</p>
+              <p className="text-xs font-black text-white uppercase tracking-widest mb-1">Invited</p>
               <p className="text-lg font-black text-primary">0 Friends</p>
            </div>
            <div className="elite-glass spatial-card border-white/5 rounded-3xl p-5">
               <span className="text-2xl mb-3 block">🎫</span>
-              <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Earned</p>
+              <p className="text-xs font-black text-white uppercase tracking-widest mb-1">Earned</p>
               <p className="text-lg font-black text-accent">0 Points</p>
            </div>
         </div>
@@ -91,7 +91,7 @@ export default function ReferralPage() {
                 <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-lg">{step.icon}</div>
                 <div>
                    <h4 className="text-xs font-black text-white uppercase tracking-widest">{step.title}</h4>
-                   <p className="text-[11px] text-text-dim mt-1">{step.desc}</p>
+                   <p className="text-sm text-text-dim mt-1">{step.desc}</p>
                 </div>
              </div>
            ))}

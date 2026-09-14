@@ -33,6 +33,7 @@ export default function CustomerAuth() {
     setCooldown(30);
     try {
       const result = await signInWithGoogle();
+      if (!result) return;
       setRole('customer');
       const uid = (result as any)?.user?.uid || user?.uid;
       if (uid) {
@@ -182,12 +183,12 @@ export default function CustomerAuth() {
             </div>
 
             <p className="text-2xl font-black mb-1 text-white type-display">{user.displayName || 'Welcome'}</p>
-            <p className="text-[10px] font-medium uppercase tracking-[3px] mb-8" style={{ color: '#52525B' }}>{user.email}</p>
+            <p className="text-xs font-medium uppercase tracking-[3px] mb-8" style={{ color: '#52525B' }}>{user.email}</p>
 
             <button 
               onClick={handleContinueAsExisting} 
               disabled={loading}
-              className="w-full py-4 font-black text-[11px] uppercase tracking-[3px] active:scale-95 transition-all"
+              className="w-full py-4 font-black text-sm uppercase tracking-[3px] active:scale-95 transition-all"
               style={{
                 borderRadius: '18px',
                 background: 'linear-gradient(135deg, rgba(0,240,255,0.1), rgba(16,185,129,0.1))',
@@ -268,7 +269,7 @@ export default function CustomerAuth() {
            >
              Welcome
            </h1>
-           <p className="text-[10px] font-bold uppercase tracking-[4px] px-8" style={{ color: '#52525B' }}>
+           <p className="text-xs font-bold uppercase tracking-[4px] px-8" style={{ color: '#52525B' }}>
              Sign in to skip every queue
            </p>
         </motion.div>
@@ -280,7 +281,7 @@ export default function CustomerAuth() {
                  initial={{ opacity: 0, height: 0 }} 
                  animate={{ opacity: 1, height: 'auto' }} 
                  exit={{ opacity: 0, height: 0 }}
-                 className="w-full mb-6 p-4 text-[10px] font-bold uppercase tracking-wider text-center"
+                 className="w-full mb-6 p-4 text-xs font-bold uppercase tracking-wider text-center"
                  style={{
                    borderRadius: '16px',
                    background: 'rgba(244,63,94,0.06)',
@@ -355,7 +356,7 @@ export default function CustomerAuth() {
                      <button 
                        type="submit"
                        disabled={loading || isTransitioning}
-                       className="w-full p-4 font-black text-[11px] uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95 mt-2"
+                       className="w-full p-4 font-black text-sm uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95 mt-2"
                        style={{
                          borderRadius: '20px',
                          background: 'linear-gradient(135deg, rgba(0,240,255,0.2), rgba(16,185,129,0.2))',
@@ -449,7 +450,7 @@ export default function CustomerAuth() {
                      <button 
                        type="submit"
                        disabled={loading || isTransitioning}
-                       className="w-full p-4 font-black text-[11px] uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95 mt-2"
+                       className="w-full p-4 font-black text-sm uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95 mt-2"
                        style={{
                          borderRadius: '20px',
                          background: 'linear-gradient(135deg, rgba(0,240,255,0.2), rgba(16,185,129,0.2))',
@@ -469,7 +470,7 @@ export default function CustomerAuth() {
 
              <div className="flex items-center justify-between mb-6">
                <div className="h-px bg-zinc-800 flex-1" />
-               <span className="px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">OR</span>
+               <span className="px-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">OR</span>
                <div className="h-px bg-zinc-800 flex-1" />
              </div>
 
@@ -477,7 +478,7 @@ export default function CustomerAuth() {
                onClick={handleGoogle} 
                disabled={loading}
                type="button"
-               className="w-full p-4 font-black text-[11px] uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95"
+               className="w-full p-4 font-black text-sm uppercase tracking-[3px] flex items-center justify-center gap-4 transition-all active:scale-95"
                style={{
                  borderRadius: '20px',
                  background: 'linear-gradient(145deg, #151518, #101012)',
@@ -504,7 +505,7 @@ export default function CustomerAuth() {
                  type="button"
                  onClick={switchPanel}
                  disabled={isTransitioning}
-                 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider hover:text-white transition-colors"
+                 className="text-xs font-bold text-zinc-400 uppercase tracking-wider hover:text-white transition-colors"
                >
                  {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
                </button>
@@ -512,7 +513,7 @@ export default function CustomerAuth() {
            </motion.div>
 
            {cooldown > 0 && (
-             <p className="text-[10px] font-bold mt-4 text-center uppercase tracking-[2px]" style={{ color: '#52525B' }}>
+             <p className="text-xs font-bold mt-4 text-center uppercase tracking-[2px]" style={{ color: '#52525B' }}>
                Retry in <span style={{ color: '#00F0FF' }}>{cooldown}s</span>
              </p>
            )}
@@ -522,7 +523,7 @@ export default function CustomerAuth() {
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           transition={{ delay: 0.8 }} 
-          className="text-[9px] mt-12 text-center uppercase tracking-[3px] font-bold"
+          className="text-xs mt-12 text-center uppercase tracking-[3px] font-bold"
           style={{ color: '#3F3F46' }}
         >
           Protected by <span style={{ color: '#00F0FF' }}>Line Free Security</span>

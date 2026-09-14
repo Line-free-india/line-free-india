@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Free India - Customer Walkthrough</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+  
+  :root {
+    --bg: #0a0a0f;
+    --card: rgba(28, 28, 36, 0.7);
+    --primary: #6C63FF;
+    --primary-glow: rgba(108, 99, 255, 0.5);
+    --accent: #00F0FF;
+    --text: #ffffff;
+    --text-dim: #a0a0b0;
+    --success: #34C759;
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body { 
+    margin: 0; background: var(--bg); font-family: 'Inter', sans-serif; 
+    color: var(--text); display: flex; align-items: center; justify-content: center; 
+    min-height: 100vh; overflow: hidden; flex-direction: column;
+  }
+  
+  .device-frame {
+    width: 375px; height: 812px;
+    background: var(--bg);
+    border-radius: 45px; border: 8px solid #222;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+    position: relative; overflow: hidden;
+  }
+  
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 30px; background: #222;
+    border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 100;
+  }
+
+  .slide {
+    position: absolute; inset: 0; padding: 50px 0 0 0;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    transform: translateX(50px);
+    display: flex; flex-direction: column;
+  }
+  
+  .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); z-index: 10; }
+  
+  .glass { background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; }
+  
+  .header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .greeting { font-size: 13px; color: var(--text-dim); }
+  .name { font-size: 22px; font-weight: 800; margin: 5px 0 0; }
+  
+  .content { padding: 20px; flex: 1; overflow-y: auto; }
+  
+  .biz-card {
+    background: var(--card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);
+    padding: 15px; margin-bottom: 15px; display: flex; gap: 15px;
+  }
+  .biz-img { width: 70px; height: 70px; border-radius: 12px; background: #333; object-fit: cover; }
+  
+  .service-item {
+    padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+    background: rgba(255,255,255,0.02);
+  }
+  .service-item.selected { border-color: var(--primary); background: rgba(108,99,255,0.1); }
+  
+  .btn-primary {
+    background: var(--primary); color: white; border: none;
+    padding: 18px; border-radius: 20px; font-weight: 800; font-size: 16px;
+    width: calc(100% - 40px); margin: 0 20px 30px; cursor: pointer;
+    box-shadow: 0 10px 20px var(--primary-glow); text-align: center;
+  }
+
+  .controls { margin-top: 30px; display: flex; gap: 10px; }
+  .ctrl-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+  .ctrl-btn:hover { background: #444; }
+
+  /* Progress map */
+  .tracker {
+    width: 200px; height: 200px; border-radius: 50%;
+    border: 10px solid rgba(255,255,255,0.1);
+    border-top-color: var(--primary);
+    border-right-color: var(--primary);
+    margin: 40px auto; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; transform: rotate(-45deg);
+  }
+  .tracker-inner { transform: rotate(45deg); text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="device-frame">
+  <div class="notch"></div>
+
+  <!-- App Home -->
+  <div class="slide active">
+    <div class="header">
+      <div class="greeting">Good evening</div>
+      <div class="name">Rahul Sharma</div>
+    </div>
+    <div class="content">
+      <h3 style="font-size: 18px; margin: 0 0 15px;">Nearby Salons</h3>
+      
+      <div class="biz-card">
+        <img class="biz-img" src="https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=150&q=80" />
+        <div>
+          <h4 style="margin: 0 0 5px; font-size: 16px;">Elite Universe</h4>
+          <p style="margin: 0 0 8px; font-size: 12px; color: var(--text-dim);">📍 Koramangala • 1.2 km</p>
+          <span style="font-size: 10px; padding: 4px 8px; background: rgba(52,199,89,0.1); color: var(--success); border-radius: 6px; font-weight: bold;">🟢 OPEN</span>
+        </div>
+      </div>
+
+      <div class="biz-card">
+        <img class="biz-img" src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=150&q=80" />
+        <div>
+          <h4 style="margin: 0 0 5px; font-size: 16px;">The Grooming Lounge</h4>
+          <p style="margin: 0 0 8px; font-size: 12px; color: var(--text-dim);">📍 HSR Layout • 2.5 km</p>
+          <span style="font-size: 10px; padding: 4px 8px; background: rgba(52,199,89,0.1); color: var(--success); border-radius: 6px; font-weight: bold;">🟢 OPEN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail & Services -->
+  <div class="slide">
+    <div style="height: 200px; background: url('https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=400&q=80') center/cover;"></div>
+    <div class="content" style="margin-top: -20px; background: var(--bg); border-top-left-radius: 24px; border-top-right-radius: 24px; padding-top: 30px;">
+      <h2 style="margin: 0 0 5px; font-size: 24px;">Elite Universe</h2>
+      <p style="color: var(--text-dim); font-size: 13px; margin: 0 0 20px;">⭐ 4.8 (124 reviews)</p>
+      
+      <h3 style="font-size: 16px; margin: 0 0 15px;">Services</h3>
+      <div class="service-item selected">
+        <div>
+          <h4 style="margin: 0 0 5px;">Classic Haircut</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim);">30 mins</p>
+        </div>
+        <div style="text-align: right;">
+          <h4 style="margin: 0; color: var(--primary);">₹250</h4>
+          <span style="display:inline-block; margin-top:5px; width:24px; height:24px; background:var(--primary); border-radius:50%; text-align:center; line-height:24px; font-size:12px;">✓</span>
+        </div>
+      </div>
+
+      <div class="service-item selected">
+        <div>
+          <h4 style="margin: 0 0 5px;">Beard Trim & Spa</h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-dim);">20 mins</p>
+        </div>
+        <div style="text-align: right;">
+          <h4 style="margin: 0; color: var(--primary);">₹150</h4>
+          <span style="display:inline-block; margin-top:5px; width:24px; height:24px; background:var(--primary); border-radius:50%; text-align:center; line-height:24px; font-size:12px;">✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="btn-primary">Join Queue (₹400)</div>
+  </div>
+
+  <!-- Token & Tracking -->
+  <div class="slide">
+    <div class="content" style="text-align: center; padding-top: 60px;">
+      <div class="tracker">
+        <div class="tracker-inner">
+          <p style="margin:0; font-size:12px; color:var(--text-dim); text-transform:uppercase; font-weight:bold; letter-spacing:1px;">Token No.</p>
+          <h1 style="font-size: 54px; margin: 5px 0; color: var(--primary);">24</h1>
+          <p style="margin:0; font-size:14px; font-weight:bold;">3 people ahead</p>
+        </div>
+      </div>
+      
+      <div class="glass" style="margin-top: 40px; text-align: left;">
+        <h4 style="margin: 0 0 10px; color: var(--text-dim); font-size: 12px; text-transform: uppercase;">Smart Arrival</h4>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <div style="font-size: 30px;">🚗</div>
+          <div>
+            <h3 style="margin: 0 0 4px; font-size: 16px;">Leave in 8 minutes</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--text-dim);">Based on live traffic & queue speed</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="prev()">Previous</button>
+  <button class="ctrl-btn" onclick="next()">Next Step</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function showSlide(idx) {
+    slides.forEach((s, i) => {
+      s.classList.remove('active');
+      if (i < idx) s.style.transform = 'translateX(-50px)';
+      if (i > idx) s.style.transform = 'translateX(50px)';
+    });
+    slides[idx].style.transform = 'translateX(0)';
+    slides[idx].classList.add('active');
+  }
+
+  function next() {
+    if(current < slides.length - 1) { current++; showSlide(current); }
+  }
+  
+  function prev() {
+    if(current > 0) { current--; showSlide(current); }
+  }
+</script>
+</body>
+</html>

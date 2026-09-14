@@ -47,7 +47,7 @@ export default function UPIMode() {
           >
             {/* Amount Visualizer */}
             <div className="text-center space-y-2">
-              <p className="text-[10px] font-black text-text-dim uppercase tracking-[0.4em]">Payment Amount</p>
+              <p className="text-xs font-black text-text-dim uppercase tracking-[0.4em]">Payment Amount</p>
               <h2 className="text-6xl font-black tracking-tighter text-white">
                 <span className="text-primary mr-1">₹</span>{amount}
               </h2>
@@ -79,7 +79,7 @@ export default function UPIMode() {
                  Authorize Payment
                  <FaFingerprint className="text-xl" />
                </motion.button>
-               <button className="w-full py-4 text-[10px] font-black text-text-dim uppercase tracking-widest flex items-center justify-center gap-2">
+               <button className="w-full py-4 text-xs font-black text-text-dim uppercase tracking-widest flex items-center justify-center gap-2">
                  <FaQrcode />
                  Show Scanner
                </button>
@@ -124,7 +124,7 @@ export default function UPIMode() {
             </div>
             <button
                onClick={() => nav('/customer/home')}
-               className="mt-8 px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+               className="mt-8 px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all"
             >
               Back to Universe
             </button>
@@ -134,7 +134,7 @@ export default function UPIMode() {
 
       {/* Bottom Security Footer */}
       <div className="absolute bottom-10 left-0 w-full flex flex-col items-center gap-2 opacity-30">
-        <p className="text-[8px] font-black uppercase tracking-[0.5em]">Military Grade 256-bit AES Encryption</p>
+        <p className="text-xs font-black uppercase tracking-[0.5em]">Military Grade 256-bit AES Encryption</p>
         <div className="flex gap-4 grayscale">
             <img src="https://img.icons8.com/color/48/000000/visa.png" className="h-4" alt="Visa" />
             <img src="https://img.icons8.com/color/48/000000/mastercard.png" className="h-4" alt="Mastercard" />

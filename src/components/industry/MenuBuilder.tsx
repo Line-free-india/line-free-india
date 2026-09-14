@@ -111,7 +111,7 @@ const MenuBuilder: React.FC = () => {
                 <span className="text-primary font-bold">₹{item.price}</span>
               </div>
               <p className="text-xs text-text-dim line-clamp-1">{item.description}</p>
-              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1 inline-block uppercase font-bold tracking-wider">
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full mt-1 inline-block uppercase font-bold tracking-wider">
                 {item.category}
               </span>
             </div>

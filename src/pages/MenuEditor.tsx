@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store/AppContext';
+import { triggerHaptic } from '../utils/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Trash2, 
   Edit3, 
   Save, 
-  ChevronRight, 
   Clock, 
   DollarSign, 
   Grid,
+  ArrowLeft,
   Info,
   CheckCircle2,
   X
@@ -17,6 +19,7 @@ import {
 
 const MenuEditor: React.FC = () => {
   const { businessProfile, updateBusinessServices } = useApp();
+  const nav = useNavigate();
   const [services, setServices] = useState<any[]>(businessProfile?.customServices || (businessProfile as any)?.services || []);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -52,27 +55,48 @@ const MenuEditor: React.FC = () => {
   if (!businessProfile) return null;
 
   return (
-    <div className="min-h-screen bg-bg p-6 lg:p-10 pb-32">
-      <div className="max-w-4xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+    <div className="min-h-screen bg-bg pb-32 relative animate-fadeIn">
+      {/* Background gradient mesh */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `
+          radial-gradient(ellipse at 10% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+          radial-gradient(ellipse at 90% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+          var(--color-bg)
+        `,
+        zIndex: 0, pointerEvents: 'none',
+      }} />
+
+      {/* Sticky Safe Top Header */}
+      <header className="bg-white/95 dark:bg-card/95 backdrop-blur-md border-b border-border px-4 app-header-safe pb-3.5 shadow-xs sticky top-0 z-30 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              triggerHaptic('light');
+              nav(-1);
+            }}
+            className="w-10 h-10 rounded-2xl bg-card-2 border border-border flex items-center justify-center text-text-dim hover:text-text transition cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div>
-            <h1 className="text-4xl font-black text-text tracking-tight flex items-center gap-4">
-              <Grid className="text-primary" size={32} />
+            <h1 className="text-lg font-black text-text tracking-tight flex items-center gap-2">
+              <Grid className="text-primary w-5 h-5" />
               Service Menu Editor
             </h1>
-            <p className="text-text-dim mt-2 font-medium">Customize your services, pricing, and durations.</p>
+            <p className="text-xs text-text-dim font-bold">Customize services & pricing</p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/20"
-          >
-            <Plus size={24} /> Add New Service
-          </motion.button>
         </div>
+
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-black shadow-sm flex items-center gap-1.5 active:scale-95 transition cursor-pointer"
+        >
+          <Plus size={16} /> Add Service
+        </button>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-4 pt-4 relative z-10">
 
         {/* Categories & Items */}
         <div className="space-y-12">
@@ -86,12 +110,12 @@ const MenuEditor: React.FC = () => {
                   <motion.div
                     layout
                     key={service.id}
-                    className="elite-glass spatial-card border-white/5 rounded-3xl p-6 flex items-center justify-between group hover:border-primary/30 transition-all shadow-xl shadow-black/20"
+                    className="premium-card p-6 flex items-center justify-between group hover:scale-[1.02] hover:border-primary/50 transition-all cursor-pointer"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-4">
                         <span className="text-xl font-bold text-text">{service.name}</span>
-                        <span className="px-3 py-1 bg-white/5 rounded-lg text-[10px] font-black text-text-dim uppercase tracking-widest border border-white/5">
+                        <span className="px-3 py-1 bg-card-2 rounded-lg text-xs font-black text-text-dim uppercase tracking-widest border border-border shadow-inner">
                           ID: {service.id.slice(-4)}
                         </span>
                       </div>
@@ -110,13 +134,13 @@ const MenuEditor: React.FC = () => {
                     <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => setIsEditing(service.id)}
-                        className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-text-dim hover:text-text transition-all"
+                        className="p-3 bg-card-2 hover:bg-card-hover rounded-xl text-text-dim hover:text-text transition-all border border-border"
                       >
                         <Edit3 size={20} />
                       </button>
                       <button 
                         onClick={() => handleDeleteService(service.id)}
-                        className="p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl text-red-500 transition-all"
+                        className="p-3 bg-danger/10 hover:bg-danger/20 border border-danger/20 rounded-xl text-danger transition-all"
                       >
                         <Trash2 size={20} />
                       </button>
@@ -129,21 +153,19 @@ const MenuEditor: React.FC = () => {
         </div>
 
         {/* Sticky Save Bar */}
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-lg px-6">
-          <div className="bg-surface/80 backdrop-blur-3xl border border-white/10 p-4 rounded-[32px] shadow-2xl flex items-center justify-between ring-1 ring-white/20">
-            <div className="flex items-center gap-4 ml-2">
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-dim">
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-lg px-6 z-50">
+          <div className="glass-ultra p-4 rounded-full shadow-2xl flex items-center justify-between">
+            <div className="flex items-center gap-4 ml-4">
+              <div className="w-10 h-10 rounded-full bg-card-2 border border-border flex items-center justify-center text-text-dim shadow-inner">
                 <Info size={20} />
               </div>
               <p className="text-sm font-bold text-text-dim">{services.length} services listed</p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={handleSaveAll}
               disabled={saveStatus === 'saving'}
-              className={`px-8 py-3 rounded-2xl font-black text-white flex items-center gap-3 transition-all ${
-                saveStatus === 'saved' ? 'bg-green-500' : 'bg-primary shadow-xl shadow-primary/20'
+              className={`premium-btn px-8 flex items-center gap-3 transition-all ${
+                saveStatus === 'saved' ? 'bg-success border-success text-white' : 'premium-btn-primary'
               }`}
             >
               {saveStatus === 'saving' ? (
@@ -157,7 +179,7 @@ const MenuEditor: React.FC = () => {
                   <Save size={20} /> Save Changes
                 </>
               )}
-            </motion.button>
+            </button>
           </div>
         </div>
 
@@ -176,50 +198,50 @@ const MenuEditor: React.FC = () => {
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="relative w-full max-w-md bg-surface border border-white/10 rounded-[40px] p-10 overflow-hidden shadow-2xl"
+                className="relative w-full max-w-md premium-card p-8 overflow-hidden shadow-2xl"
               >
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-black text-text">New Service</h3>
-                  <button onClick={() => setShowAddModal(false)} className="text-text-dim hover:text-text"><X size={24} /></button>
+                  <h3 className="text-2xl font-black text-text tracking-tight">New Service</h3>
+                  <button onClick={() => setShowAddModal(false)} className="text-text-dim hover:text-text bg-card-2 p-2 rounded-full border border-border"><X size={20} /></button>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em] mb-2 block">Service Name</label>
+                    <label className="text-xs font-black text-text-dim uppercase tracking-[0.2em] mb-2 block ml-1">Service Name</label>
                     <input 
                       type="text" 
                       value={newService.name}
                       onChange={e => setNewService({...newService, name: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-text font-bold focus:border-primary outline-none transition-all"
+                      className="input-field"
                       placeholder="e.g. Premium Haircut"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em] mb-2 block">Price (₹)</label>
+                      <label className="text-xs font-black text-text-dim uppercase tracking-[0.2em] mb-2 block ml-1">Price (₹)</label>
                       <input 
                         type="number" 
                         value={newService.price}
                         onChange={e => setNewService({...newService, price: Number(e.target.value)})}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-text font-bold focus:border-primary outline-none transition-all"
+                        className="input-field"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em] mb-2 block">Time (Min)</label>
+                      <label className="text-xs font-black text-text-dim uppercase tracking-[0.2em] mb-2 block ml-1">Time (Min)</label>
                       <input 
                         type="number" 
                         value={newService.avgTime}
                         onChange={e => setNewService({...newService, avgTime: Number(e.target.value)})}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-text font-bold focus:border-primary outline-none transition-all"
+                        className="input-field"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em] mb-2 block">Category</label>
+                    <label className="text-xs font-black text-text-dim uppercase tracking-[0.2em] mb-2 block ml-1">Category</label>
                     <select 
                       value={newService.category}
                       onChange={e => setNewService({...newService, category: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-text font-bold focus:border-primary outline-none transition-all appearance-none"
+                      className="input-field appearance-none cursor-pointer"
                     >
                       <option value="General">General</option>
                       <option value="Premium">Premium</option>
@@ -230,7 +252,7 @@ const MenuEditor: React.FC = () => {
                   
                   <button
                     onClick={handleAddService}
-                    className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-primary/30 mt-4"
+                    className="premium-btn premium-btn-primary w-full mt-4 py-4"
                   >
                     Confirm & Add
                   </button>

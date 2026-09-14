@@ -33,7 +33,7 @@ export default function ShareProfile({ businessId, businessName }: ShareProfileP
 
   return (
     <div className="p-4 rounded-2xl bg-card border border-border">
-      <p className="text-[10px] font-black uppercase tracking-widest text-text-dim mb-3">Share Your Business</p>
+      <p className="text-xs font-black uppercase tracking-widest text-text-dim mb-3">Share Your Business</p>
       <div className="flex gap-2">
         <motion.button
           whileTap={{ scale: 0.9 }}

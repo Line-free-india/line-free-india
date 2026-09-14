@@ -25,8 +25,51 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('ErrorBoundary caught an unhandled render error:', error, errorInfo);
+
+    // Auto-recover from chunk / dynamic import load errors
+    const msg = error?.message || '';
+    if (
+      msg.includes('dynamically imported') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Failed to fetch') ||
+      msg.includes('module script')
+    ) {
+      const lastReload = parseInt(sessionStorage.getItem('eb_chunk_reload') || '0', 10);
+      const now = Date.now();
+      if (now - lastReload > 8000) {
+        sessionStorage.setItem('eb_chunk_reload', now.toString());
+        window.location.reload();
+      }
+    }
+  }
+
   handleRetry = () => {
+    const msg = this.state.error?.message || '';
+    if (
+      msg.includes('dynamically imported') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Failed to fetch') ||
+      msg.includes('module script')
+    ) {
+      window.location.reload();
+      return;
+    }
     this.setState({ hasError: false, error: null });
+  };
+
+  handleGoBack = () => {
+    this.setState({ hasError: false, error: null });
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/customer/home';
+      }
+    } catch {
+      window.location.href = '/customer/home';
+    }
   };
 
   render() {
@@ -44,19 +87,19 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="relative z-10 space-y-6">
               {/* Animated error icon */}
               <div className="w-20 h-20 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-                <span className="text-4xl filter drop-shadow-md">😵</span>
+                <span className="text-4xl filter drop-shadow-md">✨</span>
               </div>
 
               <div>
-                <h2 className="text-2xl font-black text-white mb-2 tracking-tight">System Glitch</h2>
+                <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Temporary Interruption</h2>
                 <p className="text-gray-400 text-sm leading-relaxed font-medium">
-                  We've intercepted an anomaly. Don't worry, your data is completely secure.
+                  We intercepted a temporary issue. Don't worry, your queue & booking data are safe.
                 </p>
               </div>
 
               {this.state.error && (
                 <div className="p-4 rounded-2xl bg-black/40 border border-white/10 text-left backdrop-blur-md">
-                  <p className="text-[11px] text-gray-500 font-mono break-all leading-relaxed">
+                  <p className="text-xs text-gray-500 font-mono break-all leading-relaxed">
                     {this.state.error.message?.slice(0, 150)}
                   </p>
                 </div>
@@ -64,17 +107,24 @@ export default class ErrorBoundary extends Component<Props, State> {
 
               <div className="space-y-3 pt-2">
                 <button
-                  onClick={this.handleRetry}
-                  className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider text-sm rounded-2xl hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                  onClick={this.handleGoBack}
+                  className="w-full py-4 bg-primary text-white font-bold uppercase tracking-wider text-sm rounded-2xl hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
                 >
-                  Reboot System
+                  ← Go Back
+                </button>
+
+                <button
+                  onClick={this.handleRetry}
+                  className="w-full py-4 bg-white/10 text-white font-bold uppercase tracking-wider text-sm rounded-2xl border border-white/10 hover:bg-white/15 transition-colors"
+                >
+                  Try Again
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/'}
-                  className="w-full py-4 bg-white/5 text-gray-300 font-bold uppercase tracking-wider text-sm rounded-2xl border border-white/10 hover:bg-white/10 transition-colors"
+                  className="w-full py-3 bg-transparent text-gray-400 font-bold uppercase tracking-wider text-xs rounded-2xl hover:text-white transition-colors"
                 >
-                  Return to Base
+                  Go to Home
                 </button>
               </div>
             </div>

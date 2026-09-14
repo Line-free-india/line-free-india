@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useApp, DayStat, getCategoryInfo } from '../store/AppContext';
 import BottomNav from '../components/BottomNav';
 import { generateMonthlyReport } from '../utils/generateReport';
+import { generateBusinessInsights, analyzeRevenue } from '../services/aiService';
+import { useNavigate } from 'react-router-dom';
 
 export default function BarberAnalytics() {
   const { getBusinessFullStats, businessProfile } = useApp();
+  const nav = useNavigate();
   const [range, setRange] = useState<7 | 14 | 30>(30);
   const [stats, setStats] = useState<DayStat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,29 +32,52 @@ export default function BarberAnalytics() {
   const prevRevenue   = stats.slice(-14, -7).reduce((s, d) => s + d.revenue, 0);
   const growth        = prevRevenue > 0 ? ((recentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
 
+  // Real-time AI Co-Pilot Analytics
+  const revenueInsight = analyzeRevenue({
+    dailyRevenue: stats.map(s => ({ date: s.date, amount: s.revenue, customerCount: s.count }))
+  });
+
+  const businessInsights = generateBusinessInsights({
+    stats: {
+      totalCustomersServed: totalCustomers,
+      totalRevenue,
+      avgWaitMinutes: 20,
+      cancellationRate: cancelRate
+    },
+    businessName: businessProfile?.businessName || 'Business',
+    businessCategory: businessProfile?.businessType,
+    activeStaffCount: Math.max(1, businessProfile?.staffList?.filter(s => s.active !== false).length || 1)
+  });
+
+  const [reportError, setReportError] = useState('');
+
   const handleDownloadPDF = async () => {
     if (!businessProfile || stats.length === 0) return;
     setGenerating(true);
+    setReportError('');
     try {
       const month = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
       await generateMonthlyReport(stats, businessProfile, month);
-    } catch { alert('Could not generate report.'); }
+    } catch {
+      setReportError('Could not generate report.');
+      setTimeout(() => setReportError(''), 3000);
+    }
     setGenerating(false);
   };
 
   const kpi = (label: string, value: string | number, sub?: string, color?: string) => (
     <div style={{ flex: 1, background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 14, padding: '14px 12px' }}>
-      <p style={{ fontSize: 11, color: 'var(--color-text-dim)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
+      <p style={{ fontSize: 14, color: 'var(--color-text-dim)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
       <p style={{ fontSize: 22, fontWeight: 700, color: color || 'var(--color-text)', letterSpacing: -0.5 }}>{value}</p>
-      {sub && <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginTop: 2 }}>{sub}</p>}
     </div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingBottom: 160, overflowY: 'auto' }}>
       {/* Header */}
-      <div style={{ background: 'var(--color-card)', padding: '52px 16px 16px', borderBottom: '1px solid var(--color-separator)' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.3, marginBottom: 12 }}>Analytics</h1>
+      <div className="bg-white border-b border-gray-100 px-4 app-header-safe pb-3.5 shadow-xs">
+        <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-3">Analytics</h1>
 
         {/* Range selector */}
         <div style={{ display: 'flex', background: 'var(--color-bg)', borderRadius: 10, padding: 2, border: '1px solid var(--color-border)', width: 'fit-content' }}>
@@ -94,6 +120,48 @@ export default function BarberAnalytics() {
             </div>
           )}
 
+          {/* AI Salon Co-Pilot Card */}
+          <div style={{ margin: '16px 16px 0', padding: '16px', background: 'var(--color-card)', border: '1px solid rgba(0,240,255,0.25)', borderRadius: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 18 }}>🤖</span>
+                <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-primary)' }}>AI Business Co-Pilot</span>
+              </div>
+              <span style={{ fontSize: 11, background: 'rgba(0,240,255,0.12)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>Smart Advice</span>
+            </div>
+
+            <p style={{ fontSize: 13, color: 'var(--color-text)', marginBottom: 12, lineHeight: 1.5 }}>
+              {revenueInsight.insight}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {businessInsights.insights.map(item => (
+                <div key={item.id} style={{
+                  padding: '10px 12px', borderRadius: 12, fontSize: 12,
+                  background: item.type === 'warning' ? 'rgba(255,149,0,0.08)' : item.type === 'success' ? 'rgba(52,199,89,0.08)' : 'var(--color-bg)',
+                  border: `1px solid ${item.type === 'warning' ? 'rgba(255,149,0,0.25)' : item.type === 'success' ? 'rgba(52,199,89,0.25)' : 'var(--color-border)'}`,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                  <div style={{ flex: 1, paddingRight: 8 }}>
+                    <strong style={{ color: item.type === 'warning' ? '#ff9500' : item.type === 'success' ? '#34c759' : 'var(--color-text)' }}>{item.title}: </strong>
+                    <span style={{ color: 'var(--color-text-dim)' }}>{item.message}</span>
+                  </div>
+                  {item.actionRoute && (
+                    <button 
+                      onClick={() => nav(item.actionRoute!)}
+                      style={{
+                        padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                        background: 'var(--color-primary)', color: '#fff', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {item.actionLabel || 'View'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Bar chart */}
           <div style={{ margin: '16px 16px 0', padding: '16px', background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 14 }}>
             <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16 }}>Revenue</p>
@@ -111,8 +179,8 @@ export default function BarberAnalytics() {
               })}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>{stats[0]?.date?.slice(5)}</span>
-              <span style={{ fontSize: 10, color: 'var(--color-primary)', fontWeight: 600 }}>Today</span>
+              <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{stats[0]?.date?.slice(5)}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>Today</span>
             </div>
           </div>
 

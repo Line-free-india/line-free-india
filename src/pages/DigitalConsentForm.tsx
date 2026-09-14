@@ -185,7 +185,7 @@ export default function DigitalConsentForm() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-teal-400">Digital Consent 📝</h1>
-            <p className="text-[10px] text-teal-200/50 font-bold uppercase tracking-widest">{forms.filter(f => f.status === 'signed').length} Signed • {forms.filter(f => f.status === 'pending').length} Pending</p>
+            <p className="text-xs text-teal-200/50 font-bold uppercase tracking-widest">{forms.filter(f => f.status === 'signed').length} Signed • {forms.filter(f => f.status === 'pending').length} Pending</p>
           </div>
         </div>
         <button onClick={() => setCreatingForm(!creatingForm)} className="w-10 h-10 flex items-center justify-center rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 hover:bg-teal-500/20 transition-colors">
@@ -230,7 +230,7 @@ export default function DigitalConsentForm() {
                   <div className="flex justify-between items-center mb-6">
                       <div>
                           <h2 className="font-black text-lg text-teal-400">Consent & Waiver</h2>
-                          <p className="text-[10px] text-teal-200/50 uppercase tracking-widest font-bold">For {form.serviceName}</p>
+                          <p className="text-xs text-teal-200/50 uppercase tracking-widest font-bold">For {form.serviceName}</p>
                       </div>
                       <button onClick={() => setFillingId(null)} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 border border-border">✕</button>
                   </div>
@@ -243,7 +243,7 @@ export default function DigitalConsentForm() {
 
                       <div className="space-y-4">
                           <div>
-                              <label className="text-[10px] font-black uppercase tracking-widest text-text-dim block mb-2 ml-1">Medical Conditions / Ongoing Treatments</label>
+                              <label className="text-xs font-black uppercase tracking-widest text-text-dim block mb-2 ml-1">Medical Conditions / Ongoing Treatments</label>
                               <textarea value={medicalNotes} onChange={e => setMedicalNotes(e.target.value)} rows={3} placeholder="Please list any relevant medical info, pregnancies, or recent surgeries..." className="w-full p-4 rounded-2xl bg-card border border-border outline-none text-sm text-teal-50 resize-none focus:border-teal-500/50 transition-colors"></textarea>
                           </div>
 
@@ -251,15 +251,15 @@ export default function DigitalConsentForm() {
                               <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${hasAllergies ? 'bg-danger border-danger text-white' : 'bg-background border-border text-transparent'}`}>✓</div>
                               <div>
                                   <p className="text-xs font-black text-text">I have known skin allergies</p>
-                                  <p className="text-[9px] text-text-dim mt-0.5">Check if you have sensitive skin or product allergies.</p>
+                                  <p className="text-xs text-text-dim mt-0.5">Check if you have sensitive skin or product allergies.</p>
                               </div>
                               <input type="checkbox" className="hidden" checked={hasAllergies} onChange={e => setHasAllergies(e.target.checked)} />
                           </label>
 
                           <div>
                               <div className="flex justify-between items-end mb-2">
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-text-dim ml-1">Digital Signature</label>
-                                  <button onClick={clearCanvas} className="text-[9px] text-teal-500 uppercase tracking-widest font-bold px-2 py-1 bg-teal-500/10 rounded-md">Clear</button>
+                                  <label className="text-xs font-black uppercase tracking-widest text-text-dim ml-1">Digital Signature</label>
+                                  <button onClick={clearCanvas} className="text-xs text-teal-500 uppercase tracking-widest font-bold px-2 py-1 bg-teal-500/10 rounded-md">Clear</button>
                               </div>
                               <div className="bg-card border-2 border-dashed border-border rounded-2xl overflow-hidden relative touch-none">
                                   <canvas 
@@ -312,23 +312,23 @@ export default function DigitalConsentForm() {
                          <div>
                            <div className="flex items-center gap-2 mb-1">
                              <div className={`w-2 h-2 rounded-full ${isSigned ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.8)]' : 'bg-yellow-500'}`}></div>
-                             <span className={`text-[9px] font-black uppercase tracking-widest ${isSigned ? 'text-teal-400' : 'text-yellow-500'}`}>{f.status}</span>
+                             <span className={`text-xs font-black uppercase tracking-widest ${isSigned ? 'text-teal-400' : 'text-yellow-500'}`}>{f.status}</span>
                            </div>
                            <h4 className="font-black text-text text-sm leading-tight text-teal-50 flex items-center gap-2">
                              {f.clientName}
                            </h4>
-                           <p className="text-[10px] font-bold mt-1 text-teal-100/50">{f.serviceName}</p>
+                           <p className="text-xs font-bold mt-1 text-teal-100/50">{f.serviceName}</p>
                          </div>
     
-                         <button onClick={(e) => deleteForm(f.id, e)} className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full bg-danger/10 text-danger flex items-center justify-center text-[10px] hover:bg-danger/20">✕</button>
+                         <button onClick={(e) => deleteForm(f.id, e)} className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full bg-danger/10 text-danger flex items-center justify-center text-xs hover:bg-danger/20">✕</button>
                        </div>
     
                        {isSigned ? (
                            <div className="mt-2 pt-3 border-t border-border flex justify-between items-end">
                               <div>
-                                  <p className="text-[9px] font-bold text-text-dim uppercase tracking-widest">Signed On</p>
+                                  <p className="text-xs font-bold text-text-dim uppercase tracking-widest">Signed On</p>
                                   <p className="text-xs font-black text-teal-200">{new Date(f.dateSigned).toLocaleDateString()} {new Date(f.dateSigned).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                                  {f.hasAllergies && <span className="inline-block mt-1 bg-danger/10 text-danger px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">Has Allergies</span>}
+                                  {f.hasAllergies && <span className="inline-block mt-1 bg-danger/10 text-danger px-1.5 py-0.5 rounded text-xs font-black uppercase tracking-widest">Has Allergies</span>}
                               </div>
                               {f.signatureImage && (
                                   <div className="bg-white rounded-lg p-1 w-20 h-8 flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity">
@@ -338,7 +338,7 @@ export default function DigitalConsentForm() {
                            </div>
                        ) : (
                            <div className="mt-1 flex gap-2">
-                              <button onClick={() => startFilling(f.id)} className="flex-1 py-2 rounded-xl bg-card-2 border border-border text-[10px] font-black uppercase tracking-widest hover:border-teal-500/50 hover:text-teal-400 transition-colors">
+                              <button onClick={() => startFilling(f.id)} className="flex-1 py-2 rounded-xl bg-card-2 border border-border text-xs font-black uppercase tracking-widest hover:border-teal-500/50 hover:text-teal-400 transition-colors">
                                 Fill Now (Device)
                               </button>
                               <button onClick={() => sendToClient(f)} className="w-12 flex items-center justify-center rounded-xl bg-green-500/10 text-green-500 text-lg hover:bg-green-500 hover:text-white transition-colors border border-green-500/20 relative" title="Send WhatsApp Link">

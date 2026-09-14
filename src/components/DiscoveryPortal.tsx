@@ -36,7 +36,7 @@ export default function DiscoveryPortal({
             <span className="text-2xl">🔍</span>
             <span>DISCOVERY PORTAL</span>
           </h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-dim mt-1">
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-text-dim mt-1">
             Explore Premium Services
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function DiscoveryPortal({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`
-              px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest 
+              px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest 
               whitespace-nowrap transition-all border flex items-center gap-2
               ${selectedCategory === 'all'
                 ? 'bg-gradient-to-r from-primary to-accent border-transparent text-white shadow-lg shadow-primary/30'
@@ -93,7 +93,7 @@ export default function DiscoveryPortal({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`
-              px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest 
+              px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest 
               whitespace-nowrap transition-all border flex items-center gap-2
               ${getGlassClasses('elevated')} text-primary hover:border-primary/30
             `}
@@ -118,7 +118,7 @@ export default function DiscoveryPortal({
           </span>
           <button
             onClick={() => onCategorySelect('all')}
-            className="ml-2 text-[10px] font-bold text-text-dim hover:text-primary transition-colors"
+            className="ml-2 text-xs font-bold text-text-dim hover:text-primary transition-colors"
           >
             Clear ✕
           </button>

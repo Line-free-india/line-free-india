@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { useApp } from '../store/AppContext';
 import BottomNav from '../components/BottomNav';
 import BackButton from '../components/BackButton';
+import PaymentModal from '../components/PaymentModal';
 
 const UPI_ID = 'kumarsatyam9378@okhdfcbank';
 
 export default function BarberSubscription() {
-  const { isBusinessTrialActive, getBusinessTrialDaysLeft, isBusinessSubscribed, businessProfile, t } = useApp();
+  const { isBusinessTrialActive, getBusinessTrialDaysLeft, isBusinessSubscribed, businessProfile, saveBusinessProfile, t } = useApp();
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [subscribedSuccess, setSubscribedSuccess] = useState(false);
 
   const trialDays = getBusinessTrialDaysLeft();
   const trialActive = isBusinessTrialActive();
@@ -45,16 +49,26 @@ export default function BarberSubscription() {
   const handleSubscribe = (planId: string) => {
     const plan = plans.find(p => p.id === planId);
     if (!plan) return;
-    const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('LineFree')}&tn=${encodeURIComponent(`LineFree Business Subscription - ${plan.name}`)}&am=${plan.price}&cu=INR`;
-    window.location.href = upiUrl;
+    setSelectedPlan(plan);
   };
 
   return (
     <div className="min-h-screen pb-40 animate-fadeIn">
-      <div className="p-6">
+      <div className="px-5 app-header-safe pb-8">
         <BackButton to="/barber/home" />
         <h1 className="text-2xl font-bold mb-1">{t('sub.barber.title')}</h1>
         <p className="text-text-dim text-sm mb-5">First month FREE! Then subscribe to continue.</p>
+
+        {/* Subscribed Success Alert */}
+        {subscribedSuccess && (
+          <div className="p-4 rounded-2xl bg-success/15 border border-success/40 mb-5 flex items-center gap-3 animate-fadeIn">
+            <span className="text-2xl">🎉</span>
+            <div>
+              <p className="text-success font-bold text-sm">Subscription Activated!</p>
+              <p className="text-xs text-text-dim">Thank you for subscribing to Line Free India. Your plan is now active.</p>
+            </div>
+          </div>
+        )}
 
         {/* Trial Status */}
         {trialActive ? (
@@ -98,25 +112,25 @@ export default function BarberSubscription() {
           {plans.map(plan => (
             <div key={plan.id} className="uv-pack-container">
               {plan.badge && (
-                <span className="absolute -top-0 right-0 px-4 py-1.5 rounded-bl-[20px] bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
-                  {plan.badge}
-                </span>
+                <div className="uv-banner-container">
+                  <div className="uv-banner">{plan.badge}</div>
+                </div>
               )}
               
-              <div className="uv-header">
-                 <p className="uv-title">{plan.name} PLAN</p>
+              <div className="uv-pack-header">
+                <p className="uv-title">{plan.name}</p>
+                <div className="uv-price-container">
+                  <span className="uv-currency">₹</span>
+                  <span className="uv-price">{plan.price}</span>
+                  <span className="uv-period">{plan.period}</span>
+                </div>
               </div>
 
-              <div className="uv-price-container">
-                <span className="uv-price">₹{plan.price}</span>
-                <span className="text-sm text-slate-400 font-bold ml-1">{plan.period}</span>
-              </div>
-              
-              <ul className="uv-lists">
+              <ul className="uv-features">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="uv-list">
-                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
+                  <li key={i} className="uv-feature-item">
+                    <svg className="uv-check-icon" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     <span>{f}</span>
                   </li>
@@ -124,7 +138,7 @@ export default function BarberSubscription() {
               </ul>
               
               <button onClick={() => handleSubscribe(plan.id)} className="uv-button">
-                💳 PAY VIA UPI
+                💳 SUBSCRIBE NOW
               </button>
             </div>
           ))}
@@ -132,9 +146,9 @@ export default function BarberSubscription() {
 
         {/* Payment Info */}
         <div className="mt-5 p-4 rounded-xl glass-card text-center">
-          <p className="text-text-dim text-xs mb-1">Payment via UPI — Opens your payment app</p>
+          <p className="text-text-dim text-xs mb-1">Instant Activation with Cards, UPI & Netbanking</p>
           <p className="font-mono text-sm text-primary">{UPI_ID}</p>
-          <p className="text-text-dim text-[10px] mt-2">GPay • PhonePe • Paytm • BHIM & more</p>
+          <p className="text-text-dim text-xs mt-2">Razorpay • GPay • PhonePe • Paytm • Cards</p>
         </div>
 
         {/* FAQ */}
@@ -152,6 +166,35 @@ export default function BarberSubscription() {
           ))}
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={!!selectedPlan}
+          onClose={() => setSelectedPlan(null)}
+          amount={selectedPlan.price}
+          businessName="Line Free India"
+          salonId={businessProfile?.uid || 'platform_subscription'}
+          description={`Business Subscription - ${selectedPlan.name}`}
+          customerName={businessProfile?.businessName || 'Business Owner'}
+          customerPhone={businessProfile?.phone || ''}
+          upiId={UPI_ID}
+          onSuccess={async () => {
+            if (businessProfile) {
+              await saveBusinessProfile({
+                ...businessProfile,
+                subscriptionPlan: selectedPlan.id,
+                subscribedAt: Date.now(),
+                isSubscribed: true,
+                subscriptionStatus: 'active'
+              });
+            }
+            setSubscribedSuccess(true);
+            setSelectedPlan(null);
+          }}
+        />
+      )}
+
       <BottomNav />
     </div>
   );

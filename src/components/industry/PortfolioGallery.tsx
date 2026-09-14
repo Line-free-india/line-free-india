@@ -61,7 +61,7 @@ const PortfolioGallery: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div className="flex gap-2">
                   <Heart size={14} className="text-danger fill-danger" />
-                  <span className="text-[10px] text-white/80">{item.likes}</span>
+                  <span className="text-xs text-white/80">{item.likes}</span>
                 </div>
                 <div className="flex gap-2">
                   <button className="p-1 hover:bg-white/20 rounded-lg text-white transition-colors">
@@ -75,7 +75,7 @@ const PortfolioGallery: React.FC = () => {
             </div>
 
             <div className="absolute top-2 left-2">
-               <span className="text-[8px] bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-full uppercase font-black border border-white/10">
+               <span className="text-xs bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-full uppercase font-black border border-white/10">
                  {item.category}
                </span>
             </div>
@@ -88,7 +88,7 @@ const PortfolioGallery: React.FC = () => {
         
         <button className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all text-text-dim hover:text-primary animate-pulse">
            <ImageIcon size={32} strokeWidth={1.5} />
-           <span className="text-[10px] font-bold uppercase tracking-widest">New Showcase</span>
+           <span className="text-xs font-bold uppercase tracking-widest">New Showcase</span>
         </button>
       </div>
     </div>

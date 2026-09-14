@@ -22,6 +22,7 @@ export default function BarberAuth() {
     setError('');
     try {
       const result = await signInWithGoogle();
+      if (!result) return;
       setRole('business');
       const uid = (result as any)?.user?.uid || (result as any)?.uid;
       if (uid) {
@@ -118,7 +119,7 @@ export default function BarberAuth() {
               {user.photoURL ? <img src={user.photoURL} className={`${avatarSize} object-cover`} alt="" /> : <div className={`${avatarSize} flex items-center justify-center text-4xl`} style={{ background: '#1a1a1d' }}>🏪</div>}
             </div>
             <p className="text-white text-sm font-bold mb-1">{user.displayName}</p>
-            <p className="text-[10px] font-semibold mb-6" style={{ color: '#52525B' }}>{user.email}</p>
+            <p className="text-xs font-semibold mb-6" style={{ color: '#52525B' }}>{user.email}</p>
             <button 
               onClick={() => { setRole('business'); nav('/barber/setup'); }} 
               className="neu-action-btn-primary w-full py-4 px-6 font-black text-sm"
@@ -200,7 +201,7 @@ export default function BarberAuth() {
           Register your business & manage queue digitally
         </motion.p>
 
-        {error && <p className="text-[10px] mb-4 text-center font-bold uppercase tracking-wider p-3 rounded-2xl" style={{ color: '#F43F5E', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)' }}>{error}</p>}
+        {error && <p className="text-xs mb-4 text-center font-bold uppercase tracking-wider p-3 rounded-2xl" style={{ color: '#F43F5E', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)' }}>{error}</p>}
 
         <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.45, type: 'spring' }} className={`w-full ${maxWidth}`}>
           <form onSubmit={handleEmailAuth} className="flex flex-col gap-3 mb-6">
@@ -255,7 +256,7 @@ export default function BarberAuth() {
 
           <div className="flex items-center justify-between mb-6">
             <div className="h-px bg-zinc-800 flex-1" />
-            <span className="px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">OR</span>
+            <span className="px-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">OR</span>
             <div className="h-px bg-zinc-800 flex-1" />
           </div>
 
@@ -295,7 +296,7 @@ export default function BarberAuth() {
             <button 
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider hover:text-white transition-colors"
+              className="text-xs font-bold text-zinc-400 uppercase tracking-wider hover:text-white transition-colors"
               style={{ minHeight: '44px', minWidth: '44px' }}
             >
               {isSignUp ? 'Login to existing business' : 'Register a new business'}

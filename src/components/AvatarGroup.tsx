@@ -7,7 +7,7 @@ interface AvatarGroupProps {
 }
 
 export default function AvatarGroup({ avatars, max = 4, size = 'md' }: AvatarGroupProps) {
-  const sizes = { sm: 'w-8 h-8 text-[9px]', md: 'w-10 h-10 text-[10px]', lg: 'w-12 h-12 text-xs' };
+  const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-xs', lg: 'w-12 h-12 text-xs' };
   const shown = avatars.slice(0, max);
   const extra = avatars.length - max;
 

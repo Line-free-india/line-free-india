@@ -135,28 +135,28 @@ export default function RewardsCenter() {
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-base flex-shrink-0">🎫</div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-text">Complete Visit</p>
-                  <p className="text-[10px] text-text-dim">+50 points</p>
+                  <p className="text-xs text-text-dim">+50 points</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-base flex-shrink-0">⭐</div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-text">Leave Review</p>
-                  <p className="text-[10px] text-text-dim">+25 points</p>
+                  <p className="text-xs text-text-dim">+25 points</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-base flex-shrink-0">🔥</div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-text">Daily Streak</p>
-                  <p className="text-[10px] text-text-dim">+10 points/day</p>
+                  <p className="text-xs text-text-dim">+10 points/day</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-base flex-shrink-0">👥</div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-text">Refer Friend</p>
-                  <p className="text-[10px] text-text-dim">+100 points</p>
+                  <p className="text-xs text-text-dim">+100 points</p>
                 </div>
               </div>
             </div>
@@ -195,11 +195,11 @@ export default function RewardsCenter() {
                             <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{reward.points} pts</span>
                           </div>
                           {canAfford ? (
-                            <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+                            <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">
                               Redeem
                             </span>
                           ) : (
-                            <span className="px-2.5 py-1 rounded-lg bg-card-2 text-text-dim text-[10px] font-bold">
+                            <span className="px-2.5 py-1 rounded-lg bg-card-2 text-text-dim text-xs font-bold">
                               Need {reward.points - userPoints}
                             </span>
                           )}

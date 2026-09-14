@@ -78,7 +78,7 @@ export default function UniversalReferralEngine() {
           <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
           <div>
             <h1 className="font-black text-lg text-primary">Referral Engine 🎁</h1>
-            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">Growth & Loyalty</p>
+            <p className="text-xs text-text-dim font-bold uppercase tracking-widest">Growth & Loyalty</p>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function UniversalReferralEngine() {
              <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                 <div>
                    <p className="font-bold text-sm text-text">Enable Referrals</p>
-                   <p className="text-[9px] font-bold text-text-dim uppercase tracking-widest mt-0.5">Let customers refer friends</p>
+                   <p className="text-xs font-bold text-text-dim uppercase tracking-widest mt-0.5">Let customers refer friends</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={isEnabled} onChange={e => setIsEnabled(e.target.checked)} />
@@ -108,14 +108,14 @@ export default function UniversalReferralEngine() {
 
              <div className="grid grid-cols-2 gap-3">
                <div>
-                 <label className="text-[9px] uppercase tracking-widest text-text-dim font-bold block mb-1 pl-1">Points per Referral</label>
+                 <label className="text-xs uppercase tracking-widest text-text-dim font-bold block mb-1 pl-1">Points per Referral</label>
                  <div className="relative">
                    <input type="number" value={pointsPerReferral} onChange={e => setPointsPerReferral(e.target.value)} disabled={!isEnabled} className="w-full p-3 pl-8 rounded-xl bg-background border border-border outline-none font-black text-primary disabled:opacity-50" />
                    <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-xs">✨</span>
                  </div>
                </div>
                <div>
-                 <label className="text-[9px] uppercase tracking-widest text-text-dim font-bold block mb-1 pl-1">Referee Discount (%)</label>
+                 <label className="text-xs uppercase tracking-widest text-text-dim font-bold block mb-1 pl-1">Referee Discount (%)</label>
                  <div className="relative">
                    <input type="number" value={refereeDiscount} onChange={e => setRefereeDiscount(e.target.value)} disabled={!isEnabled} className="w-full p-3 pl-8 rounded-xl bg-background border border-border outline-none font-black text-green-500 disabled:opacity-50" />
                    <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-xs">%</span>
@@ -133,7 +133,7 @@ export default function UniversalReferralEngine() {
         <div className="p-5 rounded-3xl bg-gradient-to-br from-yellow-500/10 to-amber-500/5 border border-yellow-500/20 shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-8xl pointer-events-none -translate-y-4 text-yellow-500">✨</div>
           <h2 className="font-black text-amber-500 mb-1 text-sm relative z-10 flex items-center gap-2">Issue Loyalty Points</h2>
-          <p className="text-[10px] text-text-dim font-bold mb-4 relative z-10 leading-relaxed">Reward customers directly to their wallet. Great for compensations or ad-hoc promotions.</p>
+          <p className="text-xs text-text-dim font-bold mb-4 relative z-10 leading-relaxed">Reward customers directly to their wallet. Great for compensations or ad-hoc promotions.</p>
 
           <div className="grid grid-cols-3 gap-3 relative z-10">
              <div className="col-span-2">
@@ -156,7 +156,7 @@ export default function UniversalReferralEngine() {
         <div className="p-5 rounded-3xl border border-dashed border-border flex flex-col items-center justify-center text-center opacity-70">
            <span className="text-3xl mb-2 grayscale">📈</span>
            <h3 className="font-black text-text text-sm mb-1">How it Works</h3>
-           <p className="text-[10px] font-bold text-text-dim max-w-[250px] leading-relaxed">Customers share their unique link. When a new user books with you using their link, both parties receive wallet points automatically.</p>
+           <p className="text-xs font-bold text-text-dim max-w-[250px] leading-relaxed">Customers share their unique link. When a new user books with you using their link, both parties receive wallet points automatically.</p>
         </div>
 
       </div>

@@ -51,8 +51,12 @@ export default function VoiceAICompanion() {
       </div>
 
       {/* Header */}
-      <div className="px-6 pt-14 pb-8 relative z-10 text-center">
-        <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.5em] mb-2 font-mono">Neural Interface v4.0</p>
+      <div className="px-6 pt-14 pb-8 relative z-10 text-center flex flex-col items-center">
+        <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase tracking-widest">
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+          Demo Feature
+        </div>
+        <p className="text-xs text-cyan-400 font-black uppercase tracking-[0.5em] mb-2 font-mono">Neural Interface v4.0</p>
         <h1 className="text-4xl font-black italic tracking-tighter uppercase mb-2">Voice Companion</h1>
         <p className="text-zinc-500 text-xs font-medium">Control your entire business ecosystem hands-free.</p>
       </div>
@@ -103,7 +107,7 @@ export default function VoiceAICompanion() {
                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xl font-bold italic text-cyan-300">Listening to your command...</motion.p>
               ) : aiStatus === 'acting' ? (
                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Executing</p>
+                    <p className="text-xs text-zinc-500 font-black uppercase tracking-widest">Executing</p>
                     <p className="text-lg font-black text-emerald-400 italic">{lastAction}</p>
                  </motion.div>
               ) : (

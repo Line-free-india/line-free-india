@@ -80,18 +80,18 @@ const PatientRecords: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="text-center p-2 bg-white/5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-text-dim uppercase font-bold mb-1">BP</p>
+                <p className="text-xs text-text-dim uppercase font-bold mb-1">BP</p>
                 <p className="font-mono text-xs">{patient.vitals.bp}</p>
               </div>
               <div className="text-center p-2 bg-white/5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-text-dim uppercase font-bold mb-1">Pulse</p>
+                <p className="text-xs text-text-dim uppercase font-bold mb-1">Pulse</p>
                 <div className="flex items-center justify-center gap-1">
                   <Activity size={10} className="text-danger animate-pulse" />
                   <p className="font-mono text-xs">{patient.vitals.pulse}</p>
                 </div>
               </div>
               <div className="text-center p-2 bg-white/5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-text-dim uppercase font-bold mb-1">Temp</p>
+                <p className="text-xs text-text-dim uppercase font-bold mb-1">Temp</p>
                 <p className="font-mono text-xs">{patient.vitals.temp}</p>
               </div>
             </div>

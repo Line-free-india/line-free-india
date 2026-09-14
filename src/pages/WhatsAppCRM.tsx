@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApp, getCategoryInfo } from '../store/AppContext';
 import BackButton from '../components/BackButton';
 import { motion } from 'framer-motion';
+import { generateMarketingCampaign } from '../services/aiService';
 
 const TEMPLATES = [
   { id: 'offer', label: '🎯 Special Offer', msg: 'Hi {{name}}! 🎉 We have an exclusive offer for you at {{business}}. Visit us today and get 20% off! 🔥\n\n📍 {{location}}\n🔗 Book: {{link}}' },
@@ -18,6 +19,9 @@ export default function WhatsAppCRM() {
   const [customMsg, setCustomMsg] = useState('');
   const [phone, setPhone] = useState('');
   const [sentCount, setSentCount] = useState(0);
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [aiOccasion, setAiOccasion] = useState<'diwali' | 'eid' | 'holi' | 'new_year' | 'weekend_rush' | 'slow_weekday'>('weekend_rush');
+  const [aiDiscount, setAiDiscount] = useState<number>(20);
 
   const catInfo = getCategoryInfo(businessProfile?.businessType || 'men_salon');
   const CAT_COLOR: Record<string, string> = {
@@ -71,7 +75,7 @@ export default function WhatsAppCRM() {
         />
       </div>
 
-      <div className="p-6 relative z-10">
+      <div className="px-5 app-header-safe pb-8 relative z-10">
         <BackButton to="/barber/home" />
 
         <header className="mt-6 mb-8">
@@ -80,14 +84,14 @@ export default function WhatsAppCRM() {
           </h1>
           <p className="text-white/40 text-sm mt-1">Send promos, reminders & collect reviews</p>
           {sentCount > 0 && (
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#25D366]/20 border border-[#25D366]/30 text-[#25D366] text-[11px] font-bold">
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#25D366]/20 border border-[#25D366]/30 text-[#25D366] text-sm font-bold">
               ✅ {sentCount} sent this session
             </div>
           )}
         </header>
 
         {/* Templates */}
-        <h2 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Message Templates</h2>
+        <h2 className="text-xs font-black text-white/40 uppercase tracking-widest mb-3">Message Templates</h2>
         <div className="grid grid-cols-2 gap-2 mb-6">
           {TEMPLATES.map(t => (
             <button key={t.id}
@@ -103,14 +107,70 @@ export default function WhatsAppCRM() {
           ))}
         </div>
 
+        {/* AI Campaign Generator */}
+        <div className="p-5 rounded-3xl bg-gradient-to-br from-[#25D366]/15 via-black/40 to-emerald-950/20 border border-[#25D366]/30 mb-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-black text-[#25D366] uppercase tracking-widest flex items-center gap-2">
+              <span>✨</span> AI Campaign Co-Pilot
+            </h2>
+            <span className="text-[10px] bg-[#25D366]/20 text-[#25D366] px-2 py-0.5 rounded-full font-bold uppercase">Smart Copy</span>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] text-white/50 uppercase font-bold block mb-1">Occasion / Theme</label>
+              <select 
+                value={aiOccasion}
+                onChange={e => setAiOccasion(e.target.value as any)}
+                className="w-full bg-white/10 border border-white/10 rounded-xl px-2 py-2 text-xs text-white outline-none"
+              >
+                <option value="weekend_rush" className="bg-zinc-900">Weekend Special</option>
+                <option value="slow_weekday" className="bg-zinc-900">Slow Hours Deal</option>
+                <option value="diwali" className="bg-zinc-900">Diwali Festive</option>
+                <option value="eid" className="bg-zinc-900">Eid Mubarak</option>
+                <option value="holi" className="bg-zinc-900">Holi Special</option>
+                <option value="new_year" className="bg-zinc-900">New Year Promo</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] text-white/50 uppercase font-bold block mb-1">Discount %</label>
+              <input
+                type="number"
+                value={aiDiscount}
+                onChange={e => setAiDiscount(Number(e.target.value))}
+                min={5}
+                max={50}
+                className="w-full bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              const camp = generateMarketingCampaign({
+                occasion: aiOccasion,
+                discountPercent: aiDiscount,
+                businessName: businessProfile?.businessName || 'Our Business',
+                bookingUrl
+              });
+              setCustomMsg(camp.whatsappCopy);
+              setToastMessage('Generated AI Campaign Message! ✨');
+              setTimeout(() => setToastMessage(''), 3000);
+            }}
+            className="w-full py-2.5 rounded-xl bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/40 text-[#25D366] text-xs font-black uppercase tracking-wider transition-colors"
+          >
+            ⚡ Generate High-Converting Copy
+          </button>
+        </div>
+
         {/* Preview */}
-        <h2 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Message Preview</h2>
+        <h2 className="text-xs font-black text-white/40 uppercase tracking-widest mb-3">Message Preview</h2>
         <div className="p-4 rounded-2xl bg-[#1a2e1a]/60 border border-[#25D366]/20 mb-6">
           <div className="flex items-center gap-2 mb-3 pb-3 border-b border-[#25D366]/10">
             <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center text-sm font-black text-white">{catInfo.icon}</div>
             <div>
               <div className="text-sm font-bold text-[#25D366]">{businessProfile?.businessName}</div>
-              <div className="text-[9px] text-white/30">via WhatsApp</div>
+              <div className="text-xs text-white/30">via WhatsApp</div>
             </div>
           </div>
           <textarea
@@ -122,7 +182,7 @@ export default function WhatsAppCRM() {
         </div>
 
         {/* Send to single number */}
-        <h2 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Send to Customer</h2>
+        <h2 className="text-xs font-black text-white/40 uppercase tracking-widest mb-3">Send to Customer</h2>
         <div className="flex gap-2 mb-6">
           <input
             value={phone}
@@ -148,8 +208,9 @@ export default function WhatsAppCRM() {
         >
           📢 Broadcast to All Contacts
         </button>
-        <p className="text-white/20 text-[10px] text-center mt-2">Opens WhatsApp web — select contacts to send</p>
+        <p className="text-white/20 text-xs text-center mt-2">Opens WhatsApp web — select contacts to send</p>
       </div>
-    </div>
+    {toastMessage && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-zinc-900 border border-[#25D366]/40 text-white px-4 py-2 rounded-xl z-50 text-xs font-bold shadow-2xl flex items-center gap-2">{toastMessage} <button onClick={() => setToastMessage('')} className="ml-2 text-white/50 hover:text-white">&times;</button></div>}
+</div>
   );
 }

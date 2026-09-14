@@ -73,7 +73,7 @@ export default function Wallet() {
           {/* Auto-reload badge */}
           <div className="mt-3 flex items-center gap-2 bg-white/10 rounded-full py-1.5 px-3 w-fit">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white/70 text-[10px] font-medium">Auto-reload at ₹200</span>
+            <span className="text-white/70 text-xs font-medium">Auto-reload at ₹200</span>
           </div>
         </motion.div>
       </div>

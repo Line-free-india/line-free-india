@@ -65,18 +65,18 @@ export default function BusinessAnalyticsPro() {
 
   return (
     <div className="min-h-screen bg-background pb-20 animate-fadeIn bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-background to-background">
-      <div className="p-4 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
+      <div className="px-4 app-header-safe pb-3.5 glass-strong sticky top-0 z-20 flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-3">
-          <button onClick={() => nav('/barber/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
-          <div><h1 className="font-black text-lg bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">Analytics Pro 🚀</h1><p className="text-[10px] text-purple-200/50 font-bold uppercase tracking-widest">{businessProfile?.businessName}</p></div>
+          <button onClick={() => nav('/barber/home')} className="w-10 h-10 flex items-center justify-center rounded-full bg-card-2 hover:bg-border transition-colors">←</button>
+          <div><h1 className="font-black text-lg bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">Analytics Pro 🚀</h1><p className="text-xs text-purple-200/50 font-bold uppercase tracking-widest">{businessProfile?.businessName}</p></div>
         </div>
       </div>
       <div className="p-4 space-y-6">
         <div className="flex gap-1.5 bg-card-2 p-1 rounded-xl border border-border">
-          {(['today','week','month','all'] as const).map(p => (<button key={p} onClick={() => setPeriod(p)} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${period === p ? 'bg-purple-500 text-white shadow-md' : 'text-text-dim'}`}>{p}</button>))}
+          {(['today','week','month','all'] as const).map(p => (<button key={p} onClick={() => setPeriod(p)} className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${period === p ? 'bg-purple-500 text-white shadow-md' : 'text-text-dim'}`}>{p}</button>))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {kpis.map(k => (<div key={k.label} className={`bg-gradient-to-br ${k.bg} to-card border border-border rounded-3xl p-4 text-center hover:scale-[1.02] transition-transform`}><span className="text-xl block mb-1">{k.icon}</span><p className={`text-lg font-black ${k.color}`}>{k.value}</p><p className="text-[8px] font-black uppercase tracking-widest text-text-dim mt-1">{k.label}</p></div>))}
+          {kpis.map(k => (<div key={k.label} className={`bg-gradient-to-br ${k.bg} to-card border border-border rounded-3xl p-4 text-center hover:scale-[1.02] transition-transform`}><span className="text-xl block mb-1">{k.icon}</span><p className={`text-lg font-black ${k.color}`}>{k.value}</p><p className="text-xs font-black uppercase tracking-widest text-text-dim mt-1">{k.label}</p></div>))}
         </div>
         {topExpCats.length > 0 && (
           <div className="elite-glass rounded-3xl p-5 spatial-card">

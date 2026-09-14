@@ -75,7 +75,7 @@ export default function QuickActionsGrid() {
           aria-label={action.ariaLabel}
         >
           <span className="text-2xl">{action.icon}</span>
-          <span className="text-[9px] font-bold text-text-dim">
+          <span className="text-xs font-bold text-text-dim">
             {action.label}
           </span>
         </motion.button>
